@@ -187,7 +187,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     <span>LTV : CAC</span><span id="eRatio">–</span>
     <span>Free users (retained, not paying)</span><span id="eFree">0</span>
   </div>
-  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. Typical SaaS margins are near this, but the exact figure here is a game simplification, not a cited benchmark. Lifetime value and payback use gross margin. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. Typical SaaS margins are near this, but the exact figure here is a game simplification, not a cited benchmark. Lifetime value and payback use gross margin. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data. <b>Expansion</b>: from $1M valuation, each paying customer is checked about once a year and can move up or down one plan (Base, Pro, Enterprise). How often, the 12% upgrade and 4% downgrade rates, and the plan prices are game simplifications, not measured data.</p>
   </div></div></div>
 </div>
 
@@ -211,6 +211,8 @@ const C={},readColors=()=>{for(const k of ['ad','acq','act','ret','ref','rev','f
 // Tuned with sim/expansion.js: a 43px centre slot lands about 12% (EXP_RATE0), and two 9px Downgrade slots 12px in from the walls about 3.8% together (DOWN_RATE).
 // Wall-flush Downgrade slots can't reach 4%: 4px or less lands none, 5px already 6%.
 const EXP_W0=43,DOWN_W=9,DOWN_ZONES=[[12,12+DOWN_W],[348-DOWN_W,348]],EXP_RATE0=.12,DOWN_RATE=.038,EXP_AT=1e6,expOpen=()=>peak>=EXP_AT;
+// Game simplification: each paying customer gets an expansion check about once a game year.
+const EXP_CHECK=1/12;
 const BOARDS=[
   {name:'Acquisition',title:'A · ACQUISITION',zones:[[168,192]],pass:'SIGN UP',fail:'BOUNCED',col:'acq',bench:.05,inL:'visitors',outL:'sign-ups'},
   {name:'Activation',title:'A · ACTIVATION',zones:[[51,131],[229,309]],pass:'ACTIVATED',fail:'NEVER ACTIVATED',col:'act',bench:.36,inL:'sign-ups',outL:'activated'},
@@ -286,20 +288,28 @@ const referred=()=>Math.round(1+24*Array.from({length:8},Math.random).sort((a,b)
 // Above MAX_BALLS, users skip the animation and land by the odds. x is set so land() scores the outcome.
 const MAX_BALLS=400,addFloat=f=>{if(floats.length<40)floats.push(f)};
 function spawn(o){if(balls.length<MAX_BALLS){balls.push(o);return}
-  const zs=BOARDS[o.b].zones,inZone=x=>zs.some(([a,c])=>x>=a&&x<c);
-  const t=trackOf(o.b);
-  if(Math.random()<(t?rateOf(t):EXP_RATE0)*(aimed(o.src,o.b)?.lift||1)){const [a,c]=zs[Math.random()*zs.length|0];o.x=(a+c)/2}else do o.x=Math.random()*W;while(inZone(o.x));
+  const zs=BOARDS[o.b].zones,ds=o.b===5?DOWN_ZONES:[],inZone=x=>zs.some(([a,c])=>x>=a&&x<c)||ds.some(([a,c])=>x>=a&&x<c);
+  const t=trackOf(o.b),r=Math.random(),up=rateOf(t)*(aimed(o.src,o.b)?.lift||1),pick=z=>{const [a,c]=z[Math.random()*z.length|0];o.x=(a+c)/2};
+  if(r<up)pick(zs);else if(ds.length&&r<up+DOWN_RATE)pick(ds);else do o.x=Math.random()*W;while(inZone(o.x));
   land(o)}
 // Flat and capped so customers can't compound: friends never refer, and this adds at most 10 referrals a month.
 const CUST_REFER=.01,REFER_CAP=1000;
 function refer(x,y){const n=referred();for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60);addFloat({x,y,t:`+${n} friend${n>1?'s':''}`,c:C.ref,life:1});return n}
 function land(o){
   const B=BOARDS[o.b],hit=B.zones.some(([a,c])=>o.x>=a&&o.x<c),fy=o.b*BH+WALLTOP-6;
+  if(o.b===5)return landExp(o,hit,fy);
   if(hit){out[o.b]++;sfx('tick');for(const z of B.zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1}
   if(o.b<=2){if(hit)spawn(enter(o.b+1,o.friend,o.x,o.src))}
   else if(o.b===3){spawn(enter(4,o.friend,o.x,o.src));if(hit&&!o.friend){const n=refer(o.x,fy);if(out[3]===1)say(`A user told ${n} friends. They skip Acquisition and land straight in Activation.`)}}
   else if(o.b===4){if(hit){paying++;addSub(price);sfx('ching');addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
 }
+// Expansion: o.sub is the customer's "price:plan" group. A slot that can't apply (Enterprise up, Base down, group gone) counts as Same plan.
+function landExp(o,hit,fy){const pl=unkey(o.sub)[1];
+  if(hit){for(const z of BOARDS[5].zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1;
+    if(pl<2&&moveSub(o.sub,pl+1)){out[5]++;sfx('ching');addFloat({x:o.x,y:fy,t:'↑ '+PLANS[pl+1].name,c:C.exp,life:1});if(out[5]===1)say(`A customer upgraded to ${PLANS[pl+1].name}. Growth from customers you already have costs no ads.`)}}
+  else if(DOWN_ZONES.some(([a,c])=>o.x>=a&&o.x<c)&&pl>0&&moveSub(o.sub,pl-1)){sfx('thud');addFloat({x:o.x,y:fy,t:'↓ '+PLANS[pl-1].name,c:C.warn,life:1})}}
+// Once a game month, about a twelfth of each customer group drops through Expansion. Snapshot subs first: landing moves customers between groups.
+function expCheck(){if(!expOpen())return;for(const [k,n] of Object.entries(subs)){const m=binom(n,EXP_CHECK);for(let i=0;i<m;i++){const o=enter(5,0);o.sub=k;spawn(o)}}}
 function physics(dt){
   for(const o of balls){
     o.age+=dt;o.vy+=GRAV*dt;const sp=Math.hypot(o.vx,o.vy);if(sp>600){o.vx*=600/sp;o.vy*=600/sp}
@@ -309,12 +319,13 @@ function physics(dt){
     for(const p of pegs){if(p.b!==o.b)continue;const dx=o.x-p.x,dy=o.y-p.y,rr=BR+PR,d2=dx*dx+dy*dy;
       if(d2<rr*rr){const d=Math.sqrt(d2)||.01,nx=dx/d,ny=dy/d;o.x=p.x+nx*rr;o.y=p.y+ny*rr;const vn=o.vx*nx+o.vy*ny;
         if(vn<0){o.vx-=1.5*vn*nx;o.vy-=1.5*vn*ny}o.vx+=(Math.random()-.5)*24;p.flash=1}}
+    if(o.b===5&&!o.up&&o.y>y0+WALLTOP&&unkey(o.sub)[1]<2&&BOARDS[5].zones.some(([a,c])=>o.x>=a&&o.x<c))o.up=1;
     if(o.y>y0+WALLTOP-BR)for(const zs of o.b===5?[BOARDS[5].zones,DOWN_ZONES]:[BOARDS[o.b].zones])for(const [a,c] of zs)for(const w of [a,c])if(Math.abs(o.x-w)<BR+1){o.x=o.x<w?w-BR-1:w+BR+1;o.vx*=-.4}
     if(o.y>y0+FLOOR||o.age>12){o.done=1;land(o)}
   }
   balls=balls.filter(o=>!o.done);
 }
-function ballCol(o){return o.friend&&o.b===1?C.ref:o.b===0?C.ad:C[BOARDS[o.b-1].col]}
+function ballCol(o){return o.up?C.exp:o.friend&&o.b===1?C.ref:o.b===0?C.ad:C[BOARDS[o.b-1].col]}
 function draw(){
   ctx.clearRect(0,0,W,H);
   BOARDS.forEach((B,b)=>{const y0=b*BH,locked=b===5&&!expOpen(),col=locked?C.muted:C[B.col];
@@ -368,7 +379,7 @@ function hud(){
   const mrr=MRR(),mult=revMult(),val=mrr*12*mult;peak=Math.max(peak,val);
   $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
-  TRACKS.forEach(t=>{$('u-'+t.id).disabled=lvl[t.id]>=3||cash<COSTS[lvl[t.id]]});
+  TRACKS.forEach(t=>{const u=$('u-'+t.id);u.disabled=lvl[t.id]>=3||cash<costOf(t);u.hidden=trackHidden(t)});
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
@@ -401,7 +412,7 @@ function loop(now){
   for(let i=0;i<3;i++)physics(dt/3);
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*COST_TO_SERVE*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR()});if(ledger.length>13)ledger.shift();monthRev=monthOut=0;recordHist();refitRamping();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
+  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR()});if(ledger.length>13)ledger.shift();monthRev=monthOut=0;recordHist();refitRamping();expCheck();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
   {const tc=teamCost()/MONTH*dt;if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,staff.length){const e=newest();fire(e.role);say(`Payroll bounced, so you had to let ${aRole({name:roleName(e.role)})} go.${e.role==='csm'?' Their customers lose the extra attention.':''}`)}}}
@@ -426,18 +437,21 @@ const TRACKS=[
   {id:'ret',board:2,label:'month-1 retention',unit:'of activated users',base:.47,tiers:[['Lifecycle emails',.525,92],['Habit-forming features',.553,96],['Core workflow polish',.566,98]]},
   {id:'ref',board:3,label:'referral',unit:'of retained users',base:.10,tiers:[['Share button',.20,91],['Invite rewards',.25,106],['Built-in viral loop',.275,113]]},
   {id:'rev',board:4,label:'paid conversion',unit:'of retained users',base:.30,tiers:[['Pricing page',.40,156],['Upgrade prompts',.45,172],['Sales assist',.475,180]]},
-  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:.06,tiers:[['Cancellation save offers',.047],['Annual plans',.039],['Health scoring',.034]]}
+  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:.06,tiers:[['Cancellation save offers',.047],['Annual plans',.039],['Health scoring',.034]]},
+  // Keep churn at index 5 (load reads TRACKS[5]). Widths from sim/expansion.js: 56px lands 16%, 67px 20%, 80px 24%.
+  {id:'exp',board:5,label:'upgrade',unit:'of checked customers',base:EXP_RATE0,costs:[5e4,2.5e5,1e6],tiers:[['Usage-based pricing',.16,56],['Seat-based plans',.20,67],['Enterprise plan',.24,80]]}
 ];
+const costOf=t=>(t.costs||COSTS)[lvl[t.id]],trackHidden=t=>t.board===5&&!expOpen();
 const lvl={};TRACKS.forEach(t=>lvl[t.id]=0);
 const p1=v=>{const x=v*100;return(Math.abs(x-Math.round(x))<.05?Math.round(x):x.toFixed(1))+'%'};
 function cur(t){return lvl[t.id]?t.tiers[lvl[t.id]-1][1]:t.base}
 function renderUpg(){
   $('upglist').innerHTML=TRACKS.map(t=>{const L=lvl[t.id],max=L>=3,tier=t.tiers[Math.min(L,2)],col=t.id==='churn'?'warn':BOARDS[t.board].col;
-    return `<button class="upg${max?' done':''}" id="u-${t.id}" style="--c:var(--${col})"><b>${max?'Maxed':tier[0]}</b><span class="cost">${max?'—':fmt(COSTS[L])}</span><small>${t.id==='churn'?'Paid churn':BOARDS[t.board].name} · ${max?p1(cur(t))+' '+t.label:`${t.label} ${p1(cur(t))} → ${p1(tier[1])}`} · tier ${Math.min(L+1,3)}/3</small></button>`}).join('');
+    return `<button class="upg${max?' done':''}" id="u-${t.id}" style="--c:var(--${col})"${trackHidden(t)?' hidden':''}><b>${max?'Maxed':tier[0]}</b><span class="cost">${max?'—':fmt(costOf(t))}</span><small>${t.id==='churn'?'Paid churn':BOARDS[t.board].name} · ${max?p1(cur(t))+' '+t.label:`${t.label} ${p1(cur(t))} → ${p1(tier[1])}`} · tier ${Math.min(L+1,3)}/3</small></button>`}).join('');
 }
-function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<COSTS[L])return;
+function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<costOf(t)||trackHidden(t))return;
   const isChurn=id==='churn',was=isChurn?paidChurn():rateOf(t);
-  spendCash(COSTS[L]);const [name,rate,w]=t.tiers[L];lvl[id]++;
+  spendCash(costOf(t));const [name,rate,w]=t.tiers[L];lvl[id]++;
   if(isChurn)churn=rate;else zone(t.board);applyPrice();
   const d=Math.abs((isChurn?paidChurn():rateOf(t))-was)*100;celebrate(t.board,(isChurn?'−':'+')+d.toFixed(1)+' pts '+(isChurn?'churn':t.label),!isChurn);
   say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(id==='churn'?paidChurn():rateOf(t))}${t.unit?' '+t.unit:''}.`);renderUpg()}
@@ -468,7 +482,8 @@ const ROLES=[
   {id:'pd',name:'Product designer',board:1,salary:6000,at:75e4,label:'activation',blurb:'Smooths onboarding'},
   {id:'pe',name:'Product engineer',board:2,salary:8000,at:1e6,label:'month-1 retention',blurb:'Fixes what makes new users drift away'},
   {id:'cm',name:'Community manager',board:3,salary:5000,at:75e4,label:'referral',blurb:'Gives users reasons to spread the word'},
-  {id:'ae',name:'Account executive',board:4,salary:7000,at:1e6,label:'paid conversion',blurb:'Talks free users into paying'}
+  {id:'ae',name:'Account executive',board:4,salary:7000,at:1e6,label:'paid conversion',blurb:'Talks free users into paying'},
+  {id:'am',name:'Account manager',board:5,salary:9000,at:1e7,label:'upgrade',blurb:'Helps customers grow into bigger plans'}
 ];
 const aRole=r=>(/^[aeiou]/i.test(r.name)?'an ':'a ')+r.name.toLowerCase();let nextCut=0;
 // Staff are individuals in `staff`: {role, hired (game months), pay, skill}. A role's effect is the sum of skill × ramp, so 1 is one full new hire.

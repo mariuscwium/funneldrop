@@ -15,6 +15,7 @@ Progress saves in your browser, so you can reload and carry on. **New game** sta
 - **Set your price.** Higher prices earn more per customer, but fewer users pay. Very cheap and very expensive plans both lose more customers.
 - **Build a team.** Each hire lifts part of the funnel, takes a few months to ramp up, gets a raise for every year they stay, and can be headhunted, taking their experience with them.
 - **Watch your margin.** Every customer costs about 22% of their payment to host and support, so lifetime value and payback use the 78% that's left. Spending is tracked month by month.
+- **Grow your customers.** From $1M valuation, each paying customer drops through the Expansion board about once a year. They can move up a plan (Base, Pro, Enterprise), stay put, or move down. Upgrades and account managers widen the Upgrade slot.
 - **Borrow if you must.** Loans buy time, but repayments come out of cash every month.
 - **Expect surprises.** Random events can help or hurt, and they're more likely to go against you when things are going well.
 

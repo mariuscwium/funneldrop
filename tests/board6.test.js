@@ -36,10 +36,10 @@ test('expansion board layout', () => {
   assert.equal(g('EXP_AT'),1e6);
 });
 
-test('trackOf skips churn and board 5', () => {
+test('trackOf skips churn', () => {
   const {g}=load();
   assert.equal(g('trackOf(4).id'),'rev');assert.equal(g('trackOf(0).id'),'acq');
-  assert.equal(g('trackOf(5)'),undefined);
+  assert.equal(g('trackOf(5).id'),'exp');
   assert.equal(g('TRACKS[5].id'),'churn');
 });
 
