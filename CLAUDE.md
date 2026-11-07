@@ -4,7 +4,9 @@ Funnel Drop: a browser game that teaches SaaS funnel economics. Visitors fall th
 
 ## Working here
 
-Everything is in `Funnel Drop.html`: inline CSS, markup and JS. There is no build, package manager or test suite. Open the file in a browser to run it. The name contains a space, so quote it in shell commands.
+Everything is in `Funnel Drop.html`: inline CSS, markup and JS. There is no build or package manager. Open the file in a browser to run it. The name contains a space, so quote it in shell commands.
+
+Run tests with `node --test 'tests/*.test.js'` (Node 22, no packages). `tests/harness.js` runs the game headless; `el('ev').open` must stay false or `loop` pauses.
 
 Fonts load from Google Fonts. There are no other runtime dependencies. Progress saves to `localStorage`, so reloading resumes the game; the New game button wipes it.
 
