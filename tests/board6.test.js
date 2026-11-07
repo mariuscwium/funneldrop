@@ -65,3 +65,23 @@ test('locked board header and label', () => {
   assert.ok(!u.some(s=>/NaN|bench null/.test(s)),u.join('|'));
   assert.ok(u.some(s=>/^yours /.test(s)));
 });
+
+test('fits six boards at 750px tall', () => {
+  const html=require('fs').readFileSync(require('path').join(__dirname,'..','Funnel Drop.html'),'utf8');
+  const m=html.match(/canvas\{width:clamp\((\d+)px,calc\(\(100dvh - (\d+)px.*?\*360\/1224\)/);
+  assert.ok(m,'fit clamp');
+  const min=+m[1],chrome=+m[2];
+  assert.ok(min*1224/360<=750-chrome,`min ${min}px is ${min*1224/360}px tall`);
+  const {g}=load();
+  g('cv.clientWidth=176;resize()');
+  assert.ok(g('textK')>1.8,'textK '+g('textK'));
+});
+
+test('header text condenses rather than overflows', () => {
+  const {g}=load();
+  g('var _c=[];ctx.fillText=(...a)=>_c.push(a);peak=0;draw()');
+  const c=JSON.parse(g('JSON.stringify(_c)'));
+  for(const s of ['A · ACQUISITION','E · EXPANSION','locked','Unlocks at $1M valuation']){
+    const a=c.find(x=>x[0]===s);assert.ok(a,s);assert.equal(typeof a[3],'number',s+' maxWidth')}
+  const y=c.find(x=>/^yours /.test(x[0]));assert.equal(typeof y[3],'number');
+});

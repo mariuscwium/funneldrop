@@ -112,7 +112,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   .top{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px}
   .side .channels{position:sticky;top:0;z-index:4;background:var(--bg);padding-bottom:6px}
   .main{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:start}
-  canvas{width:clamp(220px,calc((100dvh - 146px - env(safe-area-inset-top,0px))*360/1224),400px)}
+  canvas{width:clamp(176px,calc((100dvh - 146px - env(safe-area-inset-top,0px))*360/1224),400px)}
   .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
   .side h2:first-child,.boardcol h2:first-child{margin-top:0}
   #h-act{display:block}
@@ -241,7 +241,7 @@ const into=Array(NB).fill(0),out=Array(NB).fill(0);let staff=[],eventT=0,month=0
 
 let textK=1;const mono=(w,s)=>`${w} ${s*textK}px JetBrains Mono, monospace`;
 // The board scales down to fit short screens, so canvas text grows to stay readable.
-function resize(){const d=window.devicePixelRatio||1;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);textK=Math.min(1.5,Math.max(1,.9*W/cv.clientWidth))}
+function resize(){const d=window.devicePixelRatio||1;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);textK=Math.min(1.85,Math.max(1,.9*W/cv.clientWidth))}
 const SEO=[['Start a blog',2000,150],['SEO foundations',5000,300],['Content library',12500,700]];let seoLvl=0,organicAcc=0,postReady=0,seoFresh=1;
 // Content goes stale but never to nothing: old articles keep a tenth of their traffic.
 const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
@@ -320,8 +320,8 @@ function draw(){
   BOARDS.forEach((B,b)=>{const y0=b*BH,locked=b===5&&!expOpen(),col=locked?C.muted:C[B.col];
     ctx.fillStyle=C.rail;ctx.fillRect(0,y0,W,22);
     ctx.fillStyle=col;ctx.fillRect(0,y0,4,22);
-    ctx.fillStyle=locked?C.muted:C.fg;ctx.font=mono(700,10);ctx.textAlign='left';ctx.fillText(B.title,10,y0+15);
-    ctx.textAlign='right';ctx.fillStyle=C.muted;ctx.font=mono(600,10);ctx.fillText(locked?'locked':`yours ${pct(out[b],into[b])}`+(B.bench==null?'':` · bench ${B.bench*100}%`),W-8,y0+15);
+    ctx.fillStyle=locked?C.muted:C.fg;ctx.font=mono(700,10);ctx.textAlign='left';ctx.fillText(B.title,10,y0+15,W/2-14);
+    ctx.textAlign='right';ctx.fillStyle=C.muted;ctx.font=mono(600,10);ctx.fillText(locked?'locked':`yours ${pct(out[b],into[b])}`+(B.bench==null?'':` · bench ${B.bench*100}%`),W-8,y0+15,W/2-12);
     if(locked){ctx.globalAlpha=.35;ctx.fillStyle=C.fail;ctx.fillRect(0,y0+22,W,BH-22);ctx.globalAlpha=1}
     ctx.globalAlpha=.35;ctx.fillStyle=C.fail;ctx.fillRect(0,y0+WALLTOP,W,FLOOR-WALLTOP);ctx.globalAlpha=1;
     if(b===5)for(const [i,[a,c]] of DOWN_ZONES.entries()){ctx.globalAlpha=.2;ctx.fillStyle=locked?C.muted:C.warn;ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);ctx.globalAlpha=1;
@@ -339,8 +339,8 @@ function draw(){
     if(b<NB-1){ctx.fillStyle=C.line;ctx.fillRect(0,y0+BH-4,W,4)}
   });
   for(const p of pegs){ctx.fillStyle=C.peg;ctx.beginPath();ctx.arc(p.x,p.y,PR+p.flash,0,7);ctx.fill();p.flash=Math.max(0,p.flash-.1)}
-  if(!expOpen()){const y=5*BH+100,t='Unlocks at $1M valuation';ctx.font=mono(700,11);const w=ctx.measureText(t).width+20;
-    ctx.fillStyle=C.panel;ctx.fillRect(W/2-w/2,y-16,w,26);ctx.strokeStyle=C.line;ctx.strokeRect(W/2-w/2,y-16,w,26);ctx.fillStyle=C.muted;ctx.textAlign='center';ctx.fillText(t,W/2,y+2)}
+  if(!expOpen()){const y=5*BH+100,t='Unlocks at $1M valuation';ctx.font=mono(700,11);const w=Math.min(W-16,ctx.measureText(t).width+20);
+    ctx.fillStyle=C.panel;ctx.fillRect(W/2-w/2,y-16,w,26);ctx.strokeStyle=C.line;ctx.strokeRect(W/2-w/2,y-16,w,26);ctx.fillStyle=C.muted;ctx.textAlign='center';ctx.fillText(t,W/2,y+2,w-16)}
   for(const p of sparks){ctx.globalAlpha=p.life;ctx.fillStyle=p.c;ctx.fillRect(p.x-1.5,p.y-1.5,3,3);p.x+=p.vx/60;p.y+=p.vy/60;p.vy+=6;p.life-=.025}
   ctx.globalAlpha=1;sparks=sparks.filter(p=>p.life>0);
   for(const o of balls){ctx.fillStyle=ballCol(o);ctx.beginPath();ctx.arc(o.x,o.y,BR,0,7);ctx.fill()}
