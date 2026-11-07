@@ -3,14 +3,14 @@ const assert=require('node:assert/strict');
 const {load}=require('./harness.js');
 const quiet=g=>g('randomEvent=()=>{};annualReview=()=>{}');
 // hud raises peak from valuation each frame; peak=0 plus small MRR keeps Expansion closed (see expansion.test.js).
-const setup=(n,churn,peak,exp=false)=>{const a=load();quiet(a.g);if(!exp)a.g('expCheck=()=>{}');a.g(`peak=${peak};churn=${churn};subs={"49:0":${n}};paying=${n};cash=1e7;flow.start=MRR();balls=[]`);return a};
+const setup=(n,churn,peak,exp=false,seed)=>{const a=load({seed});quiet(a.g);if(!exp)a.g('expCheck=()=>{}');a.g(`peak=${peak};churn=${churn};subs={"49:0":${n}};paying=${n};cash=1e7;flow.start=MRR();balls=[]`);return a};
 
 test('no churn, no expansion = 100%', () => {
   const a=setup(1000,0,0);a.months(12);
   const r=a.g('NRR12()');assert.ok(Math.abs(r-1)<.001,String(r));
 });
 test('churn only', () => {
-  const a=setup(1000,.06,0);a.months(12);
+  const a=setup(1000,.06,0,false,1);a.months(12);
   const r=a.g('NRR12()');assert.ok(Math.abs(r-Math.pow(.94,12))<.05,String(r));
 });
 test('upgrades lift it', () => {

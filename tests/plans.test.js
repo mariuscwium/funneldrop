@@ -61,3 +61,26 @@ test('loseCustomers keeps paying equal to subs', () => {
   g('subs={};paying=100;addSub(49,0,50);addSub(49,2,50);loseCustomers(.2,.2)');
   assert.equal(g('Object.values(subs).reduce((a,b)=>a+b,0)'),g('paying'));
 });
+
+test('bulk moveSub keeps flow accounting for n customers', () => {
+  const {g}=load();
+  g('subs={"49:1":100};paying=100;flow.exp=0;flow.con=0');
+  assert.equal(g('moveSub("49:1",2,30)'),true);
+  assert.equal(g('moveSub("49:1",0,20)'),true);
+  assert.equal(g('subs["49:1"]'),50);assert.equal(g('subs["49:2"]'),30);assert.equal(g('subs["49:0"]'),20);
+  assert.ok(Math.abs(g('flow.exp')-30*49*g('PLANS[2].mult-PLANS[1].mult'))<1e-9);
+  assert.ok(Math.abs(g('flow.con')-20*49*g('PLANS[1].mult-PLANS[0].mult'))<1e-9);
+  g('moveSub("49:1",2,999)');assert.equal(g('subs["49:1"]'),undefined);assert.equal(g('subs["49:2"]'),80);
+});
+
+test('unkey clamps the plan', () => {
+  const {g}=load();
+  assert.equal(g('unkey("49:7")[1]'),2);assert.equal(g('unkey("49:-1")[1]'),0);assert.equal(g('unkey("49")[1]'),0);
+});
+
+test('LTV : CAC shows – with no spend, NRR row shows its benchmark', () => {
+  const {g,frames,el}=load();
+  g('randomEvent=()=>{};spend=0;out[4]=5;paying=5;subs={"49:0":5}');frames(32);
+  assert.equal(el('eRatio').textContent,'–');
+  assert.equal(el('cNrr').textContent,'– / 109%');
+});

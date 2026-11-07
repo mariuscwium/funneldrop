@@ -160,3 +160,36 @@ test('exp level saves and loads', () => {
   assert.equal(g('lvl.exp'),2);
   near(g('BOARDS[5].zones[0][1]-BOARDS[5].zones[0][0]'),67);
 });
+
+test('bulk settlement matches the odds path for a large group', () => {
+  // Ball cap full, so every check settles in bulk. 1.2M customers: about 100k checks a group.
+  const {g}=load({seed:7});
+  g('peak=2e9;balls=Array(MAX_BALLS).fill({b:9});subs={"49:1":1200000};paying=1200000;flow.start=MRR();into[5]=0;out[5]=0;expCheck()');
+  const m=g('into[5]'),u=g('subs["49:2"]||0'),d=g('subs["49:0"]||0'),r=g('rateOf(trackOf(5))');
+  assert.ok(Math.abs(m-100000)<1500,'checked '+m);
+  assert.ok(Math.abs(u-m*r)<4*Math.sqrt(m*r),`upgrades ${u} vs ${m*r}`);
+  assert.ok(Math.abs(d-m*g('DOWN_RATE'))<4*Math.sqrt(m*.038),'downgrades '+d);
+  assert.equal(g('out[5]'),u);
+  assert.equal(g('subs["49:1"]+subs["49:2"]+subs["49:0"]'),1200000);
+  near(g('flow.exp'),u*49*g('PLANS[2].mult-PLANS[1].mult'),1e-6);
+  near(g('flow.con'),d*49*g('PLANS[1].mult-PLANS[0].mult'),1e-6);
+  assert.equal(g('balls.length'),g('MAX_BALLS'));
+});
+
+test('bulk settlement: Enterprise never upgrades, Base never downgrades', () => {
+  const {g}=load({seed:8});
+  g('peak=2e9;balls=Array(MAX_BALLS).fill({b:9});subs={"49:0":600000,"49:2":600000};paying=1200000;into[5]=0;out[5]=0;expCheck()');
+  const up=g('subs["49:1"]||0'),m=g('into[5]');
+  // Base up and Enterprise down both land in Pro; each about rate x 50k.
+  assert.ok(Math.abs(up-m/2*(g('rateOf(trackOf(5))')+g('DOWN_RATE')))<1000,'into Pro '+up);
+  assert.equal(g('out[5]'),g('600000-subs["49:0"]'));
+  assert.ok(Math.abs(m-100000)<1500,'checked '+m);
+});
+
+test('only free ball slots animate; the rest settle without spawn', () => {
+  const {g}=load({seed:9});
+  g('peak=2e9;balls=Array(MAX_BALLS-10).fill({b:9});subs={"49:0":120000};paying=120000;into[5]=0;var _sp=0;{const o=spawn;spawn=x=>{_sp++;return o(x)}};expCheck()');
+  assert.equal(g('_sp'),10);
+  assert.equal(g('balls.filter(o=>o.b===5).length'),10);
+  assert.ok(Math.abs(g('into[5]')-10000)<400);
+});

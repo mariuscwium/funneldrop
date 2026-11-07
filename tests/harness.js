@@ -8,7 +8,9 @@ function load(opts={}){
   for(const id of ['ev','sum']){const d=el(id);d.open=false;if(opts.dialogs){d.showModal=()=>{d.open=true};d.close=()=>{d.open=false}}}
   if(opts.save)store.set('funnel-drop-save-v1',JSON.stringify(opts.save));
   let now=0;
-  const ctx={console,Math,JSON,Date,Object,Array,Number,String,Map,Set,
+  // opts.seed: a seeded PRNG (mulberry32) as the game's Math.random, inside the vm only. For statistical tests that would otherwise flake.
+  let M=Math;if(opts.seed!=null){let a=opts.seed>>>0;M=Object.create(Math);M.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  const ctx={console,Math:M,JSON,Date,Object,Array,Number,String,Map,Set,
     setTimeout:()=>0,clearTimeout(){},setInterval:()=>0,performance:{now:()=>now},requestAnimationFrame:()=>0,
     localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)},
     matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){},confirm:()=>false,devicePixelRatio:1,

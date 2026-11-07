@@ -1,6 +1,8 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {load}=require('./harness.js');
+// CPU time (user+system) of fn in ms, best of 5. Wall-clock flakes when test files run in parallel.
+const cpuMs=fn=>{let best=Infinity;for(let i=0;i<5;i++){const c=process.cpuUsage();fn();const d=process.cpuUsage(c);best=Math.min(best,(d.user+d.system)/1000)}return best};
 
 test('binom mean', () => {
   const {g}=load();
@@ -20,9 +22,8 @@ test('binom edges', () => {
 test('170k customers frame', () => {
   const {g,frames}=load();
   g('subs={49:170000};paying=170000');
-  const t=process.hrtime.bigint();
-  frames(160);
-  const ms=Number(process.hrtime.bigint()-t)/1e6;
+  frames(1600); // warm up the JIT and fill the ball cap
+  const ms=cpuMs(()=>frames(160));
   assert.ok(ms<50,'took '+ms+' ms');
 });
 
@@ -42,7 +43,7 @@ for(const [n,p,exp,tol] of [[1000,1.7e-5,0.017,.15],[500,1e-4,0.05,.10],[2000,1e
   });
 
 test('small customer base churns at 6%/month', () => {
-  const {g,months}=load();
+  const {g,months}=load({seed:1});
   g('randomEvent=()=>{};churn=0.06;staff=[];subs={49:500};paying=500');
   months(6);
   const p=g('paying');
@@ -62,8 +63,24 @@ test('2,000 staff and 170k customers frame', () => {
   g('randomEvent=()=>{};peak=2e9;month=20;eventT=0;subs={"49:0":120000,"49:1":40000,"49:2":10000};paying=170000;seoLvl=3');
   g('staff=[];for(let i=0;i<2000;i++)staff.push({role:i<1200?"csm":i<1900?"mm":ROLES[i%5].id,hired:i%30,pay:6000,skill:1});restaff();BOARDS.forEach((_,b)=>zone(b))');
   frames(1600); // warm up the JIT and fill the ball cap
-  const t=process.hrtime.bigint();
-  frames(160);
-  const ms=Number(process.hrtime.bigint()-t)/1e6;
+  const ms=cpuMs(()=>frames(160));
   assert.ok(ms<50,'took '+ms+' ms');
+});
+
+test('month rollover with Expansion open at 170k customers', () => {
+  const {g,frames}=load();
+  g('randomEvent=()=>{};annualReview=()=>{};peak=2e9;month=20;eventT=0;subs={"49:0":120000,"49:1":40000,"49:2":10000};paying=170000');
+  frames(1600); // warm up the JIT and fill the ball cap
+  const ms=cpuMs(()=>{g('eventT=MONTH-.001');frames(16)});
+  assert.ok(g('month')>=25,'rollovers ran');
+  assert.ok(ms<50,'took '+ms+' ms');
+});
+
+test('expCheck at 170k customers settles in bulk', () => {
+  // Before bulk settlement this took 23-40 ms of CPU; bulk is well under 1 ms.
+  const {g,frames}=load();
+  g('randomEvent=()=>{};annualReview=()=>{};peak=2e9;subs={"49:0":120000,"49:1":40000,"49:2":10000};paying=170000');
+  frames(1600);
+  const ms=cpuMs(()=>g('expCheck()'));
+  assert.ok(ms<5,'took '+ms+' ms');
 });

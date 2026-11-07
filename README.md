@@ -29,7 +29,24 @@ Most starting rates come from published SaaS benchmarks, cited in the game below
 
 ## Development
 
-Everything is in `Funnel Drop.html`: inline CSS, markup and JavaScript. There's no build step, package manager or test suite. Fonts load from Google Fonts.
+Everything is in `Funnel Drop.html`: inline CSS, markup and JavaScript. There's no build step or package manager. Fonts load from Google Fonts.
+
+Tests run the game headless in Node 22, with no packages:
+
+```sh
+node --test 'tests/*.test.js'
+```
+
+`tests/bot.js` is a balance script, not a test. It plays a greedy policy and prints a line every 12 game months:
+
+```sh
+node tests/bot.js                 # 600 game months, full greedy policy, 50 ms frames
+node tests/bot.js 600 idle        # stops buying after $10M peak; must never file for the IPO
+node tests/bot.js 600 nomargin    # ads first, no margin check
+node tests/bot.js early           # months 6 and 12 of a social-ads-only start
+```
+
+Arguments are `[months=600] [variant] [step=50]`, where step is the frame length in ms. A full run takes 40 s to 3 min of CPU.
 
 `sim/` holds the Node scripts used to tune the slot widths:
 
@@ -39,6 +56,9 @@ node sim/sim.js '[[[168,192]],[[51,131],[229,309]],[[42,122],[238,318]],[[156,20
 
 # Landing rate per slot width for one board (0-4).
 node sim/sweep.js 0 23 28 31 34
+
+# Expansion board: Downgrade slot width, then Upgrade slot widths. N and G (gap from the walls) are optional.
+N=10000 node sim/expansion.js 9 43 56 67 80
 ```
 
 See `CLAUDE.md` for a code map and the rules that keep the tuned numbers valid.
