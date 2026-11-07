@@ -64,12 +64,29 @@ h1 em{font-style:normal;color:var(--paid)}
 .msg b{color:var(--fg)}
 .msg b.good,#ev.good #ev-title{color:var(--paid)}
 .msg b.bad,#ev.bad #ev-title{color:var(--warn)}
-#ev{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
-#ev::backdrop{background:var(--scrim)}
-#ev small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-#ev b{display:block;font-size:20px;margin-top:2px}
+#ev,#sum{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
+#sum{width:min(420px,calc(100vw - 32px))}
+#ev::backdrop,#sum::backdrop{background:var(--scrim)}
+#ev small,#sum>small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+#ev b,#sum-title{display:block;font-size:20px;margin-top:2px}
+#sum-title{color:var(--paid)}
 #ev p{font-size:14px;line-height:1.45;margin:8px 0 14px}
 #ev .buy{width:100%;justify-content:center}
+#sum-stats{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;margin:12px 0 14px;font:13px var(--mono);font-variant-numeric:tabular-nums}
+#sum-stats dt{color:var(--muted)}
+#sum-stats dd{margin:0;text-align:right}
+#sum-stats h3{grid-column:1/3;margin:8px 0 2px;font:12px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+#sum-stats h3:first-child{margin-top:0}
+.sumbtns{display:flex;gap:8px}
+.sumbtns form{flex:1;display:flex}
+.sumbtns .buy{flex:1;justify-content:center}
+.sumbtns .campbtn{justify-content:center}
+.ipo .tick{display:inline-block;width:1.3em;color:var(--muted)}
+.ipo span.ok{color:var(--fg)}
+.ipo .ok .tick{color:var(--paid)}
+.ipo .ok+span{color:var(--paid)}
+.ipo .full{grid-column:1/3}
+.ipo .buy,.ipo .campbtn{grid-column:1/3;justify-content:center;margin-top:6px}
 canvas{display:block;width:100%;aspect-ratio:360/1224;background:var(--board);border:1px solid var(--line);border-radius:10px}
 h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
 .fnl{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
@@ -140,6 +157,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 </style>
 
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><form method="dialog"><button class="buy">Continue</button></form></dialog>
+<dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
 <div class="wrap">
   <div class="top" id="top">
     <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns"><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="theme"></button><button class="campbtn" id="reset">New game</button></span></div>
@@ -171,6 +189,8 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     <span>Net revenue retention, 12 months</span><span id="cNrr">–</span>
     <span>Debt outstanding</span><span id="cDebt">$0</span>
   </div>
+  <h2 id="h-ipo" hidden>IPO readiness</h2>
+  <div class="econ ipo" id="ipo" hidden></div>
   <h2>Pirate metrics</h2>
   <div class="fnl" id="fnl"></div>
   <h2>Unit economics</h2>
@@ -188,7 +208,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     <span>LTV : CAC</span><span id="eRatio">–</span>
     <span>Free users (retained, not paying)</span><span id="eFree">0</span>
   </div>
-  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. Typical SaaS margins are near this, but the exact figure here is a game simplification, not a cited benchmark. Lifetime value and payback use gross margin. <b>Net revenue retention</b> is a chained monthly approximation: each month, (starting MRR + upgrades − downgrades − churned MRR) ÷ starting MRR, multiplied over the last 12 months. New customers are left out. Typical SaaS figures are around 100–110% (game simplification, not a checked source). <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data. <b>Expansion</b>: from $1M valuation, each paying customer is checked about once a year and can move up or down one plan (Base, Pro, Enterprise). How often, the 12% upgrade and 4% downgrade rates, and the plan prices are game simplifications, not measured data.</p>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. Typical SaaS margins are near this, but the exact figure here is a game simplification, not a cited benchmark. Lifetime value and payback use gross margin. <b>Net revenue retention</b> is a chained monthly approximation: each month, (starting MRR + upgrades − downgrades − churned MRR) ÷ starting MRR, multiplied over the last 12 months. New customers are left out. Typical SaaS figures are around 100–110% (game simplification, not a checked source). <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data. <b>Expansion</b>: from $1M valuation, each paying customer is checked about once a year and can move up or down one plan (Base, Pro, Enterprise). How often, the 12% upgrade and 4% downgrade rates, and the plan prices are game simplifications, not measured data. <b>IPO readiness</b>: ARR of $100M, net revenue retention of 110%, a Rule of 40 score of 40 (year-on-year ARR growth % plus profit margin %, a common SaaS rule of thumb) and 30% year-on-year growth, all held for 3 months in a row. The targets and the hold are game simplifications, not checked listing requirements. Profit margin is revenue minus all spending, over revenue, for the last 3 months.</p>
   </div></div></div>
 </div>
 
@@ -254,12 +274,12 @@ const SEO=[['Start a blog',2000,150],['SEO foundations',5000,300],['Content libr
 const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
 const POST_CD=15000;
 function organicRate(){const base=seoLvl?SEO[seoLvl-1][2]*seoFresh:0,m=strength('mm');return base*(1+.5*m)+m*MM.visitors}
-function post(){const now=performance.now();if(now<postReady)return;postReady=now+POST_CD;const m=1+strength('mm');
+function post(){const now=performance.now();if(ipoFiled||now<postReady)return;postReady=now+POST_CD;const m=1+strength('mm');
   const viral=Math.random()<.04,n=Math.round((viral?80+Math.random()*70:3+Math.random()*7)*m);
   const t=now;for(let i=0;i<n;i++)queue.push({t:t+i*22});
   say(viral?`Your post took off: ${n} visitors are on their way.`:`Posted. ${n} people clicked through.`)}
-function buySeo(){if(seoLvl>=3||cash<SEO[seoLvl][1])return;spendCash(SEO[seoLvl][1]);const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;say(`${name} done. About ${Math.round(organicRate())} free visitors a month will now arrive from search, until the content goes stale.`)}
-function publish(){if(!seoLvl||cash<seoCost()||seoFresh>=.99)return;spendCash(seoCost());spend+=seoCost();seoFresh=1;say(`Fresh content is live. Search traffic is back to about ${Math.round(organicRate())} free visitors a month.`)}
+function buySeo(){if(ipoFiled||seoLvl>=3||cash<SEO[seoLvl][1])return;spendCash(SEO[seoLvl][1]);const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;say(`${name} done. About ${Math.round(organicRate())} free visitors a month will now arrive from search, until the content goes stale.`)}
+function publish(){if(ipoFiled||!seoLvl||cash<seoCost()||seoFresh>=.99)return;spendCash(seoCost());spend+=seoCost();seoFresh=1;say(`Fresh content is live. Search traffic is back to about ${Math.round(organicRate())} free visitors a month.`)}
 const CHANNELS=[
   {id:'social',name:'Social ads',cost:100,base:100,camp:500,unlock:0},
   // aim/pull/lift: these visitors enter board aim pulled toward its slot, measured with chained drops to land about lift times as often.
@@ -271,12 +291,12 @@ CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0});
 const RECOVER=.10;
 function runAd(c,t=performance.now()){const v=Math.max(1,Math.round(c.reach));c.reach*=DECAY;for(let i=0;i<v;i++)queue.push({t:t+i*22,src:c.id});return v}
 function buyAd(id){const c=CHANNELS.find(x=>x.id===id);
-  if(!c.open||cash<c.cost)return;spendCash(c.cost);spend+=c.cost;ads++;c.ads++;runAd(c);
+  if(ipoFiled||!c.open||cash<c.cost)return;spendCash(c.cost);spend+=c.cost;ads++;c.ads++;runAd(c);
   if(ads===1)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
   if(c.ads===12)say(`Each ${c.name.toLowerCase()} ad reaches 8% fewer people than the last. Give the channel time to recover, or pay for a new campaign.`);
 }
-function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);if(!c.open||cash<c.camp||c.reach>=c.base-.5)return;spendCash(c.camp);spend+=c.camp;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to ${c.base} visitors per ad.`)}
-function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience of ${c.base} visitors per ad, at ${fmt(c.cost)} an ad.`);renderCh()}
+function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);if(ipoFiled||!c.open||cash<c.camp||c.reach>=c.base-.5)return;spendCash(c.camp);spend+=c.camp;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to ${c.base} visitors per ad.`)}
+function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(ipoFiled||c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience of ${c.base} visitors per ad, at ${fmt(c.cost)} an ad.`);renderCh()}
 function visibleCh(){const out=[];for(const c of CHANNELS){out.push(c);if(!c.open)break}return out}
 function renderCh(){
   $('channels').innerHTML=`<div class="chan organic"><div class="nm"><b>Organic social post</b><small id="op-meta">Free. Usually a handful of visitors; now and then a post takes off.</small></div><button class="adbtn" data-post="1" id="op-btn">Post <b>Free</b></button></div>
@@ -379,18 +399,19 @@ function gate(id,at,held,name){const el=$('c-'+id),vis=peak>=at||held>0;if(el.hi
 function hud(){
   $('vCash').textContent=fmt(cash);$('vCash').className=cash<0?'warn':'';$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;$('vDays').textContent=Math.floor((month+eventT/MONTH)*30).toLocaleString('en');
   for(const c of visibleCh()){if(c.open){const r=Math.max(1,Math.round(c.reach));$('cr-'+c.id).textContent=`${r} visitors per ad · ${fmt(c.cost/r)} each${c.note?' · '+c.note:''}`;$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
-      $('ca-'+c.id).disabled=cash<c.cost;$('cc-'+c.id).disabled=cash<c.camp||c.reach>=c.base-.5}else $('cu-'+c.id).disabled=cash<c.unlock}
+      $('ca-'+c.id).disabled=ipoFiled||cash<c.cost;$('cc-'+c.id).disabled=ipoFiled||cash<c.camp||c.reach>=c.base-.5}else $('cu-'+c.id).disabled=ipoFiled||cash<c.unlock}
   {const top=Math.max(1,...STAGES.map(s=>s[2]()));STAGES.forEach(([,,v,b],i)=>{const n=v();$('fb'+i).style.width=n?Math.max(2,Math.sqrt(n/top)*100)+'%':'0';$('fv'+i).textContent=n.toLocaleString('en');if(b==='nrr'){const r=NRR12();$('fy'+i).textContent=r==null?'–':Math.round(r*100)+'%'}else if(b!==undefined)$('fy'+i).textContent=pct(out[b],into[b])})}
   const mrr=MRR(),mult=revMult(),val=mrr*12*mult;peak=Math.max(peak,val);
   $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);{const r=NRR12();$('cNrr').textContent=r==null?'–':Math.round(r*100)+'%'}checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
-  TRACKS.forEach(t=>{const u=$('u-'+t.id);u.disabled=lvl[t.id]>=3||cash<costOf(t);u.hidden=trackHidden(t)});
+  TRACKS.forEach(t=>{const u=$('u-'+t.id);u.disabled=ipoFiled||lvl[t.id]>=3||cash<costOf(t);u.hidden=trackHidden(t)});
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=MRR()*(1-COST_TO_SERVE)-teamCost()-lp;$('eServe').textContent=fmt(MRR()*COST_TO_SERVE);$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
-   $('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
-   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
+   $('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=ipoFiled||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=ipoFiled||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
+   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=ipoFiled||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
+  ipoHud();$('price').disabled=ipoFiled;
   const won=out[4],cac=won?spend/won:0,ltv=price*(1-COST_TO_SERVE)/(paying&&heads('csm')?paidChurn()*(1-Math.min(paying,heads('csm')*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
   const pb=cac/(price*(1-COST_TO_SERVE));$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
   const r=ltv/cac;$('eRatio').textContent=won?r.toFixed(1)+' : 1':'–';$('eRatio').className=won&&r<3?'warn':'';
@@ -405,19 +426,19 @@ function binom(n,p){if(n<=0||p<=0)return 0;if(p>=1)return n;
   const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
   return Math.max(0,Math.min(n,Math.round(n*p+Math.sqrt(n*p*(1-p))*z)))}
 function loop(now){
-  if($('ev').open){last=now;draw();requestAnimationFrame(loop);return}
-  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if($('ev').open||$('sum').open){last=now;draw();requestAnimationFrame(loop);return}
+  const dt=Math.min(.05,(now-last)/1000);last=now;if(!ipoFiled)playMs+=dt*1000;
   while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
   if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+strength('mm')),dt/MONTH));
   organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;spawn(enter(0))}
-  {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
+  {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=ipoFiled||left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
    $('seo-meta').textContent=seoLvl?`${Math.round(organicRate())} free visitors a month, falling.`:'A stream of free visitors from search, for as long as you keep publishing.';
-   $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=cash<seoCost()||seoFresh>=.99}
-   const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=cash<SEO[seoLvl][1]}}
+   $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=ipoFiled||cash<seoCost()||seoFresh>=.99}
+   const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=ipoFiled||cash<SEO[seoLvl][1]}}
   for(let i=0;i<3;i++)physics(dt/3);
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*COST_TO_SERVE*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;recordHist();refitRamping();expCheck();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
+  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;recordHist();refitRamping();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
   {const tc=teamCost()/MONTH*dt;if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,staff.length){const e=newest();fire(e.role);say(`Payroll bounced, so you had to let ${aRole({name:roleName(e.role)})} go.${e.role==='csm'?' Their customers lose the extra attention.':''}`)}}}
@@ -454,7 +475,7 @@ function renderUpg(){
   $('upglist').innerHTML=TRACKS.map(t=>{const L=lvl[t.id],max=L>=3,tier=t.tiers[Math.min(L,2)],col=t.id==='churn'?'warn':BOARDS[t.board].col;
     return `<button class="upg${max?' done':''}" id="u-${t.id}" style="--c:var(--${col})"${trackHidden(t)?' hidden':''}><b>${max?'Maxed':tier[0]}</b><span class="cost">${max?'—':fmt(costOf(t))}</span><small>${t.id==='churn'?'Paid churn':BOARDS[t.board].name} · ${max?p1(cur(t))+' '+t.label:`${t.label} ${p1(cur(t))} → ${p1(tier[1])}`} · tier ${Math.min(L+1,3)}/3</small></button>`}).join('');
 }
-function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<costOf(t)||trackHidden(t))return;
+function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(ipoFiled||L>=3||cash<costOf(t)||trackHidden(t))return;
   const isChurn=id==='churn',was=isChurn?paidChurn():rateOf(t);
   spendCash(costOf(t));const [name,rate,w]=t.tiers[L];lvl[id]++;
   if(isChurn)churn=rate;else zone(t.board);applyPrice();
@@ -477,7 +498,7 @@ function celebrate(b,text,slot){const B=BOARDS[b],y0=b*BH;sfx('upgrade');addFloa
   for(const [a,c] of B.zones)for(const [x,dir] of [[a,-1],[c,1]])for(let i=0;i<9;i++)sparks.push({x,y:y0+WALLTOP+Math.random()*(FLOOR-WALLTOP),vx:dir*(40+Math.random()*120),vy:-(40+Math.random()*130),life:1,c:C[B.col]})}
 function applyPrice(){const t=trackOf(4);zone(4);
   $('p-val').textContent=fmt(price);$('p-meta').textContent=`At ${fmt(price)}: ${p1(rateOf(t))} paid conversion, ${p1(paidChurn())} monthly churn.`}
-$('price').addEventListener('input',e=>{price=+e.target.value;applyPrice()});
+$('price').addEventListener('input',e=>{if(ipoFiled){e.target.value=price;return}price=+e.target.value;applyPrice()});
 $('upglist').addEventListener('click',e=>{const b=e.target.closest('.upg');if(b&&!b.disabled)buyUpg(b.id.slice(2))});
 renderUpg();
 const CSM={salary:6000,covers:150,mult:.75,at:5e5};let warnedNeg=0;
@@ -507,7 +528,7 @@ const teamCost=()=>staff.reduce((t,e)=>t+e.pay,0);
 // Slot widths follow strength, so boards with staff still ramping are rebuilt once a game month (one month past the ramp catches the last step).
 function refit(role){const r=roleOf(role);if(r){zone(r.board);applyPrice()}}
 function refitRamping(){for(const r of ROLES)if(staff.some(e=>e.role===r.id&&gameMonths()-e.hired<RAMP_MONTHS+1))zone(r.board);applyPrice()}
-function hire(role){staff.push({role,hired:gameMonths(),pay:baseSalary(role),skill:1});refit(role)}
+function hire(role){if(ipoFiled)return;staff.push({role,hired:gameMonths(),pay:baseSalary(role),skill:1});refit(role)}
 const newest=role=>{let i=-1;staff.forEach((e,j)=>{if((!role||e.role===role)&&(i<0||e.hired>=staff[i].hired))i=j});return staff[i]};
 function fire(role){const e=newest(role);if(!e)return;staff.splice(staff.indexOf(e),1);refit(role)}
 // Once a game year, per person: everyone with a full year served gets a raise and a little skill, then each may be headhunted, likelier the longer they've stayed.
@@ -525,11 +546,11 @@ $('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:de
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
 ROLES.forEach(r=>{
-  $('r-hire-'+r.id).addEventListener('click',()=>{if(cash<r.salary||heads(r.id)>=ROLE_MAX)return;hire(r.id);say(`You hired ${aRole(r)}. They start at a quarter of full effect and take about six months to ramp up. ${r.label[0].toUpperCase()+r.label.slice(1)} is now about ${p1(rateOf(trackOf(r.board)))}.`)});
+  $('r-hire-'+r.id).addEventListener('click',()=>{if(ipoFiled||cash<r.salary||heads(r.id)>=ROLE_MAX)return;hire(r.id);say(`You hired ${aRole(r)}. They start at a quarter of full effect and take about six months to ramp up. ${r.label[0].toUpperCase()+r.label.slice(1)} is now about ${p1(rateOf(trackOf(r.board)))}.`)});
   $('r-fire-'+r.id).addEventListener('click',()=>{if(!heads(r.id))return;fire(r.id);say(`You let your newest ${r.name.toLowerCase()} go.`)})});
-$('m-hire').addEventListener('click',()=>{if(cash<MM.salary)return;hire('mm');const n=heads('mm');say(n===1?'Your first marketing manager starts Monday. Organic traffic should climb as they ramp up, but their salary only pays off if your funnel converts well.':`You now have ${n} marketing managers.`)});
+$('m-hire').addEventListener('click',()=>{if(ipoFiled||cash<MM.salary)return;hire('mm');const n=heads('mm');say(n===1?'Your first marketing manager starts Monday. Organic traffic should climb as they ramp up, but their salary only pays off if your funnel converts well.':`You now have ${n} marketing managers.`)});
 $('m-fire').addEventListener('click',()=>{if(!heads('mm'))return;fire('mm');say('You let your newest marketing manager go. Organic traffic will fall back.')});
-$('t-hire').addEventListener('click',()=>{if(cash<CSM.salary)return;hire('csm');const n=heads('csm');say(n===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${n} customer success managers.`)});
+$('t-hire').addEventListener('click',()=>{if(ipoFiled||cash<CSM.salary)return;hire('csm');const n=heads('csm');say(n===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${n} customer success managers.`)});
 $('t-fire').addEventListener('click',()=>{if(!heads('csm'))return;fire('csm');say('You let your newest customer success manager go. Their customers lose the extra attention.')});
 const r500=v=>Math.floor(v/500)*500;
 const LOANS=[
@@ -547,10 +568,10 @@ function updLoans(){let debt=0;for(const l of LOANS){debt+=l.bal;const lim=l.lim
     $('l-fig-'+l.id).textContent=fmt(l.bal);$('l-st-'+l.id).textContent=`${l.late?'Behind on repayments, late fees adding up. ':''}Owe ${fmt(l.bal)}. ${fmt(l.pay)} a month, about ${left} months left.`;}
   else if(l.ok()&&lim>0){$('l-fig-'+l.id).textContent=fmt(lim);$('l-st-'+l.id).textContent=`Borrow ${fmt(lim)}: ${fmt(pmt(lim,l.apr,l.months))} a month, ${fmt(pmt(lim,l.apr,l.months)*l.months-lim)} interest in total.`}
   else{$('l-fig-'+l.id).textContent='—';$('l-st-'+l.id).textContent=l.why}
-  $('l-take-'+l.id).disabled=l.bal>0||!l.ok()||lim<=0;$('l-off-'+l.id).disabled=!(l.bal>0)||cash<l.bal}
+  $('l-take-'+l.id).disabled=ipoFiled||l.bal>0||!l.ok()||lim<=0;$('l-off-'+l.id).disabled=!(l.bal>0)||cash<l.bal}
   $('cDebt').textContent=fmt(debt)}
 LOANS.forEach(l=>{
-  $('l-take-'+l.id).addEventListener('click',()=>{const lim=l.limit();if(l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)});
+  $('l-take-'+l.id).addEventListener('click',()=>{const lim=l.limit();if(ipoFiled||l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)});
   $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;spendCash(l.bal);l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
 // Rolled once a game month. Sizes scale with the company so events still matter late on.
 const EVENT_CHANCE=.15,evScale=()=>Math.max(1,Math.min(10,MRR()/5000));
@@ -578,17 +599,48 @@ function showEv(k,kind,name,t){sfx(kind==='Milestone'?'fanfare':k);say(`<b class
 function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()*(1-COST_TO_SERVE)-teamCost()-loanPay()>0?.5:-.5)))}
 function randomEvent(){const can=EVENTS.filter(e=>!e.when||e.when()),good=Math.random()<.4-.3*health(),sided=can.filter(e=>!!e.good===good),ok=sided.length?sided:can,e=ok[Math.random()*ok.length|0],t=e.run();showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
 // Based on peak valuation, so a dip can't repeat one and msLvl needs no saving. Crossing several at once shows the highest.
-const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn']];let msLvl=0;
+// A 4th entry replaces the usual "Next up" line.
+const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn','That is the last milestone. The next goal is an IPO: see IPO readiness under Company.']];let msLvl=0;
+// Game month each milestone was first reached, by MILES index. Saves from before this leave earlier ones empty.
+let mileMonth=[];
 const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;
-function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||$('ev').open)return;msLvl=n;const m=MILES[n-1],nx=MILES[n];
-  showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more.${nx?` Next up: ${nx[1]}.`:' That is the last milestone. Keep going if you like.'}`)}
-$('ev').addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
+function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||ipoFiled||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());msLvl=n;const m=MILES[n-1],nx=MILES[n];
+  showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}`)}
+for(const id of ['ev','sum'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
+// IPO readiness. Targets are game simplifications. Every criterion must hold at IPO.hold month rollovers in a row before filing.
+const IPO={arr:1e8,nrr:1.10,r40:40,growth:.30,hold:3};let ipoHold=0,ipoFiled=false,ipoSnap=null,playMs=0;
+// Year-on-year MRR growth against the oldest ledger entry (13 months back at most). Null until there is one with MRR.
+function yoy(){const e=ledger.at(-13);return e&&e.mrr>0?MRR()/e.mrr-1:null}
+const rule40=()=>{const y=yoy(),m=margin3();return y==null||m==null?null:y*100+m*100};
+const pc0=v=>v==null?'–':Math.round(v*100)+'%';
+function ipoChecks(){const arr=MRR()*12,n=NRR12(),r=rule40(),y=yoy();return [
+  {name:'Annual recurring revenue',now:arr,target:IPO.arr,ok:arr>=IPO.arr,txt:`${fmt(arr)} / ${fmt(IPO.arr).replace(".00","")}`},
+  {name:'Net revenue retention',now:n,target:IPO.nrr,ok:n!=null&&n>=IPO.nrr,txt:`${pc0(n)} / ${pc0(IPO.nrr)}`},
+  {name:'Rule of 40',now:r,target:IPO.r40,ok:r!=null&&r>=IPO.r40,txt:`${r==null?'–':Math.round(r)} / ${IPO.r40}`},
+  {name:'ARR growth, year on year',now:y,target:IPO.growth,ok:y!=null&&y>=IPO.growth,txt:`${pc0(y)} / ${pc0(IPO.growth)}`}]}
+$('ipo').innerHTML=[0,1,2,3].map(i=>`<span id="ipo-n${i}"><i class="tick" id="ipo-t${i}">○</i><span id="ipo-l${i}"></span></span><span id="ipo-v${i}">–</span>`).join('')+
+  '<span class="full" id="ipo-hold"></span><button class="buy" id="ipo-file" hidden>File for IPO</button><button class="campbtn" id="ipo-sum" hidden>Summary</button>';
+function ipoHud(){const vis=expOpen()||ipoFiled;$('h-ipo').hidden=$('ipo').hidden=!vis;if(!vis)return;
+  ipoChecks().forEach((c,i)=>{$('ipo-n'+i).className=c.ok?'ok':'';$('ipo-t'+i).textContent=c.ok?'✓':'○';$('ipo-l'+i).textContent=c.name;$('ipo-v'+i).textContent=c.txt});
+  $('ipo-hold').textContent=ipoFiled?'Filed. Buying is closed, but the boards keep running.':`Held for ${Math.min(ipoHold,IPO.hold)} of ${IPO.hold} months in a row. Growth compares ARR with 12 months ago. Rule of 40 adds it to profit margin over the last 3 months.`;
+  $('ipo-file').hidden=!(ipoHold>=IPO.hold&&!ipoFiled);$('ipo-sum').hidden=!ipoFiled}
+const plural=(n,w)=>`${n.toLocaleString('en')} ${w}${n===1?'':'s'}`,ym=m=>`${plural(Math.floor(m/12),'year')}, ${plural(Math.floor(m%12),'month')}`;
+const num=v=>v.toLocaleString('en');
+// The summary is a snapshot at filing, so it doesn't drift while the boards keep running. Rows are [heading] or [label, value].
+function ipoSummary(){const won=out[4],r=rule40();return [['Time to IPO'],['Game time',ym(gameMonths())],['Real time played',plural(Math.round(playMs/60000),'minute')],
+  ['At filing'],['ARR',fmt(MRR()*12)],['Valuation',fmt(MRR()*12*revMult())],['Net revenue retention',pc0(NRR12())],['Rule of 40',r==null?'–':String(Math.round(r))],['Paying customers',num(paying)],['Team size',num(staff.length)],
+  ['Lifetime'],['Visitors',num(into[0])],['Sign-ups',num(into[1])],['Customers won',num(won)],['Customers churned',num(churned)],['Total ad spend',fmt(spend)],['Cost per paying customer',won?fmt(spend/won):'–'],
+  ['Milestones reached after'],...MILES.map((m,i)=>[`${m[1]} · ${m[2]}`,mileMonth[i]==null?'–':ym(mileMonth[i])])]}
+const esc=t=>String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function openSum(){$('sum-stats').innerHTML=(ipoSnap||ipoSummary()).map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('sum').showModal()}
+function fileIPO(){if(ipoFiled||ipoHold<IPO.hold)return;ipoFiled=true;ipoSnap=ipoSummary();save();sfx('fanfare');say('<b class="good">You filed for an IPO.</b> Buying is closed. The boards keep running, and the summary is in IPO readiness.');openSum()}
+$('ipo-file').addEventListener('click',fileIPO);$('ipo-sum').addEventListener('click',openSum);
 const wide=matchMedia('(min-width:860px)');
 function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matches){$('side').prepend(a);$('h-act').after(b);$('play').append(m)}else{$('top').append(b);$('boardcol').prepend(a);$('top').after(m)}}
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histStep,month,staff,eventT,seoFresh,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,lvl,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histStep,month,staff,eventT,seoFresh,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,lvl,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;for(let i=0;i<(n||0);i++)out.push({role:id,hired:gameMonths()-12*y-RAMP_MONTHS,pay:baseSalary(id)*RAISE**y,skill:1+SKILL*y})};
@@ -599,6 +651,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
   into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
+  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh();renderUpg()}
@@ -607,9 +660,10 @@ $('mute').addEventListener('click',()=>{muted=!muted;showMute();try{localStorage
 function showTheme(){setTheme();readColors();const dark=document.documentElement.dataset.theme==='dark',t=dark?'Switch to light mode':'Switch to dark mode';$('theme').textContent=dark?'\u2600\uFE0E':'\u263E\uFE0E';$('theme').title=t;$('theme').setAttribute('aria-label',t)}showTheme();
 $('theme').addEventListener('click',()=>{theme=document.documentElement.dataset.theme==='dark'?'light':'dark';showTheme();try{localStorage.setItem('funnel-drop-theme',theme)}catch{}});
 darkOS.addEventListener('change',showTheme);
-$('reset').addEventListener('click',()=>{if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()});
+function newGame(){if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()}
+$('reset').addEventListener('click',newGame);$('sum-new').addEventListener('click',newGame);
 load();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
-resize();window.addEventListener('resize',resize);hud();gateReady=true;requestAnimationFrame(loop);
+resize();window.addEventListener('resize',resize);hud();gateReady=true;if(ipoFiled)openSum();requestAnimationFrame(loop);
 </script>
 
 </body></html>

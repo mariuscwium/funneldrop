@@ -4,7 +4,7 @@ function stub(){const v={},f=function(){return stub()};return new Proxy(f,{get(t
 function load(opts={}){
   const html=fs.readFileSync(FILE,'utf8'),scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
   const store=new Map(),els=new Map(),el=id=>{if(!els.has(id))els.set(id,stub());return els.get(id)};
-  el('ev').open=false;
+  el('ev').open=false;el('sum').open=false;
   if(opts.save)store.set('funnel-drop-save-v1',JSON.stringify(opts.save));
   let now=0;
   const ctx={console,Math,JSON,Date,Object,Array,Number,String,Map,Set,
