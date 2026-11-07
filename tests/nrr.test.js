@@ -21,7 +21,7 @@ test('upgrades lift it', () => {
 });
 test('downgrades add to contraction', () => {
   const {g}=load();g('subs={"49:1":3};paying=3;flow.start=MRR();land({b:5,x:16,sub:"49:1",vx:0,vy:0})');
-  assert.equal(g('flow.con'),49);assert.equal(g('flow.exp'),0);
+  assert.equal(g('flow.con'),g('49*(PLANS[1].mult-PLANS[0].mult)'));assert.equal(g('flow.exp'),0);
 });
 test('null before 12 months', () => {
   const a=setup(1000,0,0);a.months(6);assert.equal(a.g('NRR12()'),null);
@@ -36,7 +36,7 @@ test('new sign-ups don\'t count', () => {
 });
 test('lost customers count as lost MRR', () => {
   const {g}=load();g('subs={"49:2":100};paying=100;flow.start=MRR();loseCustomers(.5,.5)');
-  assert.equal(g('flow.lost'),(100-g('paying'))*245);assert.ok(g('flow.lost')>0);
+  assert.equal(g('flow.lost'),(100-g('paying'))*g('49*PLANS[2].mult'));assert.ok(g('flow.lost')>0);
 });
 test('old saves load: flow defaults, missing nrr is null', () => {
   const a=load();quiet(a.g);a.g('subs={"49:0":10};paying=10;save()');

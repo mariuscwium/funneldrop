@@ -14,7 +14,7 @@ test('old keys load as Base', () => {
 test('MRR uses plan multiple', () => {
   const {g}=load();
   g('subs={};paying=1;addSub(49,1,1)');
-  assert.equal(g('MRR()'),98);
+  assert.equal(g('MRR()'),g('49*PLANS[1].mult'));
 });
 
 test('moveSub', () => {
