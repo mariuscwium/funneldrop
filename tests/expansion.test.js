@@ -84,7 +84,7 @@ test('odds path uses track and downgrade rates', () => {
   assert.ok(Math.abs(u-2400)<200,'upgrades '+u);
   assert.ok(Math.abs(d-760)<120,'downgrades '+d);
   assert.equal(g('out[5]'),u);
-  g('lvl.exp=3;zone(5);_run()');
+  g('lvl.exp=3;syncBonus();zone(5);_run()');
   const u3=g('subs["49:2"]||0');
   assert.ok(Math.abs(u3-4800)<250,'tier 3 upgrades '+u3);
 });
@@ -119,7 +119,7 @@ test('zone(5) widens with tier and am', () => {
   const {g}=load();
   const w=()=>g('BOARDS[5].zones[0][1]-BOARDS[5].zones[0][0]');
   near(w(),43);
-  g('lvl.exp=1;zone(5)');near(w(),56);
+  g('lvl.exp=1;syncBonus();zone(5)');near(w(),56);
   g('month=0;eventT=0;hire("am");month=10;zone(5)');
   near(w(),56*(1+0.15*g('strength("am")')));
   near(g('rateOf(trackOf(5))'),.16*(1+0.15*g('strength("am")')));

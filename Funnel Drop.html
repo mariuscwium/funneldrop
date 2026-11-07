@@ -217,7 +217,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 
 <script>
 const W=360,BH=204,NB=6,H=BH*NB,BR=3.5,PR=3,GRAV=820,PER_AD=100,DECAY=.92,PRICE0=49,MONTH=10,AD0=100,AD_GROWTH=1.08;
-const WALLTOP=160,FLOOR=196;let churn=.06,price=PRICE0;
+const WALLTOP=160,FLOOR=196;const CHURN0=.06;let churn=CHURN0,price=PRICE0;
 // Game simplification, not a measured benchmark: 1 at $49, so tuned rates hold there. Revenue landing rate scales with slot width (sim/sweep.js).
 const wtp=p=>1/(1+(p/79)**3),priceConv=()=>wtp(price)/wtp(PRICE0); // S-curve: demand falls away past about $79
 const priceChurn=p=>(1+.5*Math.log(p/55)**2)/(1+.5*Math.log(PRICE0/55)**2),paidChurn=(p=price)=>churn*priceChurn(p); // U-shape: lowest near $55
@@ -500,30 +500,49 @@ const TRACKS=[
   {id:'ret',board:2,label:'month-1 retention',unit:'of activated users',base:.47,tiers:[['Lifecycle emails',.525,92],['Habit-forming features',.553,96],['Core workflow polish',.566,98]]},
   {id:'ref',board:3,label:'referral',unit:'of retained users',base:.10,tiers:[['Share button',.20,91],['Invite rewards',.25,106],['Built-in viral loop',.275,113]]},
   {id:'rev',board:4,label:'paid conversion',unit:'of retained users',base:.30,tiers:[['Pricing page',.40,156],['Upgrade prompts',.45,172],['Sales assist',.475,180]]},
-  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:.06,tiers:[['Cancellation save offers',.047],['Annual plans',.039],['Health scoring',.034]]},
+  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:CHURN0,tiers:[['Cancellation save offers',.047],['Annual plans',.039],['Health scoring',.034]]},
   // Keep churn at index 5 (load reads TRACKS[5]). Widths from sim/expansion.js: 56px lands 16%, 67px 20%, 80px 24%.
   {id:'exp',board:5,label:'upgrade',unit:'of checked customers',base:EXP_RATE0,costs:[5e4,2.5e5,1e6],tiers:[['Usage-based pricing',.16,56],['Seat-based plans',.20,67],['Enterprise plan',.24,80]]}
 ];
 const costOf=t=>(t.costs||COSTS)[lvl[t.id]],trackHidden=t=>t.board===5&&!expOpen();
 const lvl={};TRACKS.forEach(t=>lvl[t.id]=0);
 const p1=v=>{const x=v*100;return(Math.abs(x-Math.round(x))<.05?Math.round(x):x.toFixed(1))+'%'};
-function cur(t){return lvl[t.id]?t.tiers[lvl[t.id]-1][1]:t.base}
+// Legacy tier lookup, for the upgrade list and churn. Task 2 of the tech tree removes it with lvl.
+function tierRate(t){return lvl[t.id]?t.tiers[lvl[t.id]-1][1]:t.base}
 function renderUpg(){
   $('upglist').innerHTML=TRACKS.map(t=>{const L=lvl[t.id],max=L>=3,tier=t.tiers[Math.min(L,2)],col=t.id==='churn'?'warn':BOARDS[t.board].col;
-    return `<button class="upg${max?' done':''}" id="u-${t.id}" style="--c:var(--${col})"${trackHidden(t)?' hidden':''}><b>${max?'Maxed':tier[0]}</b><span class="cost">${max?'—':fmt(costOf(t))}</span><small>${t.id==='churn'?'Paid churn':BOARDS[t.board].name} · ${max?p1(cur(t))+' '+t.label:`${t.label} ${p1(cur(t))} → ${p1(tier[1])}`} · tier ${Math.min(L+1,3)}/3</small></button>`}).join('');
+    return `<button class="upg${max?' done':''}" id="u-${t.id}" style="--c:var(--${col})"${trackHidden(t)?' hidden':''}><b>${max?'Maxed':tier[0]}</b><span class="cost">${max?'—':fmt(costOf(t))}</span><small>${t.id==='churn'?'Paid churn':BOARDS[t.board].name} · ${max?p1(tierRate(t))+' '+t.label:`${t.label} ${p1(tierRate(t))} → ${p1(tier[1])}`} · tier ${Math.min(L+1,3)}/3</small></button>`}).join('');
 }
 function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(ipoFiled||L>=3||cash<costOf(t)||trackHidden(t))return;
   const isChurn=id==='churn',was=isChurn?paidChurn():rateOf(t);
-  spendCash(costOf(t));const [name,rate,w]=t.tiers[L];lvl[id]++;
+  spendCash(costOf(t));const [name,rate,w]=t.tiers[L];lvl[id]++;syncBonus();
   if(isChurn)churn=rate;else zone(t.board);applyPrice();
   const d=Math.abs((isChurn?paidChurn():rateOf(t))-was)*100;celebrate(t.board,(isChurn?'−':'+')+d.toFixed(1)+' pts '+(isChurn?'churn':t.label),!isChurn);
   say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(id==='churn'?paidChurn():rateOf(t))}${t.unit?' '+t.unit:''}.`);renderUpg()}
 // The upgrade track on board b; churn shares board 4 but isn't one. Undefined for a board without upgrades.
-const trackOf=b=>TRACKS.find(t=>t.board===b&&t.id!=='churn');
 const BASEW=BOARDS.map(B=>B.zones[0][1]-B.zones[0][0]);
+// Landing rate against slot width, one table per board. Widths up to the tier 3 point are the tuned ones above; the points beyond are
+// sim/sweep.js (boards 0-4) and sim/expansion.js (board 5) runs, each curve scaled to pass through the tier 3 point (tier values stay authoritative).
+// Upstream boards sat at base widths in the sims, so rates drift when several boards are upgraded (see CLAUDE.md).
+const RATES=[
+  [[24,.073],[38,.105],[44,.125],[50,.145],[56,.155],[64,.190],[74,.228],[90,.270]],
+  [[80,.36],[102,.455],[110,.503],[114,.526],[120,.570],[130,.631],[140,.676],[150,.714]],
+  [[80,.47],[92,.525],[96,.553],[98,.566],[110,.644],[124,.700],[138,.774],[150,.855]],
+  [[48,.10],[91,.20],[106,.25],[113,.275],[120,.294],[140,.392],[165,.446],[200,.558]],
+  [[116,.30],[156,.40],[172,.45],[180,.475],[200,.532],[230,.603],[260,.671],[300,.771]],
+  [[43,.12],[56,.16],[67,.20],[80,.24],[95,.276],[110,.314],[130,.378],[160,.461]]
+].map((w,b)=>{const t=TRACKS.find(t=>t.board===b&&t.id!=='churn');return{id:t.id,board:b,label:t.label,unit:t.unit,base:t.base,w}});
+const trackOf=b=>RATES[b],rateCap=b=>RATES[b].w.at(-1)[1];
+// Rate points added by upgrades. Until the tech tree replaces lvl, syncBonus derives them from the bought tiers.
+const bonus=Array(6).fill(0);
+function syncBonus(){TRACKS.forEach(t=>{if(t.id!=='churn')bonus[t.board]=lvl[t.id]?t.tiers[lvl[t.id]-1][1]-t.base:0})}
+function widthFor(b,r){const w=RATES[b].w;if(r<=w[0][1])return w[0][0];
+  for(let i=1;i<w.length;i++)if(r<=w[i][1])return w[i-1][0]+(w[i][0]-w[i-1][0])*(r-w[i-1][1])/(w[i][1]-w[i-1][1]);
+  return w.at(-1)[0]}
+const cur=t=>Math.min(rateCap(t.board),t.base+bonus[t.board]);
 const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*strength(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
 // Landing rate is close to linear in slot width on every board, so team and price scale the tuned width.
-function zone(b){const t=trackOf(b),B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(340,(t&&lvl[t.id]?t.tiers[lvl[t.id]-1][2]:BASEW[b])*teamMult(b)*(b===4?priceConv():1)));
+function zone(b){const B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(340,widthFor(b,cur(RATES[b]))*teamMult(b)*(b===4?priceConv():1)));
   if(gateReady&&from[0][1]-from[0][0]!==B.zones[0][1]-B.zones[0][0])B.anim={from,t0:performance.now()}}
 // Display only: the drawn slot springs from its old width with a slight overshoot. Physics reads B.zones, which changes at once.
 const SPRING=550,easeBack=p=>1+2.7*(p-1)**3+1.7*(p-1)**2;
@@ -707,7 +726,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
-  staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
+  staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();churn=tierRate(TRACKS[5]);syncBonus();BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh();renderUpg()}
 function showMute(){$('mute').textContent=muted?'Unmute':'Mute';$('mute').setAttribute('aria-pressed',muted)}showMute();
