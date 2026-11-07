@@ -110,6 +110,9 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 .upgrades{display:flex;flex-direction:column;gap:6px}
 .upg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;text-align:left;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c,var(--acq));border-radius:8px;padding:9px 12px;color:var(--fg);font:inherit;cursor:pointer}
 .upg b{font-size:14px}
+.hc{display:inline-block;margin-left:6px;padding:0 7px;border-radius:9px;background:var(--rail);font:600 12px/18px var(--mono);font-variant-numeric:tabular-nums;vertical-align:1px}
+.hc.zero{color:var(--muted)}
+#h-team span{color:var(--muted);font-weight:500}
 .upg small{grid-column:1;font-size:12px;color:var(--muted);line-height:1.35}
 .upg .cost{grid-row:1/3;grid-column:2;font:600 14px var(--mono);color:var(--fg)}
 .upg:hover:not(:disabled){border-color:var(--muted);border-left-color:var(--c,var(--acq))}
@@ -172,11 +175,11 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   </div>
   <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month), and about 22% of that goes on hosting and support. You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
-  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2 id="h-team">Team</h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
+  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2 id="h-team">Team <span id="team-n"></span></h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
   <canvas id="cv" aria-label="Six stacked boards: one per pirate metric (acquisition, activation, retention, referral and revenue), then expansion, locked until a $1M valuation."></canvas>
   </div><div class="side" id="side"><div class="stats">
-  <h2>Over time</h2>
+  <h2>Last 24 months</h2>
   <div class="charts" id="charts"></div>
   <h2>Company</h2>
   <div class="econ">
@@ -406,10 +409,12 @@ const STAGES=[['Visitors','ad',()=>into[0]],['Sign-ups','acq',()=>into[1],0],['A
 $('fnl').innerHTML=STAGES.map(([n,c,,b],i)=>`<div class="fr${b===3?' branch':''}" style="--c:var(--${c})"><span>${n}</span><span class="fbar"><i id="fb${i}"></i><b id="fv${i}">0</b></span><span class="fy">${b===undefined?'':b==='nrr'?`<b id="fy${i}">–</b> / 109%`:`<b id="fy${i}">–</b> / ${BOARDS[b].bench*100}%`}</span></div>`).join('')+'<small>Yours / benchmark. Bar widths use a square-root scale so small stages stay visible.</small>';
 const revMult=()=>Math.max(2,Math.min(25,6+40*growth));
 // One point a game month. Past 240 points every other one is dropped and the sampling halves, so any game length fits the save.
-const CHARTS=[['MRR','--rev',fmt],['Paying','--acq',v=>v.toLocaleString('en')],['Cash','--ad',fmt],['Valuation','--act',fmt]];let hist=[],histStep=1;
+const CHARTS=[['MRR','--rev',fmt],['Paying','--acq',v=>v.toLocaleString('en')],['Cash','--ad',fmt],['Valuation','--act',fmt]];let hist=[];
+// Charts show a fixed window: one point a game month, HIST_N points spanning the last 24 months.
+const HIST_N=25;
 $('charts').innerHTML=CHARTS.map(([n,c],i)=>`<div class="stat" style="--c:var(${c})"><span>${n}</span><b id="ch-v${i}">–</b><svg viewBox="0 0 100 32" preserveAspectRatio="none" role="img" aria-label="${n} over time"><line id="ch-z${i}" x1="0" x2="100" y1="31" y2="31"/><polyline id="ch-l${i}"/></svg></div>`).join('');
-function recordHist(){if(month%histStep)return;hist.push([MRR(),paying,Math.round(cash),Math.round(MRR()*12*revMult())]);if(hist.length>240){hist=hist.filter((_,i)=>i%2===0);histStep*=2}drawCharts()}
-function drawCharts(){CHARTS.forEach(([,,f],i)=>{if(!hist.length)return;const v=hist.map(h=>h[i]),lo=Math.min(0,...v),hi=Math.max(1,...v),y=n=>31-(n-lo)/(hi-lo)*30,x=j=>v.length>1?j/(v.length-1)*100:0;
+function recordHist(){hist.push([MRR(),paying,Math.round(cash),Math.round(MRR()*12*revMult())]);if(hist.length>HIST_N)hist.splice(0,hist.length-HIST_N);drawCharts()}
+function drawCharts(){CHARTS.forEach(([,,f],i)=>{if(!hist.length)return;const v=hist.map(h=>h[i]),lo=Math.min(0,...v),hi=Math.max(1,...v),y=n=>31-(n-lo)/(hi-lo)*30,x=j=>j/(HIST_N-1)*100;
   $('ch-v'+i).textContent=f(v[v.length-1]);$('ch-l'+i).setAttribute('points',v.map((n,j)=>`${x(j).toFixed(2)},${y(n).toFixed(2)}`).join(' '));for(const k of ['y1','y2'])$('ch-z'+i).setAttribute(k,y(0))})}
 // Team and financing appear at a peak valuation (at), and stay once seen. Anything held stays visible too.
 let gateReady=false;
@@ -428,9 +433,9 @@ function hud(){
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=MRR()*(1-COST_TO_SERVE)-teamCost()-lp;$('eServe').textContent=fmt(MRR()*COST_TO_SERVE);$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
-   $('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=ipoFiled||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=ipoFiled||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
+   showCount('csm');showCount('mm');{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=ipoFiled||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=ipoFiled||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
    {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=ipoFiled||!g||cash<g*CSM.salary;$('t-hire10').disabled=ipoFiled||cash<10*CSM.salary;$('m-hire10').disabled=ipoFiled||cash<10*MM.salary}
-   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=ipoFiled||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
+   for(const r of ROLES){showCount(r.id,ROLE_MAX);$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=ipoFiled||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
   ipoHud();$('price').disabled=ipoFiled;
   const won=out[4],cac=won?spend/won:0,ltv=price*(1-COST_TO_SERVE)/(paying&&heads('csm')?paidChurn()*(1-Math.min(paying,heads('csm')*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
   const pb=cac/(price*(1-COST_TO_SERVE));$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
@@ -547,7 +552,9 @@ function heads(role){return team[role]?.n||0}
 const rampingUp=role=>team[role]?.r||0;
 const roleOf=id=>ROLES.find(r=>r.id===id),baseSalary=id=>id==='csm'?CSM.salary:id==='mm'?MM.salary:roleOf(id).salary;
 const roleName=id=>id==='csm'?'customer success manager':id==='mm'?'marketing manager':roleOf(id).name.toLowerCase();
-const teamLine=id=>{const n=heads(id);return n?`${n} on the team · ${rampingUp(id)} ramping up · ${strength(id).toFixed(1)}× a full hire`:'0 on the team'};
+// The head count shows in a badge by the role name (showCount); the meta line carries the rest.
+const teamLine=id=>{const n=heads(id);return n?`${rampingUp(id)} ramping up · ${strength(id).toFixed(1)}× a full hire`:'None hired yet'};
+function showCount(id,max){const n=heads(id),e=$('hc-'+id);e.textContent=max?`${n} of ${max}`:n.toLocaleString('en-US');e.classList.toggle('zero',!n);e.title=`${n} on the team`}
 const csmMult=()=>{const n=heads('csm');return n?1-(1-CSM.mult)*strength('csm')/n:1};
 const teamCost=()=>payroll;
 // Slot widths follow strength, so boards with staff still ramping are rebuilt once a game month (one month past the ramp catches the last step).
@@ -565,10 +572,10 @@ function annualReview(){if(!staff.length)return;
   const lost=Object.entries(gone).map(([r,n])=>`${n} ${roleName(r)}${n>1?'s':''}`);
   const raise=!staff.length?'Payroll is now empty.':raised?`Raises for everyone with a full year in take payroll to ${fmt(teamCost())} a month, and they're slightly more effective.`:`No one has been here a full year yet, so payroll stays at ${fmt(teamCost())} a month.`;
   showEv(lost.length?'bad':'good',`Year ${month/12} review`,lost.length?'Staff headhunted':'Team stayed',lost.length?`${raise} You lost ${lost.join(', ')} to other companies, and their experience went with them.`:raise)}
-$('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:default"><b>Customer success manager</b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
+$('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:default"><b>Customer success manager<span class="hc" id="hc-csm"></span></b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-hire10">+10</button><button class="campbtn" id="t-cover">Cover all</button><button class="campbtn" id="t-fire">Let go</button></span></div>
-<div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager</b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: the first adds about ${Math.round(MM.visitors*MM_K*((1+1/MM_K)**MM_P-1)/MM_P/10)*10} free visitors a month once ramped up, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. Each extra one adds less: 10 do the work of about 7, 100 of about 27. <span id="m-meta"></span></small>
-  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-hire10">+10</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
+<div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager<span class="hc" id="hc-mm"></span></b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: the first adds about ${Math.round(MM.visitors*MM_K*((1+1/MM_K)**MM_P-1)/MM_P/10)*10} free visitors a month once ramped up, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. Each extra one adds less: 10 do the work of about 7, 100 of about 27. <span id="m-meta"></span></small>
+  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-hire10">+10</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}<span class="hc" id="hc-${r.id}"></span></b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
 ROLES.forEach(r=>{
   $('r-hire-'+r.id).addEventListener('click',()=>{if(ipoFiled||cash<r.salary||heads(r.id)>=ROLE_MAX)return;hire(r.id);say(`You hired ${aRole(r)}. They start at a quarter of full effect and take about six months to ramp up. ${r.label[0].toUpperCase()+r.label.slice(1)} is now about ${p1(rateOf(trackOf(r.board)))}.`)});
@@ -673,14 +680,16 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histStep,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,lvl,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,lvl,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
 function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;for(let i=0;i<(n||0);i++)out.push({role:id,hired:gameMonths()-12*y-RAMP_MONTHS,pay:baseSalary(id)*RAISE**y,skill:1+SKILL*y})};
   add('csm',s.csm);add('mm',s.mm);(s.roles||[]).forEach((n,i)=>ROLES[i]&&add(ROLES[i].id,n));return out}
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
-  ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,seoRoll=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc}=s);
+  ({hist=[],month=0,eventT=0,seoFresh=1,seoRoll=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc}=s);
+  // Older saves thinned the chart history to every 2nd, 4th... month once it got long; those points can't fill a monthly window, so start the charts afresh.
+  hist=(s.histStep||1)>1?[]:hist.slice(-HIST_N);
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
   flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
   into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);

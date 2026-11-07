@@ -32,3 +32,15 @@ test('save round-trips', () => {
   assert.equal(second.g('lvl.social'),2);
   assert.equal(JSON.stringify(second.g('lvl')),JSON.stringify(first.g('lvl')));
 });
+
+test('charts keep only the last 24 months', () => {
+  const {g,months}=load();
+  g('randomEvent=()=>{}');
+  months(30);
+  assert.equal(g('hist.length'),25);
+  const a=load();a.g('saving=true;save()');
+  const base=JSON.parse(a.store.get('funnel-drop-save-v1'));
+  // Older saves: monthly history is trimmed; thinned history (histStep > 1) is dropped.
+  assert.equal(load({save:{...base,hist:Array(40).fill([1,1,1,1]),histStep:1}}).g('hist.length'),25);
+  assert.equal(load({save:{...base,hist:Array(200).fill([1,1,1,1]),histStep:4}}).g('hist.length'),0);
+});

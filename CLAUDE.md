@@ -36,7 +36,7 @@ The script is one top-level block, in this order:
 - Constants, `BOARDS` (six boards: the five pirate metrics, then Expansion; slot zones, benchmarks) and peg layout, synthesised sound (`SFX`, `sfx`)
 - Channels and organic traffic: `CHANNELS`, scale pricing (`mkt`, `adCost`, `campCost`, `perAd`), `SEO`, `mmEff`, `buyAd`, `post`
 - Simulation: `enter`, `land` (Expansion in `landExp`), `expCheck`, `physics`
-- Rendering: `draw` (canvas), `hud` (DOM), `CHARTS` (SVG lines fed by `hist`, one point a game month), `STAGES` (the pirate metrics funnel)
+- Rendering: `draw` (canvas), `hud` (DOM), `CHARTS` (SVG lines fed by `hist`, one point a game month, last `HIST_N` (25) points = 24 months on a fixed axis), `STAGES` (the pirate metrics funnel)
 - `loop`: the `requestAnimationFrame` tick. Handles cash, reach recovery, payroll, loans, churn, and at each month rollover the `ledger` entry, `expCheck` and the IPO hold (`ipoHold`)
 - Upgrades (`TRACKS`), team (`CSM`, `MM`, `ROLES`, staff cache `restaff`, bulk `hireN`), financing (`LOANS`), random events (`EVENTS`), milestones (`MILES`), IPO readiness and the final summary (`IPO`, `ipoChecks`, `ipoHud`, `fileIPO`, `openSum`), responsive layout (`placeBuy`), persistence (`save`, `load`)
 
