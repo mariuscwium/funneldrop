@@ -196,8 +196,13 @@ const WALLTOP=160,FLOOR=196;let churn=.06,price=PRICE0;
 // Game simplification, not a measured benchmark: 1 at $49, so tuned rates hold there. Revenue landing rate scales with slot width (sim/sweep.js).
 const wtp=p=>1/(1+(p/79)**3),priceConv=()=>wtp(price)/wtp(PRICE0); // S-curve: demand falls away past about $79
 const priceChurn=p=>(1+.5*Math.log(p/55)**2)/(1+.5*Math.log(PRICE0/55)**2),paidChurn=(p=price)=>churn*priceChurn(p); // U-shape: lowest near $55
-let subs={}; // Paying customers by the price they signed up at. paying is their total.
-const MRR=()=>Object.entries(subs).reduce((t,[p,n])=>t+p*n,0);
+// Game simplification: a plan multiplies price and lowers churn. Pro and Enterprise customers pay more and stay longer.
+const PLANS=[{name:'Base',mult:1,stick:1},{name:'Pro',mult:2,stick:.7},{name:'Enterprise',mult:5,stick:.5}];
+const key=(p,plan=0)=>p+':'+plan,unkey=k=>{const [p,pl]=String(k).split(':');return [+p,+(pl||0)]};
+let subs={}; // Paying customers by sign-up price and plan, keyed "price:plan". paying is their total.
+const addSub=(p,plan=0,n=1)=>{const k=key(p,plan);subs[k]=(subs[k]||0)+n};
+const moveSub=(k,to)=>{if(!(subs[k]>0))return false;const [p]=unkey(k),t=key(p,to);if(t===k)return true;if(--subs[k]<1)delete subs[k];subs[t]=(subs[t]||0)+1;return true};
+const MRR=()=>Object.entries(subs).reduce((t,[k,n])=>{const [p,pl]=unkey(k);return t+p*PLANS[pl].mult*n},0);
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const C={},readColors=()=>{for(const k of ['ad','acq','act','ret','ref','rev','fail','peg','fg','muted','rail','line','panel','warn'])C[k]=css('--'+k)};readColors();
@@ -283,7 +288,7 @@ function land(o){
   if(hit){out[o.b]++;sfx('tick');for(const z of B.zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1}
   if(o.b<=2){if(hit)spawn(enter(o.b+1,o.friend,o.x,o.src))}
   else if(o.b===3){spawn(enter(4,o.friend,o.x,o.src));if(hit&&!o.friend){const n=refer(o.x,fy);if(out[3]===1)say(`A user told ${n} friends. They skip Acquisition and land straight in Activation.`)}}
-  else{if(hit){paying++;subs[price]=(subs[price]||0)+1;sfx('ching');addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
+  else{if(hit){paying++;addSub(price);sfx('ching');addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
 }
 function physics(dt){
   for(const o of balls){
@@ -389,7 +394,7 @@ function loop(now){
       if(!l.late){l.late=1;say(`You missed a ${l.name.toLowerCase()} repayment. Late fees of 25% of each missed amount are added to what you owe until you can pay again.`)}}
     if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
   if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),nr=binom(Math.min(paying,REFER_CAP),q);for(let i=0;i<nr;i++){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
-    let cov=Math.min(paying,csm*CSM.covers),lost=0;for(const k in subs){const c=paidChurn(+k),pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH),n0=subs[k],nc=Math.min(n0,cov);cov-=nc;const l=binom(nc,pc)+binom(n0-nc,p);lost+=l;if(n0-l)subs[k]=n0-l;else delete subs[k]}
+    let cov=Math.min(paying,csm*CSM.covers),lost=0;for(const k in subs){const [kp,kpl]=unkey(k),c=paidChurn(kp)*PLANS[kpl].stick,pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH),n0=subs[k],nc=Math.min(n0,cov);cov-=nc;const l=binom(nc,pc)+binom(n0-nc,p);lost+=l;if(n0-l)subs[k]=n0-l;else delete subs[k]}
     if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:C.warn,life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
   if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
@@ -495,12 +500,12 @@ LOANS.forEach(l=>{
 const EVENT_CHANCE=.15,evScale=()=>Math.max(1,Math.min(10,MRR()/5000));
 const burst=n=>{const t=performance.now();for(let i=0;i<n;i++)queue.push({t:t+i*22})};
 // Always takes at least one, and reports the share so the size reads at any scale.
-function loseCustomers(lo,hi){const frac=lo+Math.random()*(hi-lo),before=paying;let lost=0;for(const k in subs){let n=subs[k];for(let j=subs[k];j>0;j--)if(Math.random()<frac){n--;lost++}if(n)subs[k]=n;else delete subs[k]}
+function loseCustomers(lo,hi){const frac=lo+Math.random()*(hi-lo),before=paying;let lost=0;for(const k in subs){const l=binom(subs[k],frac);lost+=l;if(subs[k]-l)subs[k]-=l;else delete subs[k]}
   if(!lost){const k=Object.keys(subs)[0];lost=1;if(--subs[k]<1)delete subs[k]}paying-=lost;churned+=lost;return `${lost} of ${before} customers (${Math.round(lost/before*100)}%)`}
 const EVENTS=[
   {good:1,name:'Press mention',run(){const n=Math.round(150*evScale());burst(n);return `A trade publication wrote about you. ${n} visitors are on their way.`}},
   {good:1,name:'Newsletter feature',run(){const n=Math.round(30*evScale());for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60);return `An industry newsletter recommended you. ${n} people signed up directly.`}},
-  {good:1,name:'Rival shut down',when:()=>paying>0,run(){const n=Math.max(3,Math.round(paying*.03));paying+=n;subs[price]=(subs[price]||0)+n;return `A competitor closed. ${n} of their customers moved to you at ${fmt(price)} a month.`}},
+  {good:1,name:'Rival shut down',when:()=>paying>0,run(){const n=Math.max(3,Math.round(paying*.03));paying+=n;addSub(price,0,n);return `A competitor closed. ${n} of their customers moved to you at ${fmt(price)} a month.`}},
   {good:1,name:'Startup grant',run(){const n=Math.max(1000,MRR()*.5);cash+=n;return `You won a ${fmt(n)} grant. No repayments.`}},
   {good:1,name:'Ad promotion',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach=c.base;return 'An ad platform changed its auction. Reach is back to full on every open channel.'}},
   {good:1,name:'Social ad promo',run(){const c=CHANNELS[0];let n=0;for(let i=0;i<3;i++)n+=runAd(c,performance.now()+n*22);return `A social platform gave you three free ads. ${n} visitors are on their way.`}},
@@ -531,7 +536,7 @@ function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
   ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,custRefs=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm}=s);
-  subs=s.subs??(paying?{[price]:paying}:{});
+  subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
   into.splice(0,NB,...s.into);out.splice(0,NB,...s.out);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   Object.assign(tenure,s.tenure);(s.roles||[]).forEach((n,i)=>ROLES[i].n=n);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
