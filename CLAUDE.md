@@ -26,10 +26,10 @@ The sims differ from the game: fixed 1/180s timestep, no 600 speed cap, a 22s ti
 
 The script is one top-level block, in this order:
 
-- Constants, `BOARDS` (slot zones, benchmarks) and peg layout
+- Constants, `BOARDS` (slot zones, benchmarks) and peg layout, synthesised sound (`SFX`, `sfx`)
 - Channels and organic traffic: `CHANNELS`, `SEO`, `buyAd`, `post`
 - Simulation: `enter`, `land`, `physics`
-- Rendering: `draw` (canvas), `hud` (DOM)
+- Rendering: `draw` (canvas), `hud` (DOM), `CHARTS` (SVG lines fed by `hist`, one point a game month), `STAGES` (the pirate metrics funnel)
 - `loop`: the `requestAnimationFrame` tick. Handles cash, reach recovery, payroll, loans, churn
 - Upgrades (`TRACKS`), team (`CSM`, `MM`, `ROLES`), financing (`LOANS`), responsive layout (`placeBuy`), random events (`EVENTS`), persistence (`save`, `load`)
 
@@ -45,6 +45,7 @@ The script is one top-level block, in this order:
 - **SEO traffic decays.** `seoFresh` falls 15% a month to a floor of 10%, slower with marketing managers. Publishing resets it for 15% of the current tier's price, and that spend counts toward CAC.
 - **Milestones (`MILES`) key off `peak` valuation**, so `msLvl` is rebuilt on load and old saves don't replay them. They share the `#ev` dialog through `showEv`.
 - **Cash can go negative**, currently only from a tax bill. Payroll and loan shortfalls must keep any overdraft, not reset cash to 0.
+- **Team and financing cards unlock by peak valuation** (`at` on each entry, checked by `gate` in `hud`). Held staff and loans stay visible below it, and these sit on top of each loan's MRR rule.
 - **Annual review fires every 12 game months** (`annualReview`) instead of an event. Each role has one `tenure`: +5% pay, +3% effect, and a headhunting chance of 5% + 5% per year, capped at 40%. Use `pay()` and `skill()`, not raw salaries.
 - **Events roll once a game month** at `EVENT_CHANCE`, with good news from 10% to 70% depending on `health()`, and only after the first ad or customer. Each is one-off, not a timed effect, and `when` hides it if it can't apply. Their sizes are invented. An event opens the `#ev` dialog, which pauses `loop`; any new `performance.now()` timer must shift in its `close` handler.
 - **Channels differ by `aim`.** Search and LinkedIn visitors enter their aimed board pulled toward its slot by `pull`, and `lift` is the matching rate for the odds path. Pulling only works where incoming x is spread out: Acquisition and Revenue doubled or so, while Activation and Retention barely moved. `queue` holds `{t,src}`.

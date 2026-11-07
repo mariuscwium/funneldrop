@@ -16,9 +16,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .wrap{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brandbtns{display:flex;gap:6px}
+.sub{font-size:12px;color:var(--muted);margin:1px 0 0}
 h1{font-size:20px;margin:0;letter-spacing:.05em;text-transform:uppercase}
 h1 em{font-style:normal;color:var(--paid)}
-.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+@media (max-width:420px){.hud .stat{padding:5px 6px}.hud .stat span{font-size:9px;letter-spacing:0}.hud .stat b{font-size:13px}}
 .stat.val b{color:var(--rev)}
 .stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-width:0}
 .stat span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
@@ -58,16 +61,22 @@ h1 em{font-style:normal;color:var(--paid)}
 #ev .buy{width:100%;justify-content:center}
 canvas{display:block;width:100%;aspect-ratio:360/1020;background:var(--board);border:1px solid var(--line);border-radius:10px}
 h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
-.tablewrap{overflow-x:auto;flex:none}
-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;background:var(--panel);border:1px solid var(--line);border-radius:8px}
-th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
-th{font-weight:600;color:var(--muted);font-size:11px}
-tr:last-child td{border-bottom:0}
-i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.fnl{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+.fr{display:grid;grid-template-columns:66px minmax(0,1fr) 88px;gap:8px;align-items:center}
+.fr.branch{margin-top:4px;padding-top:6px;border-top:1px dashed var(--line)}
+.fbar{position:relative;display:flex;justify-content:center;height:22px}
+.fbar i{display:block;height:100%;width:0;background:var(--c);opacity:.4;border-radius:3px}
+.fbar b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:600}
+.fy{text-align:right;color:var(--muted);white-space:nowrap}
+.fy b{color:var(--fg);font-weight:600}
+.fnl small{font-size:10px;color:var(--muted);font-family:var(--display);line-height:1.3;margin-top:2px}
 .econ{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 .econ span:nth-child(odd){color:var(--muted)}
 .warn{color:var(--warn)}
+.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.charts svg{display:block;width:100%;height:36px;margin-top:4px;overflow:visible}
+.charts polyline{fill:none;stroke:var(--c);stroke-width:1.5;vector-effect:non-scaling-stroke}
+.charts line{stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
 .src{font-size:12px;line-height:1.5;color:var(--muted);margin:0}
 .src a{color:var(--muted)}
 .upgrades{display:flex;flex-direction:column;gap:6px}
@@ -85,6 +94,7 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
 .side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .boardcol{display:flex;flex-direction:column;gap:12px;min-width:0}
 .actions,.play{display:flex;flex-direction:column;gap:6px;min-width:0}
+#h-act{display:none}
 .stats{display:flex;flex-direction:column;gap:10px;min-width:0}
 @media (min-width:860px){
   .wrap{max-width:920px}
@@ -92,12 +102,16 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
   .side .channels{position:sticky;top:0;z-index:4;background:var(--bg);padding-bottom:6px}
   .main{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:24px;align-items:start}
   .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
-  .side h2:first-child{margin-top:0}
+  .side h2:first-child,.boardcol h2:first-child{margin-top:0}
+  #h-act{display:block}
+  .boardcol,.actions,.stats{gap:6px}
   .side>*{flex:none}
   .side .msg{flex:none;min-height:4lh}
   .side .msg.intro{visibility:hidden;height:4lh;overflow:hidden}
-  .actions{gap:10px}
   .play{display:contents}
+}
+@media (min-width:860px) and (max-width:1599px){
+  #upgrades>h2:first-child{margin-top:6px}
 }
 @media (min-width:1200px){
   .wrap{max-width:1320px}
@@ -108,7 +122,7 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
   .wrap{max-width:1720px}
   .side{grid-template-columns:repeat(3,minmax(0,1fr))}
   .actions{display:contents}
-  .play{display:flex;gap:10px}
+  .play{display:flex}
   .play,#upgrades{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
 }
 </style>
@@ -116,20 +130,24 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><form method="dialog"><button class="buy">Continue</button></form></dialog>
 <div class="wrap">
   <div class="top" id="top">
-    <div class="brand"><h1>Funnel <em>Drop</em></h1><button class="campbtn" id="reset">New game</button></div>
+    <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns"><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="reset">New game</button></span></div>
     <div class="hud">
       <div class="stat"><span>Cash</span><b id="vCash">$1,500</b></div>
       <div class="stat"><span>MRR</span><b id="vMrr">$0</b></div>
       <div class="stat"><span>Paying</span><b id="vPaying">0</b></div>
       <div class="stat val"><span>Valuation</span><b id="vVal">$0</b></div>
+      <div class="stat"><span>Days</span><b id="vDays">0</b></div>
     </div>
     <div class="channels" id="channels"></div>
   </div>
   <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (7% a month). You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
-  <div class="actions" id="actions"><div class="play" id="play"><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="19" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2>Team</h2><div class="upgrades" id="team"></div><h2>Financing</h2><div class="upgrades" id="loans"></div></div></div>
+  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="19" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2 id="h-team">Team</h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
+  <h2>Funnel</h2>
   <canvas id="cv" aria-label="Five stacked boards, one per pirate metric: acquisition, activation, retention, referral and revenue."></canvas>
   </div><div class="side" id="side"><div class="stats">
+  <h2>Over time</h2>
+  <div class="charts" id="charts"></div>
   <h2>Company</h2>
   <div class="econ">
     <span>Valuation</span><span id="cVal">$0</span>
@@ -141,10 +159,7 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
     <span>Debt outstanding</span><span id="cDebt">$0</span>
   </div>
   <h2>Pirate metrics</h2>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Metric</th><th>In</th><th>Out</th><th>Yours</th><th>Bench</th></tr></thead>
-    <tbody id="tbody"></tbody>
-  </table></div>
+  <div class="fnl" id="fnl"></div>
   <h2>Unit economics</h2>
   <div class="econ">
     <span>Ads bought</span><span id="eAds">0</span>
@@ -186,12 +201,20 @@ BOARDS.forEach((_,b)=>{const y0=b*BH;for(let r=0;r<5;r++){const odd=r%2,n=odd?11
 const fmt=v=>{const a=Math.abs(v),s=v<0?'−$':'$';if(a>=1e9)return s+(a/1e9).toFixed(2)+'B';if(a>=1e6)return s+(a/1e6).toFixed(2)+'M';if(a>=1e4)return s+(a/1e3).toFixed(1)+'k';return s+Math.round(a).toLocaleString('en')};
 const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'–';
 const $=id=>document.getElementById(id);
+// All sound is synthesised. Browsers block audio until a gesture, so the context starts on the first input. Busy sounds are rate limited.
+let ac,muted=false;const sfxLast={};try{muted=localStorage.getItem('funnel-drop-muted')==='1'}catch{}
+function tone(f,at,dur,vol,type='sine',to=f){const t=ac.currentTime+at,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(to,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+dur)}
+const notes=(fs,step,vol,type)=>fs.forEach((f,i)=>tone(f,i*step,step*1.6,vol,type));
+const SFX={tick:[125,()=>tone(900,0,.03,.015)],ching:[250,()=>notes([1320,1760],.07,.05,'triangle')],thud:[300,()=>tone(140,0,.16,.1,'sine',70)],
+  good:[0,()=>notes([523,659,784],.09,.07,'triangle')],bad:[0,()=>notes([392,294],.16,.08,'triangle')],fanfare:[0,()=>notes([523,659,784,1047],.11,.08,'triangle')]};
+function sfx(name){if(muted||!ac)return;const n=performance.now(),[gap,play]=SFX[name];if(n-(sfxLast[name]||0)<gap)return;sfxLast[name]=n;play()}
+for(const type of ['pointerdown','keydown'])addEventListener(type,()=>{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;ac??=new A();ac.resume()});
 
 let cash=1500,ads=0,spend=0,balls=[],floats=[],queue=[];
 const into=[0,0,0,0,0],out=[0,0,0,0,0];let eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
 
 function resize(){const d=window.devicePixelRatio||1;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
-const SEO=[['Start a blog',2000,60],['SEO foundations',5000,180],['Content library',12500,420]];let seoLvl=0,organicAcc=0,postReady=0,seoFresh=1;
+const SEO=[['Start a blog',2000,150],['SEO foundations',5000,300],['Content library',12500,700]];let seoLvl=0,organicAcc=0,postReady=0,seoFresh=1;
 // Content goes stale but never to nothing: old articles keep a tenth of their traffic.
 const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
 const POST_CD=15000;
@@ -243,10 +266,10 @@ const CUST_REFER=.01,REFER_CAP=1000;
 function refer(x,y){const n=referred();for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60);addFloat({x,y,t:`+${n} friend${n>1?'s':''}`,c:C.ref,life:1});return n}
 function land(o){
   const B=BOARDS[o.b],hit=B.zones.some(([a,c])=>o.x>=a&&o.x<c),fy=o.b*BH+WALLTOP-6;
-  if(hit){out[o.b]++;for(const z of B.zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1}
+  if(hit){out[o.b]++;sfx('tick');for(const z of B.zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1}
   if(o.b<=2){if(hit)spawn(enter(o.b+1,o.friend,o.x,o.src))}
   else if(o.b===3){spawn(enter(4,o.friend,o.x,o.src));if(hit&&!o.friend){const n=refer(o.x,fy);if(out[3]===1)say(`A user told ${n} friends. They skip Acquisition and land straight in Activation.`)}}
-  else{if(hit){paying++;subs[price]=(subs[price]||0)+1;addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
+  else{if(hit){paying++;subs[price]=(subs[price]||0)+1;sfx('ching');addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
 }
 function physics(dt){
   for(const o of balls){
@@ -285,18 +308,31 @@ function draw(){
   for(const f of floats){ctx.globalAlpha=Math.max(0,f.life);ctx.fillStyle=f.c;ctx.textAlign='center';ctx.font='700 12px JetBrains Mono, monospace';ctx.fillText(f.t,f.x,f.y);f.y-=.4;f.life-=.014}
   ctx.globalAlpha=1;floats=floats.filter(f=>f.life>0);
 }
-const rows=BOARDS.map((B,b)=>`<tr><td><i class="dot" style="background:var(--${B.col})"></i>${B.name}</td><td id="i${b}">0</td><td id="o${b}">0</td><td id="r${b}">–</td><td>${B.bench*100}%</td></tr>`).join('');
-$('tbody').innerHTML=rows;
+// Paid sits before Referral here because everyone retained reaches it; referrers are a side branch, not a narrower stage. Sign-ups include referred friends.
+const STAGES=[['Visitors','ad',()=>into[0]],['Sign-ups','acq',()=>into[1],0],['Activated','act',()=>out[1],1],['Retained','ret',()=>out[2],2],['Paid','rev',()=>out[4],4],['Referrers','ref',()=>out[3],3]];
+$('fnl').innerHTML=STAGES.map(([n,c,,b],i)=>`<div class="fr${b===3?' branch':''}" style="--c:var(--${c})"><span>${n}</span><span class="fbar"><i id="fb${i}"></i><b id="fv${i}">0</b></span><span class="fy">${b===undefined?'':`<b id="fy${i}">–</b> / ${BOARDS[b].bench*100}%`}</span></div>`).join('')+'<small>Yours / benchmark. Bar widths use a square-root scale so small stages stay visible.</small>';
+const revMult=()=>Math.max(2,Math.min(25,6+40*growth));
+// One point a game month. Past 240 points every other one is dropped and the sampling halves, so any game length fits the save.
+const CHARTS=[['MRR','--rev',fmt],['Paying','--acq',v=>v.toLocaleString('en')],['Cash','--ad',fmt],['Valuation','--act',fmt]];let hist=[],histStep=1;
+$('charts').innerHTML=CHARTS.map(([n,c],i)=>`<div class="stat" style="--c:var(${c})"><span>${n}</span><b id="ch-v${i}">–</b><svg viewBox="0 0 100 32" preserveAspectRatio="none" role="img" aria-label="${n} over time"><line id="ch-z${i}" x1="0" x2="100" y1="31" y2="31"/><polyline id="ch-l${i}"/></svg></div>`).join('');
+function recordHist(){if(month%histStep)return;hist.push([MRR(),paying,Math.round(cash),Math.round(MRR()*12*revMult())]);if(hist.length>240){hist=hist.filter((_,i)=>i%2===0);histStep*=2}drawCharts()}
+function drawCharts(){CHARTS.forEach(([,,f],i)=>{if(!hist.length)return;const v=hist.map(h=>h[i]),lo=Math.min(0,...v),hi=Math.max(1,...v),y=n=>31-(n-lo)/(hi-lo)*30,x=j=>v.length>1?j/(v.length-1)*100:0;
+  $('ch-v'+i).textContent=f(v[v.length-1]);$('ch-l'+i).setAttribute('points',v.map((n,j)=>`${x(j).toFixed(2)},${y(n).toFixed(2)}`).join(' '));for(const k of ['y1','y2'])$('ch-z'+i).setAttribute(k,y(0))})}
+// Team and financing appear at a peak valuation (at), and stay once seen. Anything held stays visible too.
+let gateReady=false;
+function gate(id,at,held,name){const el=$('c-'+id),vis=peak>=at||held>0;if(el.hidden===vis){el.hidden=!vis;if(vis&&gateReady)say(`<b>${name}</b> is now available.`)}return vis}
 function hud(){
-  $('vCash').textContent=fmt(cash);$('vCash').className=cash<0?'warn':'';$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;
+  $('vCash').textContent=fmt(cash);$('vCash').className=cash<0?'warn':'';$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;$('vDays').textContent=Math.floor((month+eventT/MONTH)*30).toLocaleString('en');
   for(const c of visibleCh()){if(c.open){const r=Math.max(1,Math.round(c.reach));$('cr-'+c.id).textContent=`${r} visitors per ad · ${fmt(c.cost/r)} each${c.note?' · '+c.note:''}`;$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
       $('ca-'+c.id).disabled=cash<c.cost;$('cc-'+c.id).disabled=cash<c.camp||c.reach>=c.base-.5}else $('cu-'+c.id).disabled=cash<c.unlock}
-  for(let b=0;b<NB;b++){$('i'+b).textContent=into[b].toLocaleString('en');$('o'+b).textContent=out[b];$('r'+b).textContent=pct(out[b],into[b])}
-  const mrr=MRR(),mult=Math.max(2,Math.min(25,6+40*growth)),val=mrr*12*mult;peak=Math.max(peak,val);
+  {const top=Math.max(1,...STAGES.map(s=>s[2]()));STAGES.forEach(([,,v,b],i)=>{const n=v();$('fb'+i).style.width=n?Math.max(2,Math.sqrt(n/top)*100)+'%':'0';$('fv'+i).textContent=n.toLocaleString('en');if(b!==undefined)$('fy'+i).textContent=pct(out[b],into[b])})}
+  const mrr=MRR(),mult=revMult(),val=mrr*12*mult;peak=Math.max(peak,val);
   $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
   TRACKS.forEach(t=>{$('u-'+t.id).disabled=lvl[t.id]>=3||cash<COSTS[lvl[t.id]]});
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
+  $('h-team').hidden=![gate('csm',CSM.at,csm,'Customer success manager'),gate('mm',MM.at,mm,'Marketing manager'),...ROLES.map(r=>gate(r.id,r.at,r.n,r.name))].some(Boolean);
+  $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=MRR()-teamCost()-lp;$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
    $('t-csm-meta').textContent=`${csm} on the team · covering ${Math.min(paying,csm*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<pay('csm',CSM.salary);$('s-csm').textContent=fmt(pay('csm',CSM.salary))+'/mo';$('s-mm').textContent=fmt(pay('mm',MM.salary))+'/mo';$('m-meta').textContent=`${mm} on the team · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<pay('mm',MM.salary);$('m-fire').disabled=mm===0;$('t-fire').disabled=csm===0;
    for(const r of ROLES){$('r-meta-'+r.id).textContent=`${r.n} on the team · ${r.label} about ${p1(rateOf(TRACKS[r.board]))}`;$('s-'+r.id).textContent=fmt(pay(r.id,r.salary))+'/mo';$('r-hire-'+r.id).disabled=cash<pay(r.id,r.salary)||r.n>=ROLE_MAX;$('r-fire-'+r.id).disabled=!r.n}}
@@ -320,7 +356,7 @@ function loop(now){
   for(let i=0;i<3;i++)physics(dt/3);
   cash+=MRR()/MONTH*dt;
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
+  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;recordHist();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
   {const tc=teamCost()/MONTH*dt,r=ROLES.find(x=>x.n);if(!tc||cash>=tc)cash-=tc;else{cash=Math.min(cash,0);if(now<nextCut);else if(nextCut=now+MONTH*1000,r){r.n--;zone(r.board);applyPrice();say(`Payroll bounced, so you had to let ${aRole(r)} go.`)}else if(mm>0){mm--;say('Payroll bounced, so you had to let a marketing manager go.')}else if(csm>0){csm--;say('Payroll bounced, so you had to let a customer success manager go. Their customers lose the extra attention.')}}}
@@ -330,7 +366,7 @@ function loop(now){
     if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
   if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),refs=Math.min(paying,REFER_CAP);for(let i=0;i<refs;i++)if(Math.random()<q){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
     const cov=Math.min(paying,csm*CSM.covers);let lost=0,i=0;for(const k in subs){const c=paidChurn(+k),pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH);let n=subs[k];for(let j=subs[k];j>0;j--,i++)if(Math.random()<(i<cov?pc:p)){n--;lost++}if(n)subs[k]=n;else delete subs[k]}
-    if(lost){paying-=lost;churned+=lost;addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:'#c2412f',life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
+    if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:'#c2412f',life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
   if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
 }
@@ -367,16 +403,16 @@ function applyPrice(){const t=TRACKS[4];zone(4);
 $('price').addEventListener('input',e=>{price=+e.target.value;applyPrice()});
 $('upglist').addEventListener('click',e=>{const b=e.target.closest('.upg');if(b&&!b.disabled)buyUpg(b.id.slice(2))});
 renderUpg();
-const CSM={salary:6000,covers:150,mult:.75};let csm=0,warnedNeg=0;
+const CSM={salary:6000,covers:150,mult:.75,at:5e5};let csm=0,warnedNeg=0;
 // Each role has one tenure, in years, so new hires join on that role's pay and skill. It resets when a review finds the role empty.
 const RAISE=1.05,SKILL=.03,tenure={csm:0,mm:0,pd:0,pe:0,cm:0,ae:0},pay=(id,base)=>base*RAISE**tenure[id],skill=id=>1+SKILL*tenure[id],csmMult=()=>1-(1-CSM.mult)*skill('csm');
-const MM={salary:6000,visitors:400};let mm=0;
+const MM={salary:6000,visitors:400,at:5e5};let mm=0;
 const ROLE_LIFT=.15,ROLE_MAX=3;
 const ROLES=[
-  {id:'pd',name:'Product designer',board:1,salary:6000,label:'activation',blurb:'Smooths onboarding'},
-  {id:'pe',name:'Product engineer',board:2,salary:8000,label:'month-1 retention',blurb:'Fixes what makes new users drift away'},
-  {id:'cm',name:'Community manager',board:3,salary:5000,label:'referral',blurb:'Gives users reasons to spread the word'},
-  {id:'ae',name:'Account executive',board:4,salary:7000,label:'paid conversion',blurb:'Talks free users into paying'}
+  {id:'pd',name:'Product designer',board:1,salary:6000,at:75e4,label:'activation',blurb:'Smooths onboarding'},
+  {id:'pe',name:'Product engineer',board:2,salary:8000,at:1e6,label:'month-1 retention',blurb:'Fixes what makes new users drift away'},
+  {id:'cm',name:'Community manager',board:3,salary:5000,at:75e4,label:'referral',blurb:'Gives users reasons to spread the word'},
+  {id:'ae',name:'Account executive',board:4,salary:7000,at:1e6,label:'paid conversion',blurb:'Talks free users into paying'}
 ];
 ROLES.forEach(r=>r.n=0);
 const aRole=r=>(/^[aeiou]/i.test(r.name)?'an ':'a ')+r.name.toLowerCase();let nextCut=0;
@@ -387,10 +423,10 @@ function annualReview(){if(!STAFF().some(s=>s.n)){for(const k in tenure)tenure[k
   const before=teamCost(),gone=[];for(const s of STAFF()){if(!s.n){tenure[s.id]=0;continue}tenure[s.id]++;const leave=Math.min(.4,.05+.05*tenure[s.id]);let n=s.n;for(let i=0;i<s.n;i++)if(Math.random()<leave)n--;if(n<s.n)gone.push(`${s.n-n} ${s.name}${s.n-n>1?'s':''}`);s.set(n)}
   BOARDS.forEach((_,b)=>zone(b));applyPrice();const raise=STAFF().reduce((t,s)=>t+s.n,0)?`Raises take payroll to ${fmt(teamCost())} a month, and your team is slightly more effective.`:'Payroll is now empty.';
   showEv(gone.length?'bad':'good',`Year ${month/12} review`,gone.length?'Staff headhunted':'Team stayed',gone.length?`${raise} You lost ${gone.join(', ')} to other companies.`:raise)}
-$('team').innerHTML=`<div class="upg" style="--c:var(--rev);cursor:default"><b>Customer success manager</b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
+$('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:default"><b>Customer success manager</b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-fire">Let go</button></span></div>
-<div class="upg" style="--c:var(--acq);cursor:default"><b>Marketing manager</b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: +${MM.visitors} free visitors a month each, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. <span id="m-meta"></span></small>
-  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
+<div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager</b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: +${MM.visitors} free visitors a month each, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. <span id="m-meta"></span></small>
+  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
 ROLES.forEach(r=>{const set=d=>{r.n+=d;zone(r.board);applyPrice()};
   $('r-hire-'+r.id).addEventListener('click',()=>{if(cash<pay(r.id,r.salary)||r.n>=ROLE_MAX)return;set(1);say(`You hired ${aRole(r)}. ${r.label[0].toUpperCase()+r.label.slice(1)} should now be about ${p1(rateOf(TRACKS[r.board]))}.`)});
@@ -401,14 +437,14 @@ $('t-hire').addEventListener('click',()=>{if(cash<pay('csm',CSM.salary))return;c
 $('t-fire').addEventListener('click',()=>{if(!csm)return;csm--;say('You let a customer success manager go. Their customers lose the extra attention.')});
 const r500=v=>Math.floor(v/500)*500;
 const LOANS=[
-  {id:'card',name:'Business credit card',apr:.24,months:12,limit:()=>3000,ok:()=>true,why:''},
-  {id:'online',name:'Online lender',apr:.30,months:12,limit:()=>r500(MRR()*3),ok:()=>MRR()>=500,why:'Needs $500 MRR. Lends up to 3× MRR.'},
-  {id:'bank',name:'Bank term loan',apr:.10,months:24,limit:()=>Math.min(500000,r500(MRR()*6)),ok:()=>MRR()>=5000,why:'Needs $5,000 MRR. Lends up to 6× MRR.'}
+  {id:'card',at:25e3,name:'Business credit card',apr:.24,months:12,limit:()=>3000,ok:()=>true,why:''},
+  {id:'online',at:5e4,name:'Online lender',apr:.30,months:12,limit:()=>r500(MRR()*3),ok:()=>MRR()>=500,why:'Needs $500 MRR. Lends up to 3× MRR.'},
+  {id:'bank',at:5e5,name:'Bank term loan',apr:.10,months:24,limit:()=>Math.min(500000,r500(MRR()*6)),ok:()=>MRR()>=5000,why:'Needs $5,000 MRR. Lends up to 6× MRR.'}
 ];
 LOANS.forEach(l=>{l.bal=0;l.pay=0});
 const pmt=(P,apr,n)=>{const r=apr/12;return P*r/(1-Math.pow(1+r,-n))};
 const loanPay=()=>LOANS.reduce((t,l)=>t+(l.bal>0?l.pay:0),0);
-$('loans').innerHTML=LOANS.map(l=>`<div class="upg" style="--c:var(--muted);cursor:default"><b>${l.name}</b><span class="cost" id="l-fig-${l.id}"></span><small><span>${Math.round(l.apr*100)}% APR · repaid monthly over ${l.months} months.</span> <span id="l-st-${l.id}"></span></small>
+$('loans').innerHTML=LOANS.map(l=>`<div class="upg" id="c-${l.id}" style="--c:var(--muted);cursor:default"><b>${l.name}</b><span class="cost" id="l-fig-${l.id}"></span><small><span>${Math.round(l.apr*100)}% APR · repaid monthly over ${l.months} months.</span> <span id="l-st-${l.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="l-take-${l.id}">Borrow</button><button class="campbtn" id="l-off-${l.id}">Pay off</button></span></div>`).join('');
 function updLoans(){let debt=0;for(const l of LOANS){debt+=l.bal;const lim=l.limit();
   if(l.bal>0){const left=Math.max(1,Math.ceil(Math.log(1/(1-l.bal*(l.apr/12)/l.pay))/Math.log(1+l.apr/12)||1));
@@ -440,7 +476,7 @@ const EVENTS=[
 ];
 // Saved as soon as it fires, so reloading can't dodge a bad one. Timers shift on resume so bursts and cooldowns don't run out during the pause.
 let pausedAt=0;
-function showEv(k,kind,name,t){say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
+function showEv(k,kind,name,t){sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
 function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()-teamCost()-loanPay()>0?.5:-.5)))}
 function randomEvent(){const can=EVENTS.filter(e=>!e.when||e.when()),good=Math.random()<.4-.3*health(),sided=can.filter(e=>!!e.good===good),ok=sided.length?sided:can,e=ok[Math.random()*ok.length|0],t=e.run();showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
@@ -451,23 +487,25 @@ function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MIL
   showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more.${nx?` Next up: ${nx[1]}.`:' That is the last milestone. Keep going if you like.'}`)}
 $('ev').addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
 const wide=matchMedia('(min-width:860px)');
-function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matches){$('side').prepend(a);$('play').prepend(b);$('play').append(m)}else{$('top').append(b);$('boardcol').prepend(a);$('top').after(m)}}
+function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matches){$('side').prepend(a);$('h-act').after(b);$('play').append(m)}else{$('top').append(b);$('boardcol').prepend(a);$('top').after(m)}}
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({month,tenure,eventT,seoFresh,subs,custRefs,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,csm,mm,lvl,balls,roles:ROLES.map(r=>r.n),queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histStep,month,tenure,eventT,seoFresh,subs,custRefs,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,csm,mm,lvl,balls,roles:ROLES.map(r=>r.n),queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
-  ({month=0,eventT=0,seoFresh=1,custRefs=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm}=s);
+  ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,custRefs=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm}=s);
   subs=s.subs??(paying?{[price]:paying}:{});
   into.splice(0,NB,...s.into);out.splice(0,NB,...s.out);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   Object.assign(tenure,s.tenure);(s.roles||[]).forEach((n,i)=>ROLES[i].n=n);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh();renderUpg()}
+function showMute(){$('mute').textContent=muted?'Unmute':'Mute';$('mute').setAttribute('aria-pressed',muted)}showMute();
+$('mute').addEventListener('click',()=>{muted=!muted;showMute();try{localStorage.setItem('funnel-drop-muted',muted?'1':'0')}catch{}});
 $('reset').addEventListener('click',()=>{if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()});
-load();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
-resize();window.addEventListener('resize',resize);hud();requestAnimationFrame(loop);
+load();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
+resize();window.addEventListener('resize',resize);hud();gateReady=true;requestAnimationFrame(loop);
 </script>
 
 </body></html>
