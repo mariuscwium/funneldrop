@@ -562,7 +562,7 @@ function linkNodes(){NODE_IX={};for(const n of NODES){n.adj=[];NODE_IX[n.id]=n}
   for(const n of NODES)for(const l of n.links){const m=NODE_IX[l];if(!m)continue;if(!n.adj.includes(l))n.adj.push(l);if(!m.adj.includes(n.id))m.adj.push(n.id)}}
 linkNodes();
 const nodeOf=id=>NODE_IX[id];
-let owned={start:1},rp=RP_START;
+let owned={start:1},rp=RP_START,paid={},respecUsed=false,alHist=[]; // paid: points spent per node id, so a respec can refund them
 // Rebuild FX from owned, then everything derived from it. On buy, respec and load. Hot paths read FX, never owned.
 function refx(){for(const k of FX_KEYS)FX[k]=0;
   for(const id in owned){const n=NODE_IX[id];if(!n)continue;for(const k in n.fx)FX[k]+=n.fx[k]*owned[id]}
@@ -582,10 +582,16 @@ function fxText(fx){return Object.entries(fx).map(([k,v])=>/^r\d$/.test(k)?`${RA
 function buyNode(id){const n=NODE_IX[id];if(!n||ipoFiled||nodeState(id)!=='available')return false;
   const k=nodeCash(n),pts=nodePts(n);if(rp<pts||cash<k)return false;
   const was=RATES.map(rateOf),pc=paidChurn();
-  spendCash(k);rp-=pts;owned[id]=(owned[id]||0)+1;refx();applyPrice();markShipped();
+  spendCash(k);rp-=pts;paid[id]=(paid[id]||0)+pts;owned[id]=(owned[id]||0)+1;refx();applyPrice();markShipped();
   for(let b=0;b<NB;b++){const d=rateOf(RATES[b])-was[b];if(Math.abs(d)>1e-9)celebrate(b,signed(d*100,' pts ')+RATES[b].label,true)}
   if(Math.abs(paidChurn()-pc)>1e-9)celebrate(4,signed((paidChurn()-pc)*100,' pts churn'),false);
   say(`<b>${n.name}</b> shipped: ${fxText(n.fx)}.`);return true}
+// One respec a run: refunds every point paid (may top the cap), clears the tree back to the start node and so frees fork locks.
+const respecCost=()=>Math.max(5000,3*MRR());
+function respec(){if(respecUsed||ipoFiled||cash<respecCost())return false;
+  let back=0;for(const id in paid)back+=paid[id];
+  spendCash(respecCost());rp+=back;owned={start:1};paid={};respecUsed=true;stale=0;refx();applyPrice();return true}
+const OLD_SEEDS={acq:'acq1',act:'act1',ret:'ret1',ref:'ref1',rev:'rev1',churn:'churn1',exp:'exp1'};
 const CSM={salary:6000,covers:150,mult:.75,at:5e5},csmCovers=()=>Math.round(CSM.covers*(1+FX.csm));let warnedNeg=0;
 const MM={salary:6000,visitors:400,at:5e5};
 // Roadmap points. Founders give a trickle, engineers (diminishing returns like mmEff) and the product roles more. Invented numbers.
@@ -753,7 +759,7 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,rp,stale,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
@@ -765,7 +771,9 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   hist=s.histDays===10?hist.slice(-HIST_N):[];
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
   flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
-  into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);owned={...s.owned,start:1};rp=s.rp??RP_START;stale=s.stale||0;
+  into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);owned={...s.owned,start:1};paid={...s.paid};rp=s.rp??RP_START;stale=s.stale||0;respecUsed=!!s.respecUsed;alHist=Array.isArray(s.alHist)?s.alHist:[];
+  // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
+  if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1)owned[OLD_SEEDS[k]]=1;if(l>=2)rp+=2;if(l>=3)rp+=3}}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();s.balls.forEach(spawn);
