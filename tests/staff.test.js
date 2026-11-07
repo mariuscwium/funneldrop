@@ -7,9 +7,10 @@ test('new hire ramps', () => {
   const {g}=load();
   g('month=0;eventT=0;hire("pd")');
   near(g('strength("pd")'),0.25);
-  g('month=3');near(g('strength("pd")'),0.625);
-  g('month=6');near(g('strength("pd")'),1);
-  g('month=20');near(g('strength("pd")'),1);
+  // Strength is cached and steps once a game month, at refitRamping.
+  g('month=3;refitRamping()');near(g('strength("pd")'),0.625);
+  g('month=6;refitRamping()');near(g('strength("pd")'),1);
+  g('month=20;refitRamping()');near(g('strength("pd")'),1);
   assert.equal(g('heads("pd")'),1);
 });
 
@@ -88,11 +89,38 @@ test('csm cut scales with strength, coverage per head', () => {
   const {g}=load();
   g('month=0;eventT=0;hire("csm")');
   near(g('csmMult()'),1-0.25*0.25);
-  g('month=10');near(g('csmMult()'),0.75);
+  g('month=10;refitRamping()');near(g('csmMult()'),0.75);
 });
 
 test('mm visitors scale with strength', () => {
   const {g}=load();
   g('seoLvl=0;month=0;eventT=0;hire("mm")');
-  near(g('organicRate()'),400*0.25);
+  near(g('mmEff()'),g('MM_K*((1+0.25/MM_K)**MM_P-1)/MM_P'));assert.ok(g('mmEff()')<0.25);
+  near(g('organicRate()'),400*g('mmEff()'));
 });
+
+test('mm returns diminish', () => {
+  const {g}=load();
+  g('month=0;eventT=0;for(let i=0;i<100;i++)hire("mm");month=10;refitRamping()');
+  near(g('strength("mm")'),100);
+  const e=g('mmEff()');assert.ok(e>20&&e<35,'mmEff '+e); // 100 full hires act like about 27
+});
+
+test('cache follows hire, fire, review and load', () => {
+  const a=load();
+  a.g('month=0;eventT=0;hire("csm");hire("csm");hire("mm");month=8;refitRamping()');
+  assert.equal(a.g('heads("csm")'),2);near(a.g('strength("csm")'),2);assert.equal(a.g('teamCost()'),18000);assert.equal(a.g('rampingUp("csm")'),0);
+  a.g('fire("csm")');assert.equal(a.g('heads("csm")'),1);assert.equal(a.g('teamCost()'),12000);
+  a.g('hire("pd")');assert.equal(a.g('rampingUp("pd")'),1);near(a.g('strength("pd")'),.25);
+  a.g('save()');const {g}=load({save:JSON.parse(a.store.get('funnel-drop-save-v1'))});
+  assert.equal(g('heads("csm")'),1);assert.equal(g('heads("pd")'),1);assert.equal(g('teamCost()'),18000);
+});
+
+test('bulk hiring', () => {
+  const {g}=load();
+  g('cash=59000;hireN("csm",10)');assert.equal(g('heads("csm")'),0);
+  g('cash=60000;hireN("mm",10)');assert.equal(g('heads("mm")'),10);
+  g('subs={"49:0":1000};paying=1000;cash=1e6;hireN("csm",csmGap())');assert.equal(g('heads("csm")'),7);assert.equal(g('csmGap()'),0);
+  g('ipoFiled=true;hireN("csm",10)');assert.equal(g('heads("csm")'),7);
+});
+

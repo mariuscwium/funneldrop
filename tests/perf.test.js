@@ -56,3 +56,14 @@ test('customer referral rate', () => {
   const c=g('refCalls');
   assert.ok(Math.abs(c-30)<=15,'refer calls '+c);
 });
+
+test('2,000 staff and 170k customers frame', () => {
+  const {g,frames}=load();
+  g('randomEvent=()=>{};peak=2e9;month=20;eventT=0;subs={"49:0":120000,"49:1":40000,"49:2":10000};paying=170000;seoLvl=3');
+  g('staff=[];for(let i=0;i<2000;i++)staff.push({role:i<1200?"csm":i<1900?"mm":ROLES[i%5].id,hired:i%30,pay:6000,skill:1});restaff();BOARDS.forEach((_,b)=>zone(b))');
+  frames(1600); // warm up the JIT and fill the ball cap
+  const t=process.hrtime.bigint();
+  frames(160);
+  const ms=Number(process.hrtime.bigint()-t)/1e6;
+  assert.ok(ms<50,'took '+ms+' ms');
+});
