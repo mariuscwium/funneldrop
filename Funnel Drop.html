@@ -203,8 +203,8 @@ const PLANS=[{name:'Base',mult:1,stick:1},{name:'Pro',mult:2,stick:.7},{name:'En
 const key=(p,plan=0)=>p+':'+plan,unkey=k=>{const [p,pl]=String(k).split(':');return [+p,+(pl||0)]};
 let subs={}; // Paying customers by sign-up price and plan, keyed "price:plan". paying is their total.
 const addSub=(p,plan=0,n=1)=>{const k=key(p,plan);subs[k]=(subs[k]||0)+n};
-// This month's MRR movement of customers who were already paying at its start, for net revenue retention. New sign-ups never touch it.
-let flow={start:0,exp:0,con:0,lost:0};
+// This month's MRR movement for net revenue retention. start is MRR at month start; exp/con are plan moves; lost is churned MRR from all customers, including this month's sign-ups (new is their MRR). Rollover scales lost by start/(start+new) to estimate the start cohort's share.
+let flow={start:0,exp:0,con:0,lost:0,new:0};
 const moveSub=(k,to)=>{if(!(subs[k]>0))return false;const [p,from]=unkey(k),t=key(p,to);if(t===k)return true;const d=p*(PLANS[to].mult-PLANS[from].mult);if(d>0)flow.exp+=d;else flow.con-=d;if(--subs[k]<1)delete subs[k];subs[t]=(subs[t]||0)+1;return true};
 const MRR=()=>Object.entries(subs).reduce((t,[k,n])=>{const [p,pl]=unkey(k);return t+p*PLANS[pl].mult*n},0);
 // Net revenue retention, a monthly approximation chained over 12 months: each month (start MRR + expansion - contraction - churned MRR) / start MRR, multiplied together. Not exact cohort tracking.
@@ -306,7 +306,7 @@ function land(o){
   if(hit){out[o.b]++;sfx('tick');for(const z of B.zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1}
   if(o.b<=2){if(hit)spawn(enter(o.b+1,o.friend,o.x,o.src))}
   else if(o.b===3){spawn(enter(4,o.friend,o.x,o.src));if(hit&&!o.friend){const n=refer(o.x,fy);if(out[3]===1)say(`A user told ${n} friends. They skip Acquisition and land straight in Activation.`)}}
-  else if(o.b===4){if(hit){paying++;addSub(price);sfx('ching');addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
+  else if(o.b===4){if(hit){paying++;addSub(price);flow.new+=price;sfx('ching');addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
 }
 // Expansion: o.sub is the customer's "price:plan" group. A slot that can't apply (Enterprise up, Base down, group gone) counts as Same plan.
 function landExp(o,hit,fy){const pl=unkey(o.sub)[1];
@@ -417,7 +417,7 @@ function loop(now){
   for(let i=0;i<3;i++)physics(dt/3);
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*COST_TO_SERVE*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?(flow.start+flow.exp-flow.con-flow.lost)/flow.start:null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0};monthRev=monthOut=0;recordHist();refitRamping();expCheck();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
+  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;recordHist();refitRamping();expCheck();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
   {const tc=teamCost()/MONTH*dt;if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,staff.length){const e=newest();fire(e.role);say(`Payroll bounced, so you had to let ${aRole({name:roleName(e.role)})} go.${e.role==='csm'?' Their customers lose the extra attention.':''}`)}}}
@@ -561,7 +561,7 @@ function loseCustomers(lo,hi){const frac=lo+Math.random()*(hi-lo),before=paying;
 const EVENTS=[
   {good:1,name:'Press mention',run(){const n=Math.round(150*evScale());burst(n);return `A trade publication wrote about you. ${n} visitors are on their way.`}},
   {good:1,name:'Newsletter feature',run(){const n=Math.round(30*evScale());for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60);return `An industry newsletter recommended you. ${n} people signed up directly.`}},
-  {good:1,name:'Rival shut down',when:()=>paying>0,run(){const n=Math.max(3,Math.round(paying*.03));paying+=n;addSub(price,0,n);return `A competitor closed. ${n} of their customers moved to you at ${fmt(price)} a month.`}},
+  {good:1,name:'Rival shut down',when:()=>paying>0,run(){const n=Math.max(3,Math.round(paying*.03));paying+=n;addSub(price,0,n);flow.new+=price*n;return `A competitor closed. ${n} of their customers moved to you at ${fmt(price)} a month.`}},
   {good:1,name:'Startup grant',run(){const n=Math.max(1000,MRR()*.5);cash+=n;return `You won a ${fmt(n)} grant. No repayments.`}},
   {good:1,name:'Ad promotion',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach=c.base;return 'An ad platform changed its auction. Reach is back to full on every open channel.'}},
   {good:1,name:'Social ad promo',run(){const c=CHANNELS[0];let n=0;for(let i=0;i<3;i++)n+=runAd(c,performance.now()+n*22);return `A social platform gave you three free ads. ${n} visitors are on their way.`}},
@@ -596,7 +596,7 @@ function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;f
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
   ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc}=s);
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
-  flow=s.flow?{start:0,exp:0,con:0,lost:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0};
+  flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
   into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
