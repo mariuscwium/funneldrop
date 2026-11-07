@@ -48,8 +48,14 @@ h1 em{font-style:normal;color:var(--paid)}
 @media (max-width:420px){.adbtn,.campbtn{padding:7px 8px;font-size:11px}}
 .msg{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
 .msg b{color:var(--fg)}
-.msg b.good{color:var(--paid)}
-.msg b.bad{color:var(--warn)}
+.msg b.good,#ev.good #ev-title{color:var(--paid)}
+.msg b.bad,#ev.bad #ev-title{color:var(--warn)}
+#ev{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
+#ev::backdrop{background:rgba(27,32,51,.45)}
+#ev small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+#ev b{display:block;font-size:20px;margin-top:2px}
+#ev p{font-size:14px;line-height:1.45;margin:8px 0 14px}
+#ev .buy{width:100%;justify-content:center}
 canvas{display:block;width:100%;aspect-ratio:360/1020;background:var(--board);border:1px solid var(--line);border-radius:10px}
 h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
 .tablewrap{overflow-x:auto;flex:none}
@@ -88,7 +94,8 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
   .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
   .side h2:first-child{margin-top:0}
   .side>*{flex:none}
-  .side .msg{flex:none;min-height:7lh}
+  .side .msg{flex:none;min-height:4lh}
+  .side .msg.intro{visibility:hidden;height:4lh;overflow:hidden}
   .actions{gap:10px}
   .play{display:contents}
 }
@@ -106,6 +113,7 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
 }
 </style>
 
+<dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><form method="dialog"><button class="buy">Continue</button></form></dialog>
 <div class="wrap">
   <div class="top" id="top">
     <div class="brand"><h1>Funnel <em>Drop</em></h1><button class="campbtn" id="reset">New game</button></div>
@@ -117,7 +125,7 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
     </div>
     <div class="channels" id="channels"></div>
   </div>
-  <p class="msg" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (5% a month). You can change the price. A month passes every 10 seconds.</p>
+  <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (7% a month). You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
   <div class="actions" id="actions"><div class="play" id="play"><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="19" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2>Team</h2><div class="upgrades" id="team"></div><h2>Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <canvas id="cv" aria-label="Five stacked boards, one per pirate metric: acquisition, activation, retention, referral and revenue."></canvas>
@@ -129,6 +137,7 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
     <span>MRR growth, per month</span><span id="cGrowth">–</span>
     <span>Revenue multiple</span><span id="cMult">6.0×</span>
     <span>Peak valuation</span><span id="cPeak">$0</span>
+    <span>Next milestone</span><span id="cNext">$100k</span>
     <span>Debt outstanding</span><span id="cDebt">$0</span>
   </div>
   <h2>Pirate metrics</h2>
@@ -146,17 +155,17 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
     <span>Team cost per month</span><span id="eTeam">$0</span>
     <span>Loan repayments per month</span><span id="eLoan">$0</span>
     <span>Net cash flow per month</span><span id="eNet">$0</span>
-    <span>Lifetime value per customer</span><span id="eLtv">$980</span>
+    <span>Lifetime value per customer</span><span id="eLtv">$700</span>
     <span>LTV : CAC</span><span id="eRatio">–</span>
     <span>Free users (retained, not paying)</span><span id="eFree">0</span>
   </div>
-  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 5% a month</b>: the top of the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 7% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
   </div></div></div>
 </div>
 
 <script>
 const W=360,BH=204,NB=5,H=BH*NB,BR=3.5,PR=3,GRAV=820,PER_AD=100,DECAY=.92,PRICE0=49,MONTH=10,AD0=100,AD_GROWTH=1.08;
-const WALLTOP=160,FLOOR=196;let churn=.05,price=PRICE0;
+const WALLTOP=160,FLOOR=196;let churn=.07,price=PRICE0;
 // Game simplification, not a measured benchmark: 1 at $49, so tuned rates hold there. Revenue landing rate scales with slot width (sim/sweep.js).
 const wtp=p=>1/(1+(p/79)**3),priceConv=()=>wtp(price)/wtp(PRICE0); // S-curve: demand falls away past about $79
 const priceChurn=p=>(1+.5*Math.log(p/55)**2)/(1+.5*Math.log(PRICE0/55)**2),paidChurn=(p=price)=>churn*priceChurn(p); // U-shape: lowest near $55
@@ -174,36 +183,37 @@ const BOARDS=[
 ];
 const pegs=[];
 BOARDS.forEach((_,b)=>{const y0=b*BH;for(let r=0;r<5;r++){const odd=r%2,n=odd?11:12,x0=15+(odd?15:0);for(let i=0;i<n;i++)pegs.push({b,x:x0+i*30,y:y0+36+r*26,flash:0})}});
-const fmt=v=>{const a=Math.abs(v),s=v<0?'−$':'$';if(a>=1e6)return s+(a/1e6).toFixed(2)+'M';if(a>=1e4)return s+(a/1e3).toFixed(1)+'k';return s+Math.round(a).toLocaleString('en')};
+const fmt=v=>{const a=Math.abs(v),s=v<0?'−$':'$';if(a>=1e9)return s+(a/1e9).toFixed(2)+'B';if(a>=1e6)return s+(a/1e6).toFixed(2)+'M';if(a>=1e4)return s+(a/1e3).toFixed(1)+'k';return s+Math.round(a).toLocaleString('en')};
 const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'–';
 const $=id=>document.getElementById(id);
 
 let cash=1500,ads=0,spend=0,balls=[],floats=[],queue=[];
-const into=[0,0,0,0,0],out=[0,0,0,0,0];let eventT=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
+const into=[0,0,0,0,0],out=[0,0,0,0,0];let eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
 
 function resize(){const d=window.devicePixelRatio||1;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
 const SEO=[['Start a blog',2000,60],['SEO foundations',5000,180],['Content library',12500,420]];let seoLvl=0,organicAcc=0,postReady=0,seoFresh=1;
-// Content goes stale but never to nothing: old articles keep a quarter of their traffic.
-const SEO_DECAY=.08,SEO_FLOOR=.25,seoCost=()=>SEO[seoLvl-1][1]*.15;
+// Content goes stale but never to nothing: old articles keep a tenth of their traffic.
+const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
 const POST_CD=15000;
-function organicRate(){const base=seoLvl?SEO[seoLvl-1][2]*seoFresh:0;return base*(1+.5*(typeof mm==='number'?mm:0))+(typeof mm==='number'?mm:0)*400}
+function organicRate(){const base=seoLvl?SEO[seoLvl-1][2]*seoFresh:0;return base*(1+.5*(typeof mm==='number'?mm:0))+(typeof mm==='number'?mm:0)*400*skill('mm')}
 function post(){const now=performance.now();if(now<postReady)return;postReady=now+POST_CD;const m=1+(typeof mm==='number'?mm:0);
   const viral=Math.random()<.04,n=Math.round((viral?80+Math.random()*70:3+Math.random()*7)*m);
-  const t=now;for(let i=0;i<n;i++)queue.push(t+i*22);
+  const t=now;for(let i=0;i<n;i++)queue.push({t:t+i*22});
   say(viral?`Your post took off: ${n} visitors are on their way.`:`Posted. ${n} people clicked through.`)}
 function buySeo(){if(seoLvl>=3||cash<SEO[seoLvl][1])return;cash-=SEO[seoLvl][1];const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;say(`${name} done. About ${Math.round(organicRate())} free visitors a month will now arrive from search, until the content goes stale.`)}
 function publish(){if(!seoLvl||cash<seoCost()||seoFresh>=.99)return;cash-=seoCost();spend+=seoCost();seoFresh=1;say(`Fresh content is live. Search traffic is back to about ${Math.round(organicRate())} free visitors a month.`)}
 const CHANNELS=[
   {id:'social',name:'Social ads',cost:100,base:100,camp:500,unlock:0},
-  {id:'search',name:'Search ads',cost:200,base:100,camp:1000,unlock:3000},
-  {id:'linkedin',name:'LinkedIn ads',cost:400,base:100,camp:2000,unlock:8000},
-  {id:'podcast',name:'Podcast sponsorships',cost:1500,base:200,camp:5000,unlock:20000}
+  // aim/pull/lift: these visitors enter board aim pulled toward its slot, measured with chained drops to land about lift times as often.
+  {id:'search',name:'Search ads',cost:200,base:100,camp:1000,unlock:3000,aim:0,pull:.35,lift:2,note:'About 2× the sign-ups',pitch:'People already looking for a product like yours sign up about twice as often'},
+  {id:'linkedin',name:'LinkedIn ads',cost:300,base:100,camp:1500,unlock:8000,aim:4,pull:.5,lift:1.6,note:'About 60% more pay',pitch:'Professionals with a budget are about 60% likelier to pay'},
+  {id:'podcast',name:'Podcast sponsorships',cost:1500,base:500,camp:5000,unlock:20000,note:'Biggest audience',pitch:'Reaches far more people at once than any ad'}
 ];
 CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0});
 const RECOVER=.10;
 function buyAd(id){const c=CHANNELS.find(x=>x.id===id);
   if(!c.open||cash<c.cost)return;cash-=c.cost;spend+=c.cost;ads++;c.ads++;const v=Math.max(1,Math.round(c.reach));c.reach*=DECAY;
-  const t=performance.now();for(let i=0;i<v;i++)queue.push(t+i*22);
+  const t=performance.now();for(let i=0;i<v;i++)queue.push({t:t+i*22,src:id});
   if(ads===1)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
   if(c.ads===12)say(`Each ${c.name.toLowerCase()} ad reaches 8% fewer people than the last. Give the channel time to recover, or pay for a new campaign.`);
 }
@@ -215,17 +225,18 @@ function renderCh(){
   <div class="chan"><div class="nm"><b>SEO &amp; content</b><small id="seo-meta"></small><i class="reach" id="seo-reach"><i id="seo-bar"></i></i></div><button class="adbtn" data-fresh="1" id="seo-pub"></button><button class="campbtn" data-seo="1" id="seo-btn"></button></div>`+visibleCh().map(c=>c.open?`<div class="chan"><div class="nm"><b>${c.name}</b><small id="cr-${c.id}"></small><i class="reach"><i id="cb-${c.id}"></i></i></div>
     <button class="adbtn" data-ad="${c.id}" id="ca-${c.id}">Buy ad <b>${fmt(c.cost)}</b></button>
     <button class="campbtn" data-camp="${c.id}" id="cc-${c.id}">New campaign <b>${fmt(c.camp)}</b></button></div>`
-   :`<div class="chan locked"><div class="nm"><b>${c.name}</b><small>A fresh audience of ${c.base} visitors per ad, at ${fmt(c.cost)} an ad.</small></div><button class="campbtn" data-unlock="${c.id}" id="cu-${c.id}">Unlock <b>${fmt(c.unlock)}</b></button></div>`).join('');
+   :`<div class="chan locked"><div class="nm"><b>${c.name}</b><small>${c.pitch}: ${c.base} visitors per ad, at ${fmt(c.cost)} an ad.</small></div><button class="campbtn" data-unlock="${c.id}" id="cu-${c.id}">Unlock <b>${fmt(c.unlock)}</b></button></div>`).join('');
 }
-function say(t){$('msg').innerHTML=t}
-function enter(b,friend,x){into[b]++;return{b,friend,x:x??12+Math.random()*(W-24),y:b*BH+12,vx:(Math.random()-.5)*30,vy:0,age:0}}
+function say(t){const m=$('msg');m.classList.remove('intro');m.innerHTML=t}
+const aimed=(src,b)=>{const c=src&&CHANNELS.find(x=>x.id===src);return c&&c.aim===b?c:null};
+function enter(b,friend,x,src){x??=12+Math.random()*(W-24);const a=aimed(src,b);if(a){const c=CENTERS[b].reduce((p,q)=>Math.abs(q-x)<Math.abs(p-x)?q:p);x=c+(x-c)*a.pull}into[b]++;return{b,friend,src,x,y:b*BH+12,vx:(Math.random()-.5)*30,vy:0,age:0}}
 // 3rd lowest of 8 uniforms is Beta(3,6): 1 to 25, peaking near 8.
 const referred=()=>Math.round(1+24*Array.from({length:8},Math.random).sort((a,b)=>a-b)[2]);
 // Above MAX_BALLS, users skip the animation and land by the odds. x is set so land() scores the outcome.
 const MAX_BALLS=400,addFloat=f=>{if(floats.length<40)floats.push(f)};
 function spawn(o){if(balls.length<MAX_BALLS){balls.push(o);return}
   const zs=BOARDS[o.b].zones,inZone=x=>zs.some(([a,c])=>x>=a&&x<c);
-  if(Math.random()<rateOf(TRACKS[o.b])){const [a,c]=zs[Math.random()*zs.length|0];o.x=(a+c)/2}else do o.x=Math.random()*W;while(inZone(o.x));
+  if(Math.random()<rateOf(TRACKS[o.b])*(aimed(o.src,o.b)?.lift||1)){const [a,c]=zs[Math.random()*zs.length|0];o.x=(a+c)/2}else do o.x=Math.random()*W;while(inZone(o.x));
   land(o)}
 // Flat and capped so customers can't compound: friends never refer, and this adds at most 10 referrals a month.
 const CUST_REFER=.01,REFER_CAP=1000;
@@ -233,8 +244,8 @@ function refer(x,y){const n=referred();for(let i=0;i<n;i++)setTimeout(()=>spawn(
 function land(o){
   const B=BOARDS[o.b],hit=B.zones.some(([a,c])=>o.x>=a&&o.x<c),fy=o.b*BH+WALLTOP-6;
   if(hit){out[o.b]++;for(const z of B.zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1}
-  if(o.b<=2){if(hit)spawn(enter(o.b+1,o.friend,o.x))}
-  else if(o.b===3){spawn(enter(4,o.friend,o.x));if(hit&&!o.friend){const n=refer(o.x,fy);if(out[3]===1)say(`A user told ${n} friends. They skip Acquisition and land straight in Activation.`)}}
+  if(o.b<=2){if(hit)spawn(enter(o.b+1,o.friend,o.x,o.src))}
+  else if(o.b===3){spawn(enter(4,o.friend,o.x,o.src));if(hit&&!o.friend){const n=refer(o.x,fy);if(out[3]===1)say(`A user told ${n} friends. They skip Acquisition and land straight in Activation.`)}}
   else{if(hit){paying++;subs[price]=(subs[price]||0)+1;addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
 }
 function physics(dt){
@@ -277,19 +288,19 @@ function draw(){
 const rows=BOARDS.map((B,b)=>`<tr><td><i class="dot" style="background:var(--${B.col})"></i>${B.name}</td><td id="i${b}">0</td><td id="o${b}">0</td><td id="r${b}">–</td><td>${B.bench*100}%</td></tr>`).join('');
 $('tbody').innerHTML=rows;
 function hud(){
-  $('vCash').textContent=fmt(cash);$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;
-  for(const c of visibleCh()){if(c.open){const r=Math.max(1,Math.round(c.reach));$('cr-'+c.id).textContent=`${r} visitors per ad · ${fmt(c.cost/r)} each`;$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
+  $('vCash').textContent=fmt(cash);$('vCash').className=cash<0?'warn':'';$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;
+  for(const c of visibleCh()){if(c.open){const r=Math.max(1,Math.round(c.reach));$('cr-'+c.id).textContent=`${r} visitors per ad · ${fmt(c.cost/r)} each${c.note?' · '+c.note:''}`;$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
       $('ca-'+c.id).disabled=cash<c.cost;$('cc-'+c.id).disabled=cash<c.camp||c.reach>=c.base-.5}else $('cu-'+c.id).disabled=cash<c.unlock}
   for(let b=0;b<NB;b++){$('i'+b).textContent=into[b].toLocaleString('en');$('o'+b).textContent=out[b];$('r'+b).textContent=pct(out[b],into[b])}
   const mrr=MRR(),mult=Math.max(2,Math.min(25,6+40*growth)),val=mrr*12*mult;peak=Math.max(peak,val);
-  $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);
+  $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
   TRACKS.forEach(t=>{$('u-'+t.id).disabled=lvl[t.id]>=3||cash<COSTS[lvl[t.id]]});
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   {const lp=loanPay(),net=MRR()-teamCost()-lp;$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
-   $('t-csm-meta').textContent=`${csm} on the team · covering ${Math.min(paying,csm*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<CSM.salary;$('m-meta').textContent=`${mm} on the team · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<MM.salary;$('m-fire').disabled=mm===0;$('t-fire').disabled=csm===0;
-   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${r.n} on the team · ${r.label} about ${p1(rateOf(TRACKS[r.board]))}`;$('r-hire-'+r.id).disabled=cash<r.salary||r.n>=ROLE_MAX;$('r-fire-'+r.id).disabled=!r.n}}
-  const won=out[4],cac=won?spend/won:0,ltv=price/(paying&&csm?paidChurn()*(1-Math.min(paying,csm*CSM.covers)/paying*(1-CSM.mult)):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
+   $('t-csm-meta').textContent=`${csm} on the team · covering ${Math.min(paying,csm*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<pay('csm',CSM.salary);$('s-csm').textContent=fmt(pay('csm',CSM.salary))+'/mo';$('s-mm').textContent=fmt(pay('mm',MM.salary))+'/mo';$('m-meta').textContent=`${mm} on the team · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<pay('mm',MM.salary);$('m-fire').disabled=mm===0;$('t-fire').disabled=csm===0;
+   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${r.n} on the team · ${r.label} about ${p1(rateOf(TRACKS[r.board]))}`;$('s-'+r.id).textContent=fmt(pay(r.id,r.salary))+'/mo';$('r-hire-'+r.id).disabled=cash<pay(r.id,r.salary)||r.n>=ROLE_MAX;$('r-fire-'+r.id).disabled=!r.n}}
+  const won=out[4],cac=won?spend/won:0,ltv=price/(paying&&csm?paidChurn()*(1-Math.min(paying,csm*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
   const pb=cac/price;$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
   const r=ltv/cac;$('eRatio').textContent=won?r.toFixed(1)+' : 1':'–';$('eRatio').className=won&&r<3?'warn':'';
 }
@@ -297,8 +308,9 @@ let last=performance.now();
 // Rewriting a button's children mid-press swaps the <b> under the cursor and the browser drops the click.
 const setBtn=(b,h)=>{if(b.innerHTML!==h)b.innerHTML=h};
 function loop(now){
+  if($('ev').open){last=now;draw();requestAnimationFrame(loop);return}
   const dt=Math.min(.05,(now-last)/1000);last=now;
-  while(queue.length&&queue[0]<=now){queue.shift();spawn(enter(0))}
+  while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
   if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+mm),dt/MONTH));
   organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;spawn(enter(0))}
   {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
@@ -308,17 +320,16 @@ function loop(now){
   for(let i=0;i<3;i++)physics(dt/3);
   cash+=MRR()/MONTH*dt;
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
+  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
-  {const tc=teamCost()/MONTH*dt,r=ROLES.find(x=>x.n);if(cash>=tc)cash-=tc;else{cash=0;if(now<nextCut);else if(nextCut=now+MONTH*1000,r){r.n--;zone(r.board);applyPrice();say(`Payroll bounced, so you had to let ${aRole(r)} go.`)}else if(mm>0){mm--;say('Payroll bounced, so you had to let a marketing manager go.')}else if(csm>0){csm--;say('Payroll bounced, so you had to let a customer success manager go. Their customers lose the extra attention.')}}}
+  {const tc=teamCost()/MONTH*dt,r=ROLES.find(x=>x.n);if(!tc||cash>=tc)cash-=tc;else{cash=Math.min(cash,0);if(now<nextCut);else if(nextCut=now+MONTH*1000,r){r.n--;zone(r.board);applyPrice();say(`Payroll bounced, so you had to let ${aRole(r)} go.`)}else if(mm>0){mm--;say('Payroll bounced, so you had to let a marketing manager go.')}else if(csm>0){csm--;say('Payroll bounced, so you had to let a customer success manager go. Their customers lose the extra attention.')}}}
   for(const l of LOANS)if(l.bal>0){const r=l.apr/12;l.bal+=l.bal*r*dt/MONTH;const due=Math.min(l.bal,l.pay*dt/MONTH);
-    if(cash>=due){l.bal-=due;cash-=due;l.late=0}else{const paid=cash;cash=0;l.bal-=paid;l.bal+=(due-paid)*.25;
+    if(cash>=due){l.bal-=due;cash-=due;l.late=0}else{const paid=Math.max(0,cash);cash=Math.min(cash,0);l.bal-=paid;l.bal+=(due-paid)*.25;
       if(!l.late){l.late=1;say(`You missed a ${l.name.toLowerCase()} repayment. Late fees of 25% of each missed amount are added to what you owe until you can pay again.`)}}
     if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
-  cash=Math.max(0,cash);
   if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),refs=Math.min(paying,REFER_CAP);for(let i=0;i<refs;i++)if(Math.random()<q){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
-    const cov=Math.min(paying,csm*CSM.covers);let lost=0,i=0;for(const k in subs){const c=paidChurn(+k),pc=1-Math.pow(1-c*CSM.mult,dt/MONTH),p=1-Math.pow(1-c,dt/MONTH);let n=subs[k];for(let j=subs[k];j>0;j--,i++)if(Math.random()<(i<cov?pc:p)){n--;lost++}if(n)subs[k]=n;else delete subs[k]}
+    const cov=Math.min(paying,csm*CSM.covers);let lost=0,i=0;for(const k in subs){const c=paidChurn(+k),pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH);let n=subs[k];for(let j=subs[k];j>0;j--,i++)if(Math.random()<(i<cov?pc:p)){n--;lost++}if(n)subs[k]=n;else delete subs[k]}
     if(lost){paying-=lost;churned+=lost;addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:'#c2412f',life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
   if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
@@ -334,7 +345,7 @@ const TRACKS=[
   {id:'ret',board:2,label:'month-1 retention',unit:'of activated users',base:.47,tiers:[['Lifecycle emails',.525,92],['Habit-forming features',.553,96],['Core workflow polish',.566,98]]},
   {id:'ref',board:3,label:'referral',unit:'of retained users',base:.10,tiers:[['Share button',.20,91],['Invite rewards',.25,106],['Built-in viral loop',.275,113]]},
   {id:'rev',board:4,label:'paid conversion',unit:'of retained users',base:.30,tiers:[['Pricing page',.40,156],['Upgrade prompts',.45,172],['Sales assist',.475,180]]},
-  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:.05,tiers:[['Cancellation save offers',.0325],['Annual plans',.024],['Health scoring',.019]]}
+  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:.07,tiers:[['Cancellation save offers',.055],['Annual plans',.045],['Health scoring',.04]]}
 ];
 const lvl={};TRACKS.forEach(t=>lvl[t.id]=0);
 const p1=v=>{const x=v*100;return(Math.abs(x-Math.round(x))<.05?Math.round(x):x.toFixed(1))+'%'};
@@ -348,7 +359,7 @@ function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<CO
   if(id==='churn')churn=rate;else zone(t.board);applyPrice();
   say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(id==='churn'?paidChurn():rateOf(t))}${t.unit?' '+t.unit:''}.`);renderUpg()}
 const BASEW=BOARDS.map(B=>B.zones[0][1]-B.zones[0][0]);
-const teamMult=b=>1+ROLE_LIFT*(ROLES.find(r=>r.board===b)?.n||0),rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
+const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*r.n*skill(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
 // Landing rate is close to linear in slot width on every board, so team and price scale the tuned width.
 function zone(b){const t=TRACKS[b];BOARDS[b].zones=slots(b,Math.min(340,(lvl[t.id]?t.tiers[lvl[t.id]-1][2]:BASEW[b])*teamMult(b)*(b===4?priceConv():1)))}
 function applyPrice(){const t=TRACKS[4];zone(4);
@@ -356,7 +367,9 @@ function applyPrice(){const t=TRACKS[4];zone(4);
 $('price').addEventListener('input',e=>{price=+e.target.value;applyPrice()});
 $('upglist').addEventListener('click',e=>{const b=e.target.closest('.upg');if(b&&!b.disabled)buyUpg(b.id.slice(2))});
 renderUpg();
-const CSM={salary:6000,covers:150,mult:.5};let csm=0,warnedNeg=0;
+const CSM={salary:6000,covers:150,mult:.75};let csm=0,warnedNeg=0;
+// Each role has one tenure, in years, so new hires join on that role's pay and skill. It resets when a review finds the role empty.
+const RAISE=1.05,SKILL=.03,tenure={csm:0,mm:0,pd:0,pe:0,cm:0,ae:0},pay=(id,base)=>base*RAISE**tenure[id],skill=id=>1+SKILL*tenure[id],csmMult=()=>1-(1-CSM.mult)*skill('csm');
 const MM={salary:6000,visitors:400};let mm=0;
 const ROLE_LIFT=.15,ROLE_MAX=3;
 const ROLES=[
@@ -367,18 +380,24 @@ const ROLES=[
 ];
 ROLES.forEach(r=>r.n=0);
 const aRole=r=>(/^[aeiou]/i.test(r.name)?'an ':'a ')+r.name.toLowerCase();let nextCut=0;
-const teamCost=()=>csm*CSM.salary+mm*MM.salary+ROLES.reduce((t,r)=>t+r.n*r.salary,0);
-$('team').innerHTML=`<div class="upg" style="--c:var(--rev);cursor:default"><b>Customer success manager</b><span class="cost">${fmt(CSM.salary)}/mo</span><small>Halves monthly churn for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
+const teamCost=()=>csm*pay('csm',CSM.salary)+mm*pay('mm',MM.salary)+ROLES.reduce((t,r)=>t+r.n*pay(r.id,r.salary),0);
+const STAFF=()=>[{id:'csm',name:'customer success manager',n:csm,set:v=>csm=v},{id:'mm',name:'marketing manager',n:mm,set:v=>mm=v},...ROLES.map(r=>({id:r.id,name:r.name.toLowerCase(),n:r.n,set:v=>r.n=v}))];
+// Once a game year: raises and skill for everyone, then each person may be headhunted, likelier the longer the role's tenure.
+function annualReview(){if(!STAFF().some(s=>s.n)){for(const k in tenure)tenure[k]=0;return}
+  const before=teamCost(),gone=[];for(const s of STAFF()){if(!s.n){tenure[s.id]=0;continue}tenure[s.id]++;const leave=Math.min(.4,.05+.05*tenure[s.id]);let n=s.n;for(let i=0;i<s.n;i++)if(Math.random()<leave)n--;if(n<s.n)gone.push(`${s.n-n} ${s.name}${s.n-n>1?'s':''}`);s.set(n)}
+  BOARDS.forEach((_,b)=>zone(b));applyPrice();const raise=STAFF().reduce((t,s)=>t+s.n,0)?`Raises take payroll to ${fmt(teamCost())} a month, and your team is slightly more effective.`:'Payroll is now empty.';
+  showEv(gone.length?'bad':'good',`Year ${month/12} review`,gone.length?'Staff headhunted':'Team stayed',gone.length?`${raise} You lost ${gone.join(', ')} to other companies.`:raise)}
+$('team').innerHTML=`<div class="upg" style="--c:var(--rev);cursor:default"><b>Customer success manager</b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-fire">Let go</button></span></div>
-<div class="upg" style="--c:var(--acq);cursor:default"><b>Marketing manager</b><span class="cost">${fmt(MM.salary)}/mo</span><small>Publishes content and runs social: +${MM.visitors} free visitors a month each, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. <span id="m-meta"></span></small>
-  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost">${fmt(r.salary)}/mo</span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
+<div class="upg" style="--c:var(--acq);cursor:default"><b>Marketing manager</b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: +${MM.visitors} free visitors a month each, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. <span id="m-meta"></span></small>
+  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
 ROLES.forEach(r=>{const set=d=>{r.n+=d;zone(r.board);applyPrice()};
-  $('r-hire-'+r.id).addEventListener('click',()=>{if(cash<r.salary||r.n>=ROLE_MAX)return;set(1);say(`You hired ${aRole(r)}. ${r.label[0].toUpperCase()+r.label.slice(1)} should now be about ${p1(rateOf(TRACKS[r.board]))}.`)});
+  $('r-hire-'+r.id).addEventListener('click',()=>{if(cash<pay(r.id,r.salary)||r.n>=ROLE_MAX)return;set(1);say(`You hired ${aRole(r)}. ${r.label[0].toUpperCase()+r.label.slice(1)} should now be about ${p1(rateOf(TRACKS[r.board]))}.`)});
   $('r-fire-'+r.id).addEventListener('click',()=>{if(!r.n)return;set(-1);say(`You let ${aRole(r)} go.`)})});
-$('m-hire').addEventListener('click',()=>{if(cash<MM.salary)return;mm++;say(mm===1?'Your first marketing manager starts Monday. Organic traffic should climb, but their salary only pays off if your funnel converts well.':`You now have ${mm} marketing managers.`)});
+$('m-hire').addEventListener('click',()=>{if(cash<pay('mm',MM.salary))return;mm++;say(mm===1?'Your first marketing manager starts Monday. Organic traffic should climb, but their salary only pays off if your funnel converts well.':`You now have ${mm} marketing managers.`)});
 $('m-fire').addEventListener('click',()=>{if(!mm)return;mm--;say('You let a marketing manager go. Organic traffic will fall back.')});
-$('t-hire').addEventListener('click',()=>{if(cash<CSM.salary)return;csm++;say(csm===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${csm} customer success managers.`)});
+$('t-hire').addEventListener('click',()=>{if(cash<pay('csm',CSM.salary))return;csm++;say(csm===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${csm} customer success managers.`)});
 $('t-fire').addEventListener('click',()=>{if(!csm)return;csm--;say('You let a customer success manager go. Their customers lose the extra attention.')});
 const r500=v=>Math.floor(v/500)*500;
 const LOANS=[
@@ -403,38 +422,51 @@ LOANS.forEach(l=>{
   $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;cash-=l.bal;l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
 // Rolled once a game month. Sizes scale with the company so events still matter late on.
 const EVENT_CHANCE=.15,evScale=()=>Math.max(1,Math.min(10,MRR()/5000));
-const burst=n=>{const t=performance.now();for(let i=0;i<n;i++)queue.push(t+i*22)};
-function loseCustomers(frac){let lost=0;for(const k in subs){let n=subs[k];for(let j=subs[k];j>0;j--)if(Math.random()<frac){n--;lost++}if(n)subs[k]=n;else delete subs[k]}paying-=lost;churned+=lost;return lost}
+const burst=n=>{const t=performance.now();for(let i=0;i<n;i++)queue.push({t:t+i*22})};
+// Always takes at least one, and reports the share so the size reads at any scale.
+function loseCustomers(lo,hi){const frac=lo+Math.random()*(hi-lo),before=paying;let lost=0;for(const k in subs){let n=subs[k];for(let j=subs[k];j>0;j--)if(Math.random()<frac){n--;lost++}if(n)subs[k]=n;else delete subs[k]}
+  if(!lost){const k=Object.keys(subs)[0];lost=1;if(--subs[k]<1)delete subs[k]}paying-=lost;churned+=lost;return `${lost} of ${before} customers (${Math.round(lost/before*100)}%)`}
 const EVENTS=[
   {good:1,name:'Press mention',run(){const n=Math.round(150*evScale());burst(n);return `A trade publication wrote about you. ${n} visitors are on their way.`}},
   {good:1,name:'Newsletter feature',run(){const n=Math.round(30*evScale());for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60);return `An industry newsletter recommended you. ${n} people signed up directly.`}},
   {good:1,name:'Rival shut down',when:()=>paying>0,run(){const n=Math.max(3,Math.round(paying*.03));paying+=n;subs[price]=(subs[price]||0)+n;return `A competitor closed. ${n} of their customers moved to you at ${fmt(price)} a month.`}},
   {good:1,name:'Startup grant',run(){const n=Math.max(1000,MRR()*.5);cash+=n;return `You won a ${fmt(n)} grant. No repayments.`}},
   {good:1,name:'Ad promotion',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach=c.base;return 'An ad platform changed its auction. Reach is back to full on every open channel.'}},
-  {name:'Search update',when:()=>seoLvl>0,run(){seoFresh=Math.max(SEO_FLOOR,seoFresh*.6);return 'A search engine update hit your rankings. Search traffic fell by up to 40%.'}},
-  {name:'Outage',when:()=>paying>0,run(){return `A long outage annoyed your customers. ${loseCustomers(.03)} cancelled.`}},
-  {name:'Cheaper rival',when:()=>paying>0,run(){return `A competitor launched a cheaper plan. ${loseCustomers(.04)} customers left.`}},
-  {name:'Tax bill',when:()=>cash>=500,run(){const n=Math.min(cash,Math.max(500,MRR()*.5));cash-=n;return `An unexpected tax bill cost you ${fmt(n)}.`}},
-  {name:'Ad policy change',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach*=.7;return 'An ad platform tightened its targeting. Reach fell 30% on every open channel.'}}
+  {name:'Search update',when:()=>seoLvl>0,run(){seoFresh=Math.max(SEO_FLOOR,seoFresh*.4);return 'A search engine update buried your rankings. Search traffic fell by up to 60%.'}},
+  {name:'Outage',when:()=>paying>0,run(){return `A long outage cost you customers. ${loseCustomers(.08,.12)} cancelled.`}},
+  {name:'Cheaper rival',when:()=>paying>0,run(){return `A competitor launched a cheaper plan. ${loseCustomers(.15,.25)} left.`}},
+  {name:'Tax bill',run(){const n=Math.max(500,MRR()*1.5,cash*.2);cash-=n;return `An unexpected tax bill cost you ${fmt(n)}.${cash<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
+  {name:'Ad policy change',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach*=.5;return 'An ad platform tightened its targeting. Reach halved on every open channel.'}}
 ];
-function randomEvent(){const ok=EVENTS.filter(e=>!e.when||e.when()),e=ok[Math.random()*ok.length|0];say(`<b class="${e.good?'good':'bad'}">${e.name}.</b> ${e.run()}`)}
+// Saved as soon as it fires, so reloading can't dodge a bad one. Timers shift on resume so bursts and cooldowns don't run out during the pause.
+let pausedAt=0;
+function showEv(k,kind,name,t){say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
+// Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
+function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()-teamCost()-loanPay()>0?.5:-.5)))}
+function randomEvent(){const can=EVENTS.filter(e=>!e.when||e.when()),good=Math.random()<.4-.3*health(),sided=can.filter(e=>!!e.good===good),ok=sided.length?sided:can,e=ok[Math.random()*ok.length|0],t=e.run();showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
+// Based on peak valuation, so a dip can't repeat one and msLvl needs no saving. Crossing several at once shows the highest.
+const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn']];let msLvl=0;
+const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;
+function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||$('ev').open)return;msLvl=n;const m=MILES[n-1],nx=MILES[n];
+  showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more.${nx?` Next up: ${nx[1]}.`:' That is the last milestone. Keep going if you like.'}`)}
+$('ev').addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
 const wide=matchMedia('(min-width:860px)');
-function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matches){$('side').prepend(a);$('play').prepend(m,b)}else{$('top').append(b);$('boardcol').prepend(a);$('top').after(m)}}
+function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matches){$('side').prepend(a);$('play').prepend(b);$('play').append(m)}else{$('top').append(b);$('boardcol').prepend(a);$('top').after(m)}}
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({eventT,seoFresh,subs,custRefs,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,csm,mm,lvl,balls,roles:ROLES.map(r=>r.n),queued:queue.length,postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({month,tenure,eventT,seoFresh,subs,custRefs,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,csm,mm,lvl,balls,roles:ROLES.map(r=>r.n),queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
-  ({eventT=0,seoFresh=1,custRefs=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm}=s);
+  ({month=0,eventT=0,seoFresh=1,custRefs=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm}=s);
   subs=s.subs??(paying?{[price]:paying}:{});
   into.splice(0,NB,...s.into);out.splice(0,NB,...s.out);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
-  (s.roles||[]).forEach((n,i)=>ROLES[i].n=n);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
-  const now=performance.now();postReady=now+s.postLeft;for(let i=0;i<s.queued;i++)queue.push(now+i*22);
+  Object.assign(tenure,s.tenure);(s.roles||[]).forEach((n,i)=>ROLES[i].n=n);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
+  const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh();renderUpg()}
 $('reset').addEventListener('click',()=>{if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()});
-load();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
+load();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
 resize();window.addEventListener('resize',resize);hud();requestAnimationFrame(loop);
 </script>
 
