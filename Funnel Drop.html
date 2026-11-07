@@ -2,13 +2,22 @@
 <title>Funnel Drop</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<script>let theme=null;try{theme=localStorage.getItem('funnel-drop-theme')}catch{}
+const darkOS=matchMedia('(prefers-color-scheme:dark)'),setTheme=()=>{document.documentElement.dataset.theme=theme||(darkOS.matches?'dark':'light')};setTheme()</script>
 <style>
-/* Layout: sticky money strip + ad button. Phone: boards then panels stacked. Desktop: boards directly under the header, then sticky columns: one shared panel from 860px, actions and stats from 1200px, play, upgrades and stats from 1600px. Single light theme. */
+/* Layout: sticky money strip + ad button. Phone: boards then panels stacked. Desktop: boards directly under the header, then sticky columns: one shared panel from 860px, actions and stats from 1200px, play, upgrades and stats from 1600px. Light and dark themes: colours are tokens on :root, overridden under [data-theme=dark]. */
 :root{
   --bg:#eef1f7; --panel:#ffffff; --line:#d3d9e6; --fg:#1b2033; --muted:#646c86; --rail:#e3e8f2; --board:#fbfcfe; --peg:#b4bbcf;
   --ad:#f0b020; --acq:#1aa3d4; --act:#7a5ad8; --ret:#14a39a; --ref:#e8508f; --rev:#1ea862; --paid:#1ea862; --fail:#c9cfdd; --warn:#c2412f;
+  --on-ad:#1b2033; --shadow:rgba(27,32,51,.18); --scrim:rgba(27,32,51,.45);
   --display:'Chakra Petch',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
   color-scheme:light;
+}
+:root[data-theme=dark]{
+  --bg:#11141d; --panel:#1a1f2d; --line:#2e3547; --fg:#e7eaf3; --muted:#9aa3bc; --rail:#262c3d; --board:#151925; --peg:#5b6480;
+  --acq:#3bb9e8; --act:#a48ff2; --ret:#2fc7ba; --ref:#f272a9; --rev:#3ccb84; --paid:#3ccb84; --fail:#3a4258; --warn:#f2755f;
+  --shadow:rgba(0,0,0,.45); --scrim:rgba(0,0,0,.6);
+  color-scheme:dark;
 }
 html,body{background:var(--bg);color:var(--fg)}
 body{font-family:var(--display);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
@@ -16,8 +25,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .wrap{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brandbtns{display:flex;gap:6px}
+.brandbtns{display:flex;gap:6px;flex:none}
+.brandbtns .campbtn{white-space:nowrap}
 .sub{font-size:12px;color:var(--muted);margin:1px 0 0}
+@media (max-width:420px){.sub{font-size:11px}}
 h1{font-size:20px;margin:0;letter-spacing:.05em;text-transform:uppercase}
 h1 em{font-style:normal;color:var(--paid)}
 .hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
@@ -26,7 +37,7 @@ h1 em{font-style:normal;color:var(--paid)}
 .stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-width:0}
 .stat span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .stat b{display:block;font-family:var(--mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.buy{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--ad);color:var(--fg);border:0;border-radius:10px;padding:12px 16px;font:700 16px var(--display);letter-spacing:.05em;text-transform:uppercase;cursor:pointer;box-shadow:0 2px 0 rgba(27,32,51,.18)}
+.buy{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--ad);color:var(--on-ad);border:0;border-radius:10px;padding:12px 16px;font:700 16px var(--display);letter-spacing:.05em;text-transform:uppercase;cursor:pointer;box-shadow:0 2px 0 var(--shadow)}
 .buy small{display:block;font:500 11px var(--mono);letter-spacing:0;text-transform:none;opacity:.8}
 .buy b{font-family:var(--mono);font-size:16px}
 .buy:active:not(:disabled){transform:translateY(1px);box-shadow:none}
@@ -43,7 +54,7 @@ h1 em{font-style:normal;color:var(--paid)}
 .reach i{display:block;height:100%;width:100%;background:var(--ad)}
 .adbtn,.campbtn{border-radius:7px;padding:8px 10px;font:700 12px var(--display);letter-spacing:.03em;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
 .adbtn b,.campbtn b{font:600 12px var(--mono);text-transform:none}
-.adbtn{background:var(--ad);color:var(--fg);border:0;box-shadow:0 2px 0 rgba(27,32,51,.18)}
+.adbtn{background:var(--ad);color:var(--on-ad);border:0;box-shadow:0 2px 0 var(--shadow)}
 .adbtn:active:not(:disabled){transform:translateY(1px);box-shadow:none}
 .campbtn{background:var(--panel);color:var(--fg);border:1px solid var(--line)}
 .adbtn:disabled,.campbtn:disabled{background:var(--rail);color:var(--muted);box-shadow:none;cursor:not-allowed;border-color:var(--rail)}
@@ -54,7 +65,7 @@ h1 em{font-style:normal;color:var(--paid)}
 .msg b.good,#ev.good #ev-title{color:var(--paid)}
 .msg b.bad,#ev.bad #ev-title{color:var(--warn)}
 #ev{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
-#ev::backdrop{background:rgba(27,32,51,.45)}
+#ev::backdrop{background:var(--scrim)}
 #ev small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 #ev b{display:block;font-size:20px;margin-top:2px}
 #ev p{font-size:14px;line-height:1.45;margin:8px 0 14px}
@@ -100,7 +111,8 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   .wrap{max-width:920px}
   .top{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px}
   .side .channels{position:sticky;top:0;z-index:4;background:var(--bg);padding-bottom:6px}
-  .main{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:24px;align-items:start}
+  .main{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:start}
+  canvas{width:clamp(220px,calc((100dvh - 146px - env(safe-area-inset-top,0px))*360/1020),400px)}
   .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
   .side h2:first-child,.boardcol h2:first-child{margin-top:0}
   #h-act{display:block}
@@ -130,7 +142,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><form method="dialog"><button class="buy">Continue</button></form></dialog>
 <div class="wrap">
   <div class="top" id="top">
-    <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns"><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="reset">New game</button></span></div>
+    <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns"><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="theme"></button><button class="campbtn" id="reset">New game</button></span></div>
     <div class="hud">
       <div class="stat"><span>Cash</span><b id="vCash">$1,500</b></div>
       <div class="stat"><span>MRR</span><b id="vMrr">$0</b></div>
@@ -140,9 +152,9 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     </div>
     <div class="channels" id="channels"></div>
   </div>
-  <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (7% a month). You can change the price. A month passes every 10 seconds.</p>
+  <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month). You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
-  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="19" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2 id="h-team">Team</h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
+  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2 id="h-team">Team</h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
   <canvas id="cv" aria-label="Five stacked boards, one per pirate metric: acquisition, activation, retention, referral and revenue."></canvas>
   </div><div class="side" id="side"><div class="stats">
@@ -170,17 +182,17 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     <span>Team cost per month</span><span id="eTeam">$0</span>
     <span>Loan repayments per month</span><span id="eLoan">$0</span>
     <span>Net cash flow per month</span><span id="eNet">$0</span>
-    <span>Lifetime value per customer</span><span id="eLtv">$700</span>
+    <span>Lifetime value per customer</span><span id="eLtv">$817</span>
     <span>LTV : CAC</span><span id="eRatio">–</span>
     <span>Free users (retained, not paying)</span><span id="eFree">0</span>
   </div>
-  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 7% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
   </div></div></div>
 </div>
 
 <script>
 const W=360,BH=204,NB=5,H=BH*NB,BR=3.5,PR=3,GRAV=820,PER_AD=100,DECAY=.92,PRICE0=49,MONTH=10,AD0=100,AD_GROWTH=1.08;
-const WALLTOP=160,FLOOR=196;let churn=.07,price=PRICE0;
+const WALLTOP=160,FLOOR=196;let churn=.06,price=PRICE0;
 // Game simplification, not a measured benchmark: 1 at $49, so tuned rates hold there. Revenue landing rate scales with slot width (sim/sweep.js).
 const wtp=p=>1/(1+(p/79)**3),priceConv=()=>wtp(price)/wtp(PRICE0); // S-curve: demand falls away past about $79
 const priceChurn=p=>(1+.5*Math.log(p/55)**2)/(1+.5*Math.log(PRICE0/55)**2),paidChurn=(p=price)=>churn*priceChurn(p); // U-shape: lowest near $55
@@ -188,10 +200,10 @@ let subs={}; // Paying customers by the price they signed up at. paying is their
 const MRR=()=>Object.entries(subs).reduce((t,[p,n])=>t+p*n,0);
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const C={ad:css('--ad'),acq:css('--acq'),act:css('--act'),ret:css('--ret'),ref:css('--ref'),rev:css('--rev'),fail:css('--fail'),peg:css('--peg'),fg:css('--fg'),muted:css('--muted'),rail:css('--rail'),line:css('--line')};
+const C={},readColors=()=>{for(const k of ['ad','acq','act','ret','ref','rev','fail','peg','fg','muted','rail','line','panel','warn'])C[k]=css('--'+k)};readColors();
 const BOARDS=[
-  {name:'Acquisition',title:'A · ACQUISITION',zones:[[172,188]],pass:'SIGN UP',fail:'BOUNCED',col:'acq',bench:.05,inL:'visitors',outL:'sign-ups'},
-  {name:'Activation',title:'A · ACTIVATION',zones:[[55,127],[233,305]],pass:'ACTIVATED',fail:'NEVER ACTIVATED',col:'act',bench:.36,inL:'sign-ups',outL:'activated'},
+  {name:'Acquisition',title:'A · ACQUISITION',zones:[[168,192]],pass:'SIGN UP',fail:'BOUNCED',col:'acq',bench:.05,inL:'visitors',outL:'sign-ups'},
+  {name:'Activation',title:'A · ACTIVATION',zones:[[51,131],[229,309]],pass:'ACTIVATED',fail:'NEVER ACTIVATED',col:'act',bench:.36,inL:'sign-ups',outL:'activated'},
   {name:'Retention',title:'R · RETENTION',zones:[[42,122],[238,318]],pass:'RETAINED',fail:'CHURNED',col:'ret',bench:.47,inL:'activated',outL:'retained'},
   {name:'Referral',title:'R · REFERRAL',zones:[[156,204]],pass:'REFERS',fail:'NO REFERRAL',col:'ref',bench:.10,inL:'retained',outL:'referrals'},
   {name:'Revenue',title:'R · REVENUE',zones:[[122,238]],pass:'PAID',fail:'STAYS FREE',col:'rev',bench:.30,inL:'retained',outL:'paying'}
@@ -206,14 +218,16 @@ let ac,muted=false;const sfxLast={};try{muted=localStorage.getItem('funnel-drop-
 function tone(f,at,dur,vol,type='sine',to=f){const t=ac.currentTime+at,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(to,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+dur)}
 const notes=(fs,step,vol,type)=>fs.forEach((f,i)=>tone(f,i*step,step*1.6,vol,type));
 const SFX={tick:[125,()=>tone(900,0,.03,.015)],ching:[250,()=>notes([1320,1760],.07,.05,'triangle')],thud:[300,()=>tone(140,0,.16,.1,'sine',70)],
-  good:[0,()=>notes([523,659,784],.09,.07,'triangle')],bad:[0,()=>notes([392,294],.16,.08,'triangle')],fanfare:[0,()=>notes([523,659,784,1047],.11,.08,'triangle')]};
+  good:[0,()=>notes([523,659,784],.09,.07,'triangle')],upgrade:[0,()=>{tone(330,0,.3,.04,'triangle',990);notes([784,988,1319,1568],.06,.06,'triangle')}],bad:[0,()=>notes([392,294],.16,.08,'triangle')],fanfare:[0,()=>notes([523,659,784,1047],.11,.08,'triangle')]};
 function sfx(name){if(muted||!ac)return;const n=performance.now(),[gap,play]=SFX[name];if(n-(sfxLast[name]||0)<gap)return;sfxLast[name]=n;play()}
 for(const type of ['pointerdown','keydown'])addEventListener(type,()=>{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;ac??=new A();ac.resume()});
 
 let cash=1500,ads=0,spend=0,balls=[],floats=[],queue=[];
 const into=[0,0,0,0,0],out=[0,0,0,0,0];let eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
 
-function resize(){const d=window.devicePixelRatio||1;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
+let textK=1;const mono=(w,s)=>`${w} ${s*textK}px JetBrains Mono, monospace`;
+// The board scales down to fit short screens, so canvas text grows to stay readable.
+function resize(){const d=window.devicePixelRatio||1;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);textK=Math.min(1.5,Math.max(1,.9*W/cv.clientWidth))}
 const SEO=[['Start a blog',2000,150],['SEO foundations',5000,300],['Content library',12500,700]];let seoLvl=0,organicAcc=0,postReady=0,seoFresh=1;
 // Content goes stale but never to nothing: old articles keep a tenth of their traffic.
 const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
@@ -234,9 +248,9 @@ const CHANNELS=[
 ];
 CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0});
 const RECOVER=.10;
+function runAd(c,t=performance.now()){const v=Math.max(1,Math.round(c.reach));c.reach*=DECAY;for(let i=0;i<v;i++)queue.push({t:t+i*22,src:c.id});return v}
 function buyAd(id){const c=CHANNELS.find(x=>x.id===id);
-  if(!c.open||cash<c.cost)return;cash-=c.cost;spend+=c.cost;ads++;c.ads++;const v=Math.max(1,Math.round(c.reach));c.reach*=DECAY;
-  const t=performance.now();for(let i=0;i<v;i++)queue.push({t:t+i*22,src:id});
+  if(!c.open||cash<c.cost)return;cash-=c.cost;spend+=c.cost;ads++;c.ads++;runAd(c);
   if(ads===1)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
   if(c.ads===12)say(`Each ${c.name.toLowerCase()} ad reaches 8% fewer people than the last. Give the channel time to recover, or pay for a new campaign.`);
 }
@@ -291,21 +305,25 @@ function draw(){
   BOARDS.forEach((B,b)=>{const y0=b*BH;
     ctx.fillStyle=C.rail;ctx.fillRect(0,y0,W,22);
     ctx.fillStyle=C[B.col];ctx.fillRect(0,y0,4,22);
-    ctx.fillStyle=C.fg;ctx.font='700 10px JetBrains Mono, monospace';ctx.textAlign='left';ctx.fillText(B.title,10,y0+15);
-    ctx.textAlign='right';ctx.fillStyle=C.muted;ctx.font='600 10px JetBrains Mono, monospace';ctx.fillText(`yours ${pct(out[b],into[b])} · bench ${B.bench*100}%`,W-8,y0+15);
+    ctx.fillStyle=C.fg;ctx.font=mono(700,10);ctx.textAlign='left';ctx.fillText(B.title,10,y0+15);
+    ctx.textAlign='right';ctx.fillStyle=C.muted;ctx.font=mono(600,10);ctx.fillText(`yours ${pct(out[b],into[b])} · bench ${B.bench*100}%`,W-8,y0+15);
     ctx.globalAlpha=.35;ctx.fillStyle=C.fail;ctx.fillRect(0,y0+WALLTOP,W,FLOOR-WALLTOP);ctx.globalAlpha=1;
-    ctx.fillStyle=C.muted;ctx.font='600 9px JetBrains Mono, monospace';ctx.textAlign='center';
-    if(B.zones.length>1)ctx.fillText(B.fail,W/2,y0+FLOOR-8);else{ctx.fillText(B.fail,70,y0+FLOOR-8);ctx.fillText(B.fail,W-70,y0+FLOOR-8)}
-    for(const z of B.zones){const [a,c]=z;ctx.fillStyle='#ffffff';ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);
-      ctx.globalAlpha=.25+(z.flash||0)*.5;ctx.fillStyle=C[B.col];ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);ctx.globalAlpha=1;z.flash=Math.max(0,(z.flash||0)-.05);
+    ctx.fillStyle=C.muted;ctx.font=mono(600,9);ctx.textAlign='center';
+    if(B.zones.length>1)ctx.fillText(B.fail,W/2,y0+FLOOR-8,B.zones[1][0]-B.zones[0][1]-8);else{ctx.fillText(B.fail,70,y0+FLOOR-8);ctx.fillText(B.fail,W-70,y0+FLOOR-8)}
+    const glow=B.glow||0;B.glow=Math.max(0,glow-.02);
+    for(const [i,z] of B.zones.entries()){const [a,c]=shown(B)[i];ctx.fillStyle=C.panel;ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);
+      if(glow){ctx.save();ctx.shadowColor=C[B.col];ctx.shadowBlur=24*glow;ctx.globalAlpha=glow;ctx.fillStyle=C[B.col];ctx.fillRect(a,y0+WALLTOP-4,c-a,FLOOR-WALLTOP+4);ctx.restore()}
+      ctx.globalAlpha=.25+Math.max(z.flash||0,glow)*.5;ctx.fillStyle=C[B.col];ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);ctx.globalAlpha=1;z.flash=Math.max(0,(z.flash||0)-.05);
       ctx.strokeStyle=C[B.col];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a,y0+WALLTOP-4);ctx.lineTo(a,y0+FLOOR);ctx.moveTo(c,y0+WALLTOP-4);ctx.lineTo(c,y0+FLOOR);ctx.stroke();ctx.lineWidth=1;
-      ctx.fillStyle=C[B.col];ctx.font='700 9px JetBrains Mono, monospace';
+      ctx.fillStyle=C[B.col];ctx.font=mono(700,9);
       if(c-a>60)ctx.fillText(B.pass,(a+c)/2,y0+FLOOR-8);else ctx.fillText(B.pass+' ▼',(a+c)/2,y0+WALLTOP-7)}
     if(b<NB-1){ctx.fillStyle=C.line;ctx.fillRect(0,y0+BH-4,W,4)}
   });
   for(const p of pegs){ctx.fillStyle=C.peg;ctx.beginPath();ctx.arc(p.x,p.y,PR+p.flash,0,7);ctx.fill();p.flash=Math.max(0,p.flash-.1)}
+  for(const p of sparks){ctx.globalAlpha=p.life;ctx.fillStyle=p.c;ctx.fillRect(p.x-1.5,p.y-1.5,3,3);p.x+=p.vx/60;p.y+=p.vy/60;p.vy+=6;p.life-=.025}
+  ctx.globalAlpha=1;sparks=sparks.filter(p=>p.life>0);
   for(const o of balls){ctx.fillStyle=ballCol(o);ctx.beginPath();ctx.arc(o.x,o.y,BR,0,7);ctx.fill()}
-  for(const f of floats){ctx.globalAlpha=Math.max(0,f.life);ctx.fillStyle=f.c;ctx.textAlign='center';ctx.font='700 12px JetBrains Mono, monospace';ctx.fillText(f.t,f.x,f.y);f.y-=.4;f.life-=.014}
+  for(const f of floats){ctx.globalAlpha=Math.max(0,f.life);ctx.fillStyle=f.c;ctx.textAlign='center';ctx.font=mono(700,f.size||12);ctx.fillText(f.t,f.x,f.y);f.y-=.4;f.life-=.014}
   ctx.globalAlpha=1;floats=floats.filter(f=>f.life>0);
 }
 // Paid sits before Referral here because everyone retained reaches it; referrers are a side branch, not a narrower stage. Sign-ups include referred friends.
@@ -366,7 +384,7 @@ function loop(now){
     if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
   if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),refs=Math.min(paying,REFER_CAP);for(let i=0;i<refs;i++)if(Math.random()<q){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
     const cov=Math.min(paying,csm*CSM.covers);let lost=0,i=0;for(const k in subs){const c=paidChurn(+k),pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH);let n=subs[k];for(let j=subs[k];j>0;j--,i++)if(Math.random()<(i<cov?pc:p)){n--;lost++}if(n)subs[k]=n;else delete subs[k]}
-    if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:'#c2412f',life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
+    if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:C.warn,life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
   if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
 }
@@ -376,12 +394,12 @@ renderCh();
 const COSTS=[2000,5000,12500],CENTERS=[[180],[91,269],[82,278],[180],[180]];
 const slots=(b,w)=>CENTERS[b].map(c=>[c-w/2,c+w/2]);
 const TRACKS=[
-  {id:'acq',board:0,label:'sign-up',unit:'of visitors',base:.05,tiers:[['Market research',.075,26],['Landing page rewrite',.088,30],['Positioning overhaul',.094,33]]},
-  {id:'act',board:1,label:'activation',unit:'of sign-ups',base:.36,tiers:[['Onboarding checklist',.455,94],['Guided setup',.503,103],['Aha-moment redesign',.526,108]]},
+  {id:'acq',board:0,label:'sign-up',unit:'of visitors',base:.073,tiers:[['Market research',.105,38],['Landing page rewrite',.125,44],['Positioning overhaul',.145,50]]},
+  {id:'act',board:1,label:'activation',unit:'of sign-ups',base:.36,tiers:[['Onboarding checklist',.455,102],['Guided setup',.503,110],['Aha-moment redesign',.526,114]]},
   {id:'ret',board:2,label:'month-1 retention',unit:'of activated users',base:.47,tiers:[['Lifecycle emails',.525,92],['Habit-forming features',.553,96],['Core workflow polish',.566,98]]},
   {id:'ref',board:3,label:'referral',unit:'of retained users',base:.10,tiers:[['Share button',.20,91],['Invite rewards',.25,106],['Built-in viral loop',.275,113]]},
   {id:'rev',board:4,label:'paid conversion',unit:'of retained users',base:.30,tiers:[['Pricing page',.40,156],['Upgrade prompts',.45,172],['Sales assist',.475,180]]},
-  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:.07,tiers:[['Cancellation save offers',.055],['Annual plans',.045],['Health scoring',.04]]}
+  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:.06,tiers:[['Cancellation save offers',.047],['Annual plans',.039],['Health scoring',.034]]}
 ];
 const lvl={};TRACKS.forEach(t=>lvl[t.id]=0);
 const p1=v=>{const x=v*100;return(Math.abs(x-Math.round(x))<.05?Math.round(x):x.toFixed(1))+'%'};
@@ -391,13 +409,24 @@ function renderUpg(){
     return `<button class="upg${max?' done':''}" id="u-${t.id}" style="--c:var(--${col})"><b>${max?'Maxed':tier[0]}</b><span class="cost">${max?'—':fmt(COSTS[L])}</span><small>${t.id==='churn'?'Paid churn':BOARDS[t.board].name} · ${max?p1(cur(t))+' '+t.label:`${t.label} ${p1(cur(t))} → ${p1(tier[1])}`} · tier ${Math.min(L+1,3)}/3</small></button>`}).join('');
 }
 function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<COSTS[L])return;
+  const isChurn=id==='churn',was=isChurn?paidChurn():rateOf(t);
   cash-=COSTS[L];const [name,rate,w]=t.tiers[L];lvl[id]++;
-  if(id==='churn')churn=rate;else zone(t.board);applyPrice();
+  if(isChurn)churn=rate;else zone(t.board);applyPrice();
+  const d=Math.abs((isChurn?paidChurn():rateOf(t))-was)*100;celebrate(t.board,(isChurn?'−':'+')+d.toFixed(1)+' pts '+(isChurn?'churn':t.label),!isChurn);
   say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(id==='churn'?paidChurn():rateOf(t))}${t.unit?' '+t.unit:''}.`);renderUpg()}
 const BASEW=BOARDS.map(B=>B.zones[0][1]-B.zones[0][0]);
 const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*r.n*skill(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
 // Landing rate is close to linear in slot width on every board, so team and price scale the tuned width.
-function zone(b){const t=TRACKS[b];BOARDS[b].zones=slots(b,Math.min(340,(lvl[t.id]?t.tiers[lvl[t.id]-1][2]:BASEW[b])*teamMult(b)*(b===4?priceConv():1)))}
+function zone(b){const t=TRACKS[b],B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(340,(lvl[t.id]?t.tiers[lvl[t.id]-1][2]:BASEW[b])*teamMult(b)*(b===4?priceConv():1)));
+  if(gateReady&&from[0][1]-from[0][0]!==B.zones[0][1]-B.zones[0][0])B.anim={from,t0:performance.now()}}
+// Display only: the drawn slot springs from its old width with a slight overshoot. Physics reads B.zones, which changes at once.
+const SPRING=550,easeBack=p=>1+2.7*(p-1)**3+1.7*(p-1)**2;
+function shown(B){if(!B.anim)return B.zones;const p=(performance.now()-B.anim.t0)/SPRING;if(p>=1){B.anim=null;return B.zones}const e=easeBack(p);
+  return B.zones.map((z,i)=>{const f=B.anim.from[i]||z;return [f[0]+(z[0]-f[0])*e,f[1]+(z[1]-f[1])*e]})}
+// Upgrade payoff: glow, sparks from both walls, a floating gain and a chime.
+let sparks=[];
+function celebrate(b,text,slot){const B=BOARDS[b],y0=b*BH;sfx('upgrade');addFloat({x:W/2,y:y0+WALLTOP-26,t:text,c:C[B.col],life:1.4,size:14});if(!slot)return;B.glow=1;
+  for(const [a,c] of B.zones)for(const [x,dir] of [[a,-1],[c,1]])for(let i=0;i<9;i++)sparks.push({x,y:y0+WALLTOP+Math.random()*(FLOOR-WALLTOP),vx:dir*(40+Math.random()*120),vy:-(40+Math.random()*130),life:1,c:C[B.col]})}
 function applyPrice(){const t=TRACKS[4];zone(4);
   $('p-val').textContent=fmt(price);$('p-meta').textContent=`At ${fmt(price)}: ${p1(rateOf(t))} paid conversion, ${p1(paidChurn())} monthly churn.`}
 $('price').addEventListener('input',e=>{price=+e.target.value;applyPrice()});
@@ -468,6 +497,7 @@ const EVENTS=[
   {good:1,name:'Rival shut down',when:()=>paying>0,run(){const n=Math.max(3,Math.round(paying*.03));paying+=n;subs[price]=(subs[price]||0)+n;return `A competitor closed. ${n} of their customers moved to you at ${fmt(price)} a month.`}},
   {good:1,name:'Startup grant',run(){const n=Math.max(1000,MRR()*.5);cash+=n;return `You won a ${fmt(n)} grant. No repayments.`}},
   {good:1,name:'Ad promotion',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach=c.base;return 'An ad platform changed its auction. Reach is back to full on every open channel.'}},
+  {good:1,name:'Social ad promo',run(){const c=CHANNELS[0];let n=0;for(let i=0;i<3;i++)n+=runAd(c,performance.now()+n*22);return `A social platform gave you three free ads. ${n} visitors are on their way.`}},
   {name:'Search update',when:()=>seoLvl>0,run(){seoFresh=Math.max(SEO_FLOOR,seoFresh*.4);return 'A search engine update buried your rankings. Search traffic fell by up to 60%.'}},
   {name:'Outage',when:()=>paying>0,run(){return `A long outage cost you customers. ${loseCustomers(.08,.12)} cancelled.`}},
   {name:'Cheaper rival',when:()=>paying>0,run(){return `A competitor launched a cheaper plan. ${loseCustomers(.15,.25)} left.`}},
@@ -503,6 +533,9 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   renderCh();renderUpg()}
 function showMute(){$('mute').textContent=muted?'Unmute':'Mute';$('mute').setAttribute('aria-pressed',muted)}showMute();
 $('mute').addEventListener('click',()=>{muted=!muted;showMute();try{localStorage.setItem('funnel-drop-muted',muted?'1':'0')}catch{}});
+function showTheme(){setTheme();readColors();const dark=document.documentElement.dataset.theme==='dark',t=dark?'Switch to light mode':'Switch to dark mode';$('theme').textContent=dark?'\u2600\uFE0E':'\u263E\uFE0E';$('theme').title=t;$('theme').setAttribute('aria-label',t)}showTheme();
+$('theme').addEventListener('click',()=>{theme=document.documentElement.dataset.theme==='dark'?'light':'dark';showTheme();try{localStorage.setItem('funnel-drop-theme',theme)}catch{}});
+darkOS.addEventListener('change',showTheme);
 $('reset').addEventListener('click',()=>{if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()});
 load();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
 resize();window.addEventListener('resize',resize);hud();gateReady=true;requestAnimationFrame(loop);

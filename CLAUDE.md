@@ -14,11 +14,13 @@ Fonts load from Google Fonts. There are no other runtime dependencies. Progress 
 
 ```sh
 # Chained rates for all five boards, 10,000 users each. Takes about 35s.
-node sim/sim.js '[[[172,188]],[[55,127],[233,305]],[[42,122],[238,318]],[[156,204]],[[122,238]]]'
+node sim/sim.js '[[[168,192]],[[51,131],[229,309]],[[42,122],[238,318]],[[156,204]],[[122,238]]]'
 
 # Landing rate per slot width for one board (0-4), upstream boards at base widths.
 node sim/sweep.js 0 23 28 31 34
 ```
+
+`sweep.js` still chains upstream boards from the old base widths (Acquisition 16, Activation 72), so its results for boards 1-4 are slightly off.
 
 The sims differ from the game: fixed 1/180s timestep, no 600 speed cap, a 22s timeout instead of 12s, and no referred friends.
 
@@ -35,10 +37,11 @@ The script is one top-level block, in this order:
 
 ## Gotchas
 
-- **Slot widths are tuned, not derived.** Base widths in `BOARDS` were checked with `sim/sim.js`. The third value in each `TRACKS` tier is a slot width in px, interpolated by hand from `sim/sweep.js` points. Changing pegs, gravity, ball size or `CENTERS` invalidates the widths and the benchmark claims.
+- **Slot widths are tuned, not derived.** Base widths in `BOARDS` were checked with `sim/sim.js`. The third value in each `TRACKS` tier is a slot width in px, interpolated by hand from `sim/sweep.js` points. Changing pegs, gravity, ball size or `CENTERS` invalidates the widths and the benchmark claims. Acquisition is deliberately above its 5% benchmark: 24px lands about 7.3%, and Activation is 80px to hold 36% with that wider slot above it.
 - **Users keep their x position between boards**, so slot positions on one board affect rates on the next. Tier targets assume base widths upstream, so they drift when several boards are upgraded: with every board at tier 3, Retention lands near 54% against a 56.6% target.
 - **Funnel flow is not strictly linear.** All retained users pass through Referral to Revenue, whether or not they refer. A referral adds 1 to 25 friends (`referred`, peaking near 8) directly to Activation. Referred friends never refer again, though they still land in the slot and count in `out[3]`. Paying customers also refer at a flat 1% a month, counting at most `REFER_CAP` customers; those referrals skip `out[3]`. Both limits stop referrals compounding, so keep them when rebalancing.
 - **`CENTERS` must match the zone midpoints in `BOARDS`.** Upgrades rebuild zones from `CENTERS`.
+- **Colours are tokens.** `:root` holds the light theme and `:root[data-theme=dark]` overrides it. A small script before the stylesheet sets `data-theme` from the saved `funnel-drop-theme` choice, or the system setting if there isn't one. Canvas colours come from `C`, so add new ones to `readColors`, which reruns on every theme change. Text on `--ad` uses `--on-ad`, which doesn't change with the theme.
 - **Numbers are repeated in copy.** The intro in `#msg` (phone only; desktop keeps the space blank until the first message) and the sources paragraph in `.src` hard-code values such as $49, 8%, 7% and 10 seconds. Update them when the constants change, and keep the cited sources accurate.
 - **New game state must be added to `save` and `load`.** Zones and `churn` are rebuilt from `lvl`, not saved. Bump the `SAVE` key if the saved shape changes.
 - **Price effects are multipliers that equal 1 at `PRICE0` ($49).** `priceConv` (S-curve) scales the Revenue slot width, which works because landing rate is close to linear in width there (`sim/sweep.js 4`, widths 8 to 320, slightly above the line below 26). `priceChurn` (U-shape) scales paid churn. Their curves are invented, so keep them out of the benchmark claims.
@@ -50,6 +53,7 @@ The script is one top-level block, in this order:
 - **Events roll once a game month** at `EVENT_CHANCE`, with good news from 10% to 70% depending on `health()`, and only after the first ad or customer. Each is one-off, not a timed effect, and `when` hides it if it can't apply. Their sizes are invented. An event opens the `#ev` dialog, which pauses `loop`; any new `performance.now()` timer must shift in its `close` handler.
 - **Channels differ by `aim`.** Search and LinkedIn visitors enter their aimed board pulled toward its slot by `pull`, and `lift` is the matching rate for the odds path. Pulling only works where incoming x is spread out: Acquisition and Revenue doubled or so, while Activation and Retention barely moved. `queue` holds `{t,src}`.
 - **At most `MAX_BALLS` users animate.** `spawn` lands the rest by the odds, so always add users through it. This also keeps the save small.
-- **`zone(b)` is the only place that sets a board's slot width.** It combines the upgrade tier, `ROLES` hires (+15% each) and price. Team lifts assume near-linear rate against width, and `TRACKS` indexes 0-4 line up with boards.
+- **`zone(b)` is the only place that sets a board's slot width.** It combines the upgrade tier, `ROLES` hires (+15% each) and price. Physics uses the new width at once; `shown(B)` springs the drawn slot over `SPRING` ms. Upgrades also call `celebrate` for the glow, sparks, floating gain and chime, which hires and price changes skip. Team lifts assume near-linear rate against width, and `TRACKS` indexes 0-4 line up with boards.
 - **Customers keep their sign-up price.** `subs` maps price to customer count, and each group churns at its own price. Change `paying` and `subs` together, and use `MRR()` rather than `paying*price`.
+- **The board scales to fit the screen from 860px up.** CSS clamps the canvas to 220-400px wide from the viewport height, down to about 750px tall. Below 860px it stays full width. It only changes display size: physics stays at 360x1020, so tuned widths are unaffected. Canvas text uses `mono()`, which grows by `textK` (set in `resize`) as the board shrinks.
 - **One game month is 10 real seconds** (`MONTH`). Monthly rates are scaled by `dt/MONTH`.

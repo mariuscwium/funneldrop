@@ -6,7 +6,7 @@ A product management simulator. Visitors fall through five Plinko-style boards, 
 
 Download `Funnel Drop.html` and open it in a browser. There's nothing to install or build.
 
-Progress saves in your browser, so you can reload and carry on. **New game** starts again.
+Progress saves in your browser, so you can reload and carry on. **New game** starts again. The game follows your system's light or dark setting, and the sun or moon button overrides it.
 
 ## How it works
 
@@ -31,7 +31,7 @@ Everything is in `Funnel Drop.html`: inline CSS, markup and JavaScript. There's 
 
 ```sh
 # Chained landing rates for all five boards. Takes about 35s.
-node sim/sim.js '[[[172,188]],[[55,127],[233,305]],[[42,122],[238,318]],[[156,204]],[[122,238]]]'
+node sim/sim.js '[[[168,192]],[[51,131],[229,309]],[[42,122],[238,318]],[[156,204]],[[122,238]]]'
 
 # Landing rate per slot width for one board (0-4).
 node sim/sweep.js 0 23 28 31 34
