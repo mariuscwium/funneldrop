@@ -139,7 +139,6 @@ test('effect keys reach their code', () => {
   near(g('adCost(CHANNELS[0])'),Math.round(ad/2/10)*10,10);near(g('campCost(CHANNELS[0])'),Math.round(camp/2/10)*10,10);
   assert.equal(g('perAd(CHANNELS[0])'),Math.round(per*1.5));
   fx({csm:.2});assert.equal(g('csmCovers()'),180);
-  fx({down:-.5});near(g('downRate()'),.019);
   fx({custRef:1});near(g('custRefer()'),.02);
   g('price=150');fx({});const pc=g('priceConv()'),ch=g('priceChurn(150)');
   fx({priceTol:.5});near(g('priceConv()'),1+(pc-1)/2);near(g('priceChurn(150)'),1+(ch-1)/2);

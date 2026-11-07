@@ -219,7 +219,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 const W=360,BH=204,NB=6,H=BH*NB,BR=3.5,PR=3,GRAV=820,PER_AD=100,DECAY=.92,PRICE0=49,MONTH=10,AD0=100,AD_GROWTH=1.08;
 const WALLTOP=160,FLOOR=196;const CHURN0=.06;let churn=CHURN0,price=PRICE0;
 // Summed effects of the owned roadmap nodes, rebuilt by refx(). Every value is a delta: r0..r5 and evGood in rate points as fractions (.032 is 3.2 points), the rest relative (-.1 is 10% lower).
-const FX_KEYS=['r0','r1','r2','r3','r4','r5','churn','priceTol','adCost','adReach','refSize','custRef','down','cts','csm','seo','rp','evGood'],FX=Object.fromEntries(FX_KEYS.map(k=>[k,0]));
+const FX_KEYS=['r0','r1','r2','r3','r4','r5','churn','priceTol','adCost','adReach','refSize','custRef','cts','csm','seo','rp','evGood'],FX=Object.fromEntries(FX_KEYS.map(k=>[k,0]));
 // Price tolerance shrinks how far price moves conversion and churn away from 1, at most by 80%.
 const priceTol=x=>1+(x-1)*(1-Math.min(.8,FX.priceTol));
 // Game simplification, not a measured benchmark: 1 at $49, so tuned rates hold there. Revenue landing rate scales with slot width (sim/sweep.js).
@@ -244,7 +244,7 @@ const C={},readColors=()=>{for(const k of ['ad','acq','act','ret','ref','rev','f
 // Expansion (board 5): paying customers only, uniform entry, no carryover from Revenue. Locked until EXP_AT peak valuation.
 // Tuned with sim/expansion.js: a 43px centre slot lands about 12% (EXP_RATE0), and two 9px Downgrade slots 12px in from the walls about 3.8% together (DOWN_RATE).
 // Wall-flush Downgrade slots can't reach 4%: 4px or less lands none, 5px already 6%.
-const EXP_W0=43,DOWN_W=9,DOWN_ZONES=[[12,12+DOWN_W],[348-DOWN_W,348]],EXP_RATE0=.12,DOWN_RATE=.038,EXP_AT=1e6,expOpen=()=>peak>=EXP_AT,downRate=()=>DOWN_RATE*(1+FX.down);
+const EXP_W0=43,DOWN_W=9,DOWN_ZONES=[[12,12+DOWN_W],[348-DOWN_W,348]],EXP_RATE0=.12,DOWN_RATE=.038,EXP_AT=1e6,expOpen=()=>peak>=EXP_AT;
 // Game simplification: each paying customer gets an expansion check about once a game year.
 const EXP_CHECK=1/12;
 const BOARDS=[
@@ -343,7 +343,7 @@ const addFloat=f=>{if(floats.length<40)floats.push(f)};
 function spawn(o){if(balls.length<ballCap){balls.push(o);return}
   const zs=BOARDS[o.b].zones,ds=o.b===5?DOWN_ZONES:[],inZone=x=>zs.some(([a,c])=>x>=a&&x<c)||ds.some(([a,c])=>x>=a&&x<c);
   const t=trackOf(o.b),r=Math.random(),up=rateOf(t)*(aimed(o.src,o.b)?.lift||1),pick=z=>{const [a,c]=z[Math.random()*z.length|0];o.x=(a+c)/2};
-  if(r<up)pick(zs);else if(ds.length&&r<up+downRate())pick(ds);else do o.x=Math.random()*W;while(inZone(o.x));
+  if(r<up)pick(zs);else if(ds.length&&r<up+DOWN_RATE)pick(ds);else do o.x=Math.random()*W;while(inZone(o.x));
   land(o)}
 // Flat and capped so customers can't compound: friends never refer, and this adds at most 10 referrals a month.
 const CUST_REFER=.01,REFER_CAP=1000,custRefer=()=>CUST_REFER*(1+FX.custRef);
@@ -365,7 +365,7 @@ function landExp(o,hit,fy){const pl=unkey(o.sub)[1];
 // Only free ball slots animate. The rest settle in bulk with the odds path's rates, so there's no per-customer loop: upgrade at the track rate, downgrade at DOWN_RATE overall (DOWN_RATE/(1-rate) of those that missed Upgrade).
 function expCheck(){if(!expOpen())return;for(const [k,n] of Object.entries(subs)){const m=binom(n,EXP_CHECK),a=Math.max(0,Math.min(m,ballCap-balls.length)),rest=m-a;
   for(let i=0;i<a;i++){const o=enter(5,0);o.sub=k;spawn(o)}
-  if(!rest)continue;into[5]+=rest;const pl=unkey(k)[1],r=rateOf(trackOf(5)),up=binom(rest,r),down=binom(rest-up,Math.min(1,downRate()/(1-r)));
+  if(!rest)continue;into[5]+=rest;const pl=unkey(k)[1],r=rateOf(trackOf(5)),up=binom(rest,r),down=binom(rest-up,Math.min(1,DOWN_RATE/(1-r)));
   if(pl<2&&up&&moveSub(k,pl+1,up)){out[5]+=up;if(out[5]===up)say(`Customers upgraded to ${PLANS[pl+1].name}. Growth from customers you already have costs no ads.`)}
   if(pl>0&&down)moveSub(k,pl-1,down)}}
 function physics(dt){
@@ -574,7 +574,7 @@ function nodeState(id){const n=NODE_IX[id];if(!n)return'unreachable';if(n.ring==
 const nodeCash=n=>n.cash*mkt()**AD_PRICE_P,nodePts=n=>n.pts+(n.rep?owned[n.id]||0:0);
 // What a node does, in plain words: "sign-up +3.2 points, paid churn −21.7%".
 const FX_WORDS={churn:'paid churn',priceTol:'price sensitivity',adCost:'ad prices',adReach:'visitors per ad',refSize:'friends per referral',custRef:'customer referrals',
-  down:'downgrades',cts:'cost to serve',csm:'customers per CSM',seo:'search traffic',rp:'roadmap points',evGood:'chance of a lucky break'};
+  cts:'cost to serve',csm:'customers per CSM',seo:'search traffic',rp:'roadmap points',evGood:'chance of a lucky break'};
 const signed=(x,u)=>{const r=Math.round(x*10)/10;return(r<0?'−':'+')+Math.abs(r)+u};
 function fxText(fx){return Object.entries(fx).map(([k,v])=>/^r\d$/.test(k)?`${RATES[+k[1]].label} ${signed(v*100,' points')}`:k==='evGood'?`${FX_WORDS[k]} ${signed(v*100,' points')}`:k==='priceTol'?`${FX_WORDS[k]} ${signed(-v*100,'%')}`:`${FX_WORDS[k]} ${signed(v*100,'%')}`).join(', ')}
 function markShipped(){} // Task 3: resets the falling-behind timer.
