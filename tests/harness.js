@@ -5,7 +5,7 @@ function load(opts={}){
   const html=fs.readFileSync(FILE,'utf8'),scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
   const store=new Map(),els=new Map(),el=id=>{if(!els.has(id))els.set(id,stub());return els.get(id)};
   // opts.dialogs: showModal/close toggle .open, so an open dialog pauses loop. Off by default: milestones and events would pause other tests.
-  for(const id of ['ev','sum']){const d=el(id);d.open=false;if(opts.dialogs){d.showModal=()=>{d.open=true};d.close=()=>{d.open=false}}}
+  for(const id of ['ev','sum','tree']){const d=el(id);d.open=false;if(opts.dialogs){d.showModal=()=>{d.open=true};d.close=()=>{d.open=false}}}
   if(opts.save)store.set('funnel-drop-save-v1',JSON.stringify(opts.save));
   let now=0;
   // opts.seed: a seeded PRNG (mulberry32) as the game's Math.random, inside the vm only. For statistical tests that would otherwise flake.
