@@ -84,42 +84,37 @@ test('odds path uses track and downgrade rates', () => {
   assert.ok(Math.abs(u-2400)<200,'upgrades '+u);
   assert.ok(Math.abs(d-760)<120,'downgrades '+d);
   assert.equal(g('out[5]'),u);
-  g('lvl.exp=3;syncBonus();zone(5);_run()');
+  g('bonus[5]=.12;zone(5);_run()');
   const u3=g('subs["49:2"]||0');
   assert.ok(Math.abs(u3-4800)<250,'tier 3 upgrades '+u3);
 });
 
-test('track costs are its own', () => {
+test('expansion seed costs its own price', () => {
   const {g}=load();
-  g('peak=1e6;cash=60000;buyUpg("exp")');
-  assert.equal(g('cash'),10000);assert.equal(g('lvl.exp'),1);
-  g('cash=200000;buyUpg("exp")');
-  assert.equal(g('lvl.exp'),1,'tier 2 costs $250k');
-  assert.equal(g('JSON.stringify(TRACKS.find(t=>t.id==="exp").costs)'),'[50000,250000,1000000]');
+  assert.equal(g('nodeOf("exp1").cash'),5e4);assert.equal(g('nodeOf("acq1").cash'),2000);
+  g('peak=1e6;rp=9;cash=nodeCash(nodeOf("exp1"))-1');
+  assert.equal(g('buyNode("exp1")'),false);
+  g('cash+=10001');assert.equal(g('buyNode("exp1")'),true);
+  assert.ok(Math.abs(g('cash')-10000)<1e-6);assert.equal(g('owned.exp1'),1);
 });
 
-test('cost display and disabled state use the track costs', () => {
+test('roadmap card shows points', () => {
   const {g}=load();
-  g('peak=1e6;cash=20000;renderUpg();hud()');
-  assert.equal(g('$("u-exp").disabled'),true);
-  assert.equal(g('$("u-acq").disabled'),false);
-  g('renderUpg()');
-  const s=g('$("upglist").innerHTML');
-  assert.match(s,/id="u-exp"[^>]*--exp/);
-  assert.match(s,/\$50\.0k/);
+  g('rp=3.7;hud()');assert.equal(g('$("rm-pts").textContent'),'3 points');
+  g('rp=1;hud()');assert.equal(g('$("rm-pts").textContent'),'1 point');
 });
 
-test('exp card hidden before $1M', () => {
+test('expansion seed closed before $1M', () => {
   const {g}=load();
-  g('peak=0;hud()');assert.equal(g('$("u-exp").hidden'),true);
-  g('peak=1e6;hud()');assert.equal(g('$("u-exp").hidden'),false);
+  g('peak=0');assert.equal(g('nodeState("exp1")'),'closed');
+  g('peak=1e6');assert.equal(g('nodeState("exp1")'),'available');
 });
 
 test('zone(5) widens with tier and am', () => {
   const {g}=load();
   const w=()=>g('BOARDS[5].zones[0][1]-BOARDS[5].zones[0][0]');
   near(w(),43);
-  g('lvl.exp=1;syncBonus();zone(5)');near(w(),56);
+  g('peak=1e6;rp=9;cash=1e6;buyNode("exp1")');near(w(),56);
   g('month=0;eventT=0;hire("am");month=10;zone(5)');
   near(w(),56*(1+0.15*g('strength("am")')));
   near(g('rateOf(trackOf(5))'),.16*(1+0.15*g('strength("am")')));
@@ -131,10 +126,9 @@ test('am role', () => {
   assert.equal(r.board,5);assert.equal(r.salary,9000);assert.equal(r.at,1e7);assert.equal(r.name,'Account manager');
 });
 
-test('churn track still at TRACKS index 5', () => {
+test('trackOf ids; zone(4) is stable', () => {
   const {g}=load();
   const before=g('JSON.stringify(BOARDS[4].zones)');
-  assert.equal(g('TRACKS[5].id'),'churn');
   assert.equal(g('trackOf(4).id'),'rev');
   assert.equal(g('trackOf(5).id'),'exp');
   g('zone(4)');assert.equal(g('JSON.stringify(BOARDS[4].zones)'),before);
@@ -154,11 +148,11 @@ test('ball from an emptied group never turns exp colour', () => {
   assert.ok(!g('_o.up'));
 });
 
-test('exp level saves and loads', () => {
-  const a=load();a.g('lvl.exp=2;save()');
+test('expansion seed saves and loads', () => {
+  const a=load();a.g('peak=1e6;rp=9;cash=1e6;buyNode("exp1");save()');
   const {g}=load({save:JSON.parse(a.store.get('funnel-drop-save-v1'))});
-  assert.equal(g('lvl.exp'),2);
-  near(g('BOARDS[5].zones[0][1]-BOARDS[5].zones[0][0]'),67);
+  assert.equal(g('owned.exp1'),1);
+  near(g('BOARDS[5].zones[0][1]-BOARDS[5].zones[0][0]'),56);
 });
 
 test('bulk settlement matches the odds path for a large group', () => {

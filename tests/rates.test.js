@@ -29,10 +29,10 @@ test('cur adds the bonus and caps at the table', () => {
   g('bonus[0]=.05');assert.ok(Math.abs(g('cur(RATES[0])')-.123)<1e-9);
   g('bonus[0]=5');assert.equal(g('cur(RATES[0])'),g('rateCap(0)'));
 });
-test('bought tiers still set the width through bonus', () => {
+test('seed nodes set the width through bonus', () => {
   const {g}=load();
-  g('cash=1e9;buyUpg("acq")');assert.ok(Math.abs(g('BOARDS[0].zones[0][1]-BOARDS[0].zones[0][0]')-38)<.01);
-  g('buyUpg("churn")');assert.equal(g('churn'),.047);
+  g('cash=1e9;rp=9;buyNode("acq1")');assert.ok(Math.abs(g('BOARDS[0].zones[0][1]-BOARDS[0].zones[0][0]')-38)<.01);
+  g('buyNode("churn1")');assert.ok(Math.abs(g('churn')-.047)<1e-4);
 });
 test('slots stay clear of walls, each other and the Downgrade slots at the table end with full staff and best price', () => {
   const {g}=load();

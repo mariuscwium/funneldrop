@@ -27,7 +27,7 @@ test('ledger records a month', () => {
 
 test('upgrade counts as spending', () => {
   const {g,months}=base();
-  g('cash=5000;buyUpg("acq")');
+  g('cash=5000;rp=9;buyNode("acq1")');
   months(1);
   assert.ok(g('ledger[0].out')>=2000);
 });

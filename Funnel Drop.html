@@ -175,7 +175,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   </div>
   <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month), and about 22% of that goes on hosting and support. You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
-  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2 id="h-team">Team <span id="team-n"></span></h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
+  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Roadmap items quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Product</h2><div class="upgrades" id="upglist"><div class="upg" id="roadmap" style="--c:var(--act);cursor:default"><b>Roadmap</b><span class="cost" id="rm-pts">2 points</span><small>Product work you can ship. Each item costs roadmap points and cash.</small></div></div><h2 id="h-team">Team <span id="team-n"></span></h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
   <canvas id="cv" aria-label="Six stacked boards: one per pirate metric (acquisition, activation, retention, referral and revenue), then expansion, locked until a $1M valuation."></canvas>
   </div><div class="side" id="side"><div class="stats">
@@ -211,16 +211,20 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     <span>LTV : CAC</span><span id="eRatio">–</span>
     <span>Free users (retained, not paying)</span><span id="eFree">0</span>
   </div>
-  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, marketing managers’ diminishing returns, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events, how fast content goes stale and how much search traffic swings from month to month (up to 40% either way). Above a $100k valuation, ads and campaigns cost more and reach more as the company grows, with price rising faster, so each visitor costs more at scale. How fast is a game simplification. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. That is close to the 77% median subscription margin in KeyBanc’s 2022 private SaaS survey (<a href="https://www.kellblog.com/key-takeaways-from-the-2022-keybanc-saas-metrics-survey/" target="_blank" rel="noopener">Kellblog summary</a>). The 22% itself is a game simplification. Lifetime value and payback use gross margin. <b>Net revenue retention</b> is a chained monthly approximation: each month, (starting MRR + upgrades − downgrades − churned MRR) ÷ starting MRR, multiplied over the last 12 months. New customers’ churn is mostly left out. Median net dollar retention was 109% in the same KeyBanc survey, and Clouded Judgement’s cloud software comps showed a median net retention of 112% in January 2024 (<a href="https://cloudedjudgement.substack.com/p/clouded-judgement-11924-the-bar-for" target="_blank" rel="noopener">source</a>). <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data. <b>Expansion</b>: from $1M valuation, each paying customer is checked about once a year and can move up or down one plan (Base, Pro, Enterprise). How often, the 12% upgrade and 4% downgrade rates, and the plan prices are game simplifications, not measured data. <b>IPO readiness</b>: ARR of $100M, net revenue retention of 110%, a Rule of 40 score of 40 (year-on-year ARR growth % plus profit margin %, a rule of thumb from <a href="https://feld.com/archives/2015/02/rule-40-healthy-saas-company/" target="_blank" rel="noopener">Brad Feld</a>) and 30% year-on-year growth, all held for 3 months in a row. In the late 2010s, “IPO scale” was commonly put at $100M ARR growing 30% a year; the bar is higher now (<a href="https://www.scalevp.com/blog/the-path-from-zero-to-ipo-revisiting-the-mendoza-line-in-2024" target="_blank" rel="noopener">Scale Venture Partners</a>). The 110% retention target and the 3-month hold are game simplifications, and none of these are listing requirements. Profit margin is revenue minus all spending, over revenue, for the last 3 months.</p>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, marketing managers’ diminishing returns, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events, how fast content goes stale and how much search traffic swings from month to month (up to 40% either way). Above a $100k valuation, ads and campaigns cost more and reach more as the company grows, with price rising faster, so each visitor costs more at scale. How fast is a game simplification. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Roadmap items bring it lower. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. That is close to the 77% median subscription margin in KeyBanc’s 2022 private SaaS survey (<a href="https://www.kellblog.com/key-takeaways-from-the-2022-keybanc-saas-metrics-survey/" target="_blank" rel="noopener">Kellblog summary</a>). The 22% itself is a game simplification. Lifetime value and payback use gross margin. <b>Net revenue retention</b> is a chained monthly approximation: each month, (starting MRR + upgrades − downgrades − churned MRR) ÷ starting MRR, multiplied over the last 12 months. New customers’ churn is mostly left out. Median net dollar retention was 109% in the same KeyBanc survey, and Clouded Judgement’s cloud software comps showed a median net retention of 112% in January 2024 (<a href="https://cloudedjudgement.substack.com/p/clouded-judgement-11924-the-bar-for" target="_blank" rel="noopener">source</a>). <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data. <b>Expansion</b>: from $1M valuation, each paying customer is checked about once a year and can move up or down one plan (Base, Pro, Enterprise). How often, the 12% upgrade and 4% downgrade rates, and the plan prices are game simplifications, not measured data. <b>IPO readiness</b>: ARR of $100M, net revenue retention of 110%, a Rule of 40 score of 40 (year-on-year ARR growth % plus profit margin %, a rule of thumb from <a href="https://feld.com/archives/2015/02/rule-40-healthy-saas-company/" target="_blank" rel="noopener">Brad Feld</a>) and 30% year-on-year growth, all held for 3 months in a row. In the late 2010s, “IPO scale” was commonly put at $100M ARR growing 30% a year; the bar is higher now (<a href="https://www.scalevp.com/blog/the-path-from-zero-to-ipo-revisiting-the-mendoza-line-in-2024" target="_blank" rel="noopener">Scale Venture Partners</a>). The 110% retention target and the 3-month hold are game simplifications, and none of these are listing requirements. Profit margin is revenue minus all spending, over revenue, for the last 3 months.</p>
   </div></div></div>
 </div>
 
 <script>
 const W=360,BH=204,NB=6,H=BH*NB,BR=3.5,PR=3,GRAV=820,PER_AD=100,DECAY=.92,PRICE0=49,MONTH=10,AD0=100,AD_GROWTH=1.08;
 const WALLTOP=160,FLOOR=196;const CHURN0=.06;let churn=CHURN0,price=PRICE0;
+// Summed effects of the owned roadmap nodes, rebuilt by refx(). Every value is a delta: r0..r5 and evGood in rate points as fractions (.032 is 3.2 points), the rest relative (-.1 is 10% lower).
+const FX_KEYS=['r0','r1','r2','r3','r4','r5','churn','priceTol','adCost','adReach','refSize','custRef','down','cts','csm','seo','rp','evGood'],FX=Object.fromEntries(FX_KEYS.map(k=>[k,0]));
+// Price tolerance shrinks how far price moves conversion and churn away from 1, at most by 80%.
+const priceTol=x=>1+(x-1)*(1-Math.min(.8,FX.priceTol));
 // Game simplification, not a measured benchmark: 1 at $49, so tuned rates hold there. Revenue landing rate scales with slot width (sim/sweep.js).
-const wtp=p=>1/(1+(p/79)**3),priceConv=()=>wtp(price)/wtp(PRICE0); // S-curve: demand falls away past about $79
-const priceChurn=p=>(1+.5*Math.log(p/55)**2)/(1+.5*Math.log(PRICE0/55)**2),paidChurn=(p=price)=>churn*priceChurn(p); // U-shape: lowest near $55
+const wtp=p=>1/(1+(p/79)**3),priceConv=()=>priceTol(wtp(price)/wtp(PRICE0)); // S-curve: demand falls away past about $79
+const priceChurn=p=>priceTol((1+.5*Math.log(p/55)**2)/(1+.5*Math.log(PRICE0/55)**2)),paidChurn=(p=price)=>churn*priceChurn(p); // U-shape: lowest near $55
 // Game simplification: a plan multiplies price and lowers churn. Pro and Enterprise customers pay more and stay longer.
 // Multiples tuned with tests/bot.js. At 1/2/5, bot runs peaked near 106% NRR and never filed. At 1/2.5/6, a company with the churn track maxed, CSMs covering every customer, 3 account managers and Expansion tier 3 reaches about 117%.
 const PLANS=[{name:'Base',mult:1,stick:1},{name:'Pro',mult:2.5,stick:.7},{name:'Enterprise',mult:6,stick:.5}];
@@ -240,7 +244,7 @@ const C={},readColors=()=>{for(const k of ['ad','acq','act','ret','ref','rev','f
 // Expansion (board 5): paying customers only, uniform entry, no carryover from Revenue. Locked until EXP_AT peak valuation.
 // Tuned with sim/expansion.js: a 43px centre slot lands about 12% (EXP_RATE0), and two 9px Downgrade slots 12px in from the walls about 3.8% together (DOWN_RATE).
 // Wall-flush Downgrade slots can't reach 4%: 4px or less lands none, 5px already 6%.
-const EXP_W0=43,DOWN_W=9,DOWN_ZONES=[[12,12+DOWN_W],[348-DOWN_W,348]],EXP_RATE0=.12,DOWN_RATE=.038,EXP_AT=1e6,expOpen=()=>peak>=EXP_AT;
+const EXP_W0=43,DOWN_W=9,DOWN_ZONES=[[12,12+DOWN_W],[348-DOWN_W,348]],EXP_RATE0=.12,DOWN_RATE=.038,EXP_AT=1e6,expOpen=()=>peak>=EXP_AT,downRate=()=>DOWN_RATE*(1+FX.down);
 // Game simplification: each paying customer gets an expansion check about once a game year.
 const EXP_CHECK=1/12;
 const BOARDS=[
@@ -268,7 +272,7 @@ function sfx(name){if(muted||!ac)return;const n=performance.now(),[gap,play]=SFX
 for(const type of ['pointerdown','keydown'])addEventListener(type,()=>{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;ac??=new A();ac.resume()});
 
 let cash=1500,ads=0,spend=0,ledger=[],monthOut=0,monthRev=0,balls=[],floats=[],queue=[];
-const COST_TO_SERVE=.22;
+const COST_TO_SERVE=.22,cts=()=>COST_TO_SERVE*(1+FX.cts);
 function spendCash(n){cash-=n;monthOut+=n}
 function margin3(){const l=ledger.slice(-3),rv=l.reduce((t,e)=>t+e.rev,0);return rv>0?(rv-l.reduce((t,e)=>t+e.out,0))/rv:null}
 const into=Array(NB).fill(0),out=Array(NB).fill(0);let staff=[],eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
@@ -285,7 +289,7 @@ const POST_CD=15000;
 // Marketing managers have diminishing returns: their combined effect grows like a power of team strength. One full hire counts about 1. Game simplification.
 const MM_K=5,MM_P=.35,mmEff=()=>{const m=strength('mm');return m>0?MM_K*((1+m/MM_K)**MM_P-1)/MM_P:0};
 // seoBase is the average search traffic a month; seoRange is what it can be this month.
-function seoBase(l=seoLvl,f=seoFresh){return l?SEO[l-1][2]*f*(1+.5*mmEff()):0}
+function seoBase(l=seoLvl,f=seoFresh){return l?SEO[l-1][2]*f*(1+.5*mmEff())*(1+FX.seo):0}
 function seoRange(l,f){const b=seoBase(l,f);return [Math.round(b*(1-SEO_VAR)),Math.round(b*(1+SEO_VAR))]}
 function organicRate(){return seoBase()*seoRoll+mmEff()*MM.visitors}
 function post(){const now=performance.now();if(ipoFiled||now<postReady)return;postReady=now+POST_CD;const m=1+mmEff();
@@ -305,7 +309,7 @@ CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0});
 // Acquisition gets dearer at scale, as CAC does. Above $100k peak valuation, ad and campaign prices grow faster than reach, so each visitor costs more. Game simplification.
 // c.reach stays in base units (the reach bar); visitors per ad are c.reach × reachK().
 const MKT0=1e5,AD_PRICE_P=.6,AD_REACH_P=.1,mkt=()=>Math.max(1,peak/MKT0),r10=v=>Math.round(v/10)*10;
-const adCost=c=>r10(c.cost*mkt()**AD_PRICE_P),campCost=c=>r10(c.camp*mkt()**AD_PRICE_P),reachK=()=>mkt()**AD_REACH_P,perAd=c=>Math.max(1,Math.round(c.reach*reachK()));
+const adCost=c=>r10(c.cost*mkt()**AD_PRICE_P*(1+FX.adCost)),campCost=c=>r10(c.camp*mkt()**AD_PRICE_P*(1+FX.adCost)),reachK=()=>mkt()**AD_REACH_P*(1+FX.adReach),perAd=c=>Math.max(1,Math.round(c.reach*reachK()));
 const RECOVER=.10;
 function runAd(c,t=performance.now()){const v=perAd(c);c.reach*=DECAY;for(let i=0;i<v;i++)queue.push({t:t+i*22,src:c.id});return v}
 function buyAd(id){const c=CHANNELS.find(x=>x.id===id);
@@ -327,7 +331,7 @@ function say(t){const m=$('msg');m.classList.remove('intro');m.innerHTML=t}
 const aimed=(src,b)=>{const c=src&&CHANNELS.find(x=>x.id===src);return c&&c.aim===b?c:null};
 function enter(b,friend,x,src){x??=12+Math.random()*(W-24);const a=aimed(src,b);if(a){const c=CENTERS[b].reduce((p,q)=>Math.abs(q-x)<Math.abs(p-x)?q:p);x=c+(x-c)*a.pull}into[b]++;return{b,friend,src,x,y:b*BH+12,vx:(Math.random()-.5)*30,vy:0,age:0}}
 // 3rd lowest of 8 uniforms is Beta(3,6): 1 to 25, peaking near 8.
-const referred=()=>Math.round(1+24*Array.from({length:8},Math.random).sort((a,b)=>a-b)[2]);
+const referred=()=>Math.max(1,Math.round((1+24*Array.from({length:8},Math.random).sort((a,b)=>a-b)[2])*(1+FX.refSize)));
 // Above ballCap, users skip the animation and land by the odds. x is set so land() scores the outcome.
 // The cap adapts to the device: every 30 frames it shrinks by a fifth if frames averaged over 18 ms (under about 55 fps), and grows by a tenth while frames keep up and the cap is full. capCeil remembers just under the level that dropped frames and creeps back up 1% per clean window, so the cap doesn't saw-tooth. Outcomes don't depend on it.
 const BALL_MIN=400,BALL_MAX=6000;let ballCap=BALL_MIN,capCeil=BALL_MAX,frameN=0,frameSum=0;
@@ -339,10 +343,10 @@ const addFloat=f=>{if(floats.length<40)floats.push(f)};
 function spawn(o){if(balls.length<ballCap){balls.push(o);return}
   const zs=BOARDS[o.b].zones,ds=o.b===5?DOWN_ZONES:[],inZone=x=>zs.some(([a,c])=>x>=a&&x<c)||ds.some(([a,c])=>x>=a&&x<c);
   const t=trackOf(o.b),r=Math.random(),up=rateOf(t)*(aimed(o.src,o.b)?.lift||1),pick=z=>{const [a,c]=z[Math.random()*z.length|0];o.x=(a+c)/2};
-  if(r<up)pick(zs);else if(ds.length&&r<up+DOWN_RATE)pick(ds);else do o.x=Math.random()*W;while(inZone(o.x));
+  if(r<up)pick(zs);else if(ds.length&&r<up+downRate())pick(ds);else do o.x=Math.random()*W;while(inZone(o.x));
   land(o)}
 // Flat and capped so customers can't compound: friends never refer, and this adds at most 10 referrals a month.
-const CUST_REFER=.01,REFER_CAP=1000;
+const CUST_REFER=.01,REFER_CAP=1000,custRefer=()=>CUST_REFER*(1+FX.custRef);
 function refer(x,y){const n=referred();for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60);addFloat({x,y,t:`+${n} friend${n>1?'s':''}`,c:C.ref,life:1});return n}
 function land(o){
   const B=BOARDS[o.b],hit=B.zones.some(([a,c])=>o.x>=a&&o.x<c),fy=o.b*BH+WALLTOP-6;
@@ -361,7 +365,7 @@ function landExp(o,hit,fy){const pl=unkey(o.sub)[1];
 // Only free ball slots animate. The rest settle in bulk with the odds path's rates, so there's no per-customer loop: upgrade at the track rate, downgrade at DOWN_RATE overall (DOWN_RATE/(1-rate) of those that missed Upgrade).
 function expCheck(){if(!expOpen())return;for(const [k,n] of Object.entries(subs)){const m=binom(n,EXP_CHECK),a=Math.max(0,Math.min(m,ballCap-balls.length)),rest=m-a;
   for(let i=0;i<a;i++){const o=enter(5,0);o.sub=k;spawn(o)}
-  if(!rest)continue;into[5]+=rest;const pl=unkey(k)[1],r=rateOf(trackOf(5)),up=binom(rest,r),down=binom(rest-up,Math.min(1,DOWN_RATE/(1-r)));
+  if(!rest)continue;into[5]+=rest;const pl=unkey(k)[1],r=rateOf(trackOf(5)),up=binom(rest,r),down=binom(rest-up,Math.min(1,downRate()/(1-r)));
   if(pl<2&&up&&moveSub(k,pl+1,up)){out[5]+=up;if(out[5]===up)say(`Customers upgraded to ${PLANS[pl+1].name}. Growth from customers you already have costs no ads.`)}
   if(pl>0&&down)moveSub(k,pl-1,down)}}
 function physics(dt){
@@ -440,17 +444,17 @@ function hud(){
   const mrr=MRR(),mult=revMult(),val=mrr*12*mult;peak=Math.max(peak,val);
   $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);{const r=NRR12();$('cNrr').textContent=(r==null?'–':Math.round(r*100)+'%')+' / 109%'}checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
-  TRACKS.forEach(t=>{const u=$('u-'+t.id);u.disabled=ipoFiled||lvl[t.id]>=3||cash<costOf(t);u.hidden=trackHidden(t)});
+  $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;$('csm-cov').textContent=csmCovers();
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
-  {const lp=loanPay(),net=MRR()*(1-COST_TO_SERVE)-teamCost()-lp;$('eServe').textContent=fmt(MRR()*COST_TO_SERVE);$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
-   showCount('csm');showCount('mm');{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=ipoFiled||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=ipoFiled||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
+  {const lp=loanPay(),net=MRR()*(1-cts())-teamCost()-lp;$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
+   showCount('csm');showCount('mm');{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=ipoFiled||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=ipoFiled||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
    {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=ipoFiled||!g||cash<g*CSM.salary;$('t-hire10').disabled=ipoFiled||cash<10*CSM.salary;$('m-hire10').disabled=ipoFiled||cash<10*MM.salary}
    for(const r of ROLES){showCount(r.id,ROLE_MAX);$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=ipoFiled||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
   ipoHud();$('price').disabled=ipoFiled;
-  const won=out[4],cac=won?spend/won:0,ltv=price*(1-COST_TO_SERVE)/(paying&&heads('csm')?paidChurn()*(1-Math.min(paying,heads('csm')*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
-  const pb=cac/(price*(1-COST_TO_SERVE));$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
+  const won=out[4],cac=won?spend/won:0,ltv=price*(1-cts())/(paying&&heads('csm')?paidChurn()*(1-Math.min(paying,heads('csm')*csmCovers())/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
+  const pb=cac/(price*(1-cts()));$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
   const r=ltv/cac,ok=won&&isFinite(r);$('eRatio').textContent=ok?r.toFixed(1)+' : 1':'–';$('eRatio').className=ok&&r<3?'warn':'';
 }
 let last=performance.now();
@@ -473,7 +477,7 @@ function loop(now){
    $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=ipoFiled||cash<seoCost()||seoFresh>=.99}
    const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=ipoFiled||cash<SEO[seoLvl][1]}}
   for(let i=0;i<3;i++)physics(dt/3);
-  {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*COST_TO_SERVE*dt/MONTH)}
+  {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*cts()*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
   eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
@@ -483,8 +487,8 @@ function loop(now){
     if(cash>=due){l.bal-=due;spendCash(due);l.late=0}else{const paid=Math.max(0,cash);spendCash(paid);l.bal-=paid;l.bal+=(due-paid)*.25;
       if(!l.late){l.late=1;say(`You missed a ${l.name.toLowerCase()} repayment. Late fees of 25% of each missed amount are added to what you owe until you can pay again.`)}}
     if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
-  if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),nr=binom(Math.min(paying,REFER_CAP),q);for(let i=0;i<nr;i++){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
-    let cov=Math.min(paying,heads('csm')*CSM.covers),lost=0;for(const k in subs){const [kp,kpl]=unkey(k),c=paidChurn(kp)*PLANS[kpl].stick,pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH),n0=subs[k],nc=Math.min(n0,cov);cov-=nc;const l=binom(nc,pc)+binom(n0-nc,p);lost+=l;flow.lost+=l*kp*PLANS[kpl].mult;if(n0-l)subs[k]=n0-l;else delete subs[k]}
+  if(paying>0){const q=1-Math.pow(1-custRefer(),dt/MONTH),nr=binom(Math.min(paying,REFER_CAP),q);for(let i=0;i<nr;i++){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
+    let cov=Math.min(paying,heads('csm')*csmCovers()),lost=0;for(const k in subs){const [kp,kpl]=unkey(k),c=paidChurn(kp)*PLANS[kpl].stick,pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH),n0=subs[k],nc=Math.min(n0,cov);cov-=nc;const l=binom(nc,pc)+binom(n0-nc,p);lost+=l;flow.lost+=l*kp*PLANS[kpl].mult;if(n0-l)subs[k]=n0-l;else delete subs[k]}
     if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:C.warn,life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
   if(cash<adCost(CHANNELS[0])&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
@@ -492,37 +496,12 @@ function loop(now){
 $('channels').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.dataset.ad)buyAd(b.dataset.ad);else if(b.dataset.camp)newCampaign(b.dataset.camp);else if(b.dataset.unlock)unlockCh(b.dataset.unlock);else if(b.dataset.post)post();else if(b.dataset.seo)buySeo();else if(b.dataset.fresh)publish()});
 renderCh();
-const COSTS=[2000,5000,12500],CENTERS=[[180],[91,269],[82,278],[180],[180],[180]];
+const CENTERS=[[180],[91,269],[82,278],[180],[180],[180]];
 const slots=(b,w)=>CENTERS[b].map(c=>[c-w/2,c+w/2]);
-const TRACKS=[
-  {id:'acq',board:0,label:'sign-up',unit:'of visitors',base:.073,tiers:[['Market research',.105,38],['Landing page rewrite',.125,44],['Positioning overhaul',.145,50]]},
-  {id:'act',board:1,label:'activation',unit:'of sign-ups',base:.36,tiers:[['Onboarding checklist',.455,102],['Guided setup',.503,110],['Aha-moment redesign',.526,114]]},
-  {id:'ret',board:2,label:'month-1 retention',unit:'of activated users',base:.47,tiers:[['Lifecycle emails',.525,92],['Habit-forming features',.553,96],['Core workflow polish',.566,98]]},
-  {id:'ref',board:3,label:'referral',unit:'of retained users',base:.10,tiers:[['Share button',.20,91],['Invite rewards',.25,106],['Built-in viral loop',.275,113]]},
-  {id:'rev',board:4,label:'paid conversion',unit:'of retained users',base:.30,tiers:[['Pricing page',.40,156],['Upgrade prompts',.45,172],['Sales assist',.475,180]]},
-  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:CHURN0,tiers:[['Cancellation save offers',.047],['Annual plans',.039],['Health scoring',.034]]},
-  // Keep churn at index 5 (load reads TRACKS[5]). Widths from sim/expansion.js: 56px lands 16%, 67px 20%, 80px 24%.
-  {id:'exp',board:5,label:'upgrade',unit:'of checked customers',base:EXP_RATE0,costs:[5e4,2.5e5,1e6],tiers:[['Usage-based pricing',.16,56],['Seat-based plans',.20,67],['Enterprise plan',.24,80]]}
-];
-const costOf=t=>(t.costs||COSTS)[lvl[t.id]],trackHidden=t=>t.board===5&&!expOpen();
-const lvl={};TRACKS.forEach(t=>lvl[t.id]=0);
 const p1=v=>{const x=v*100;return(Math.abs(x-Math.round(x))<.05?Math.round(x):x.toFixed(1))+'%'};
-// Legacy tier lookup, for the upgrade list and churn. Task 2 of the tech tree removes it with lvl.
-function tierRate(t){return lvl[t.id]?t.tiers[lvl[t.id]-1][1]:t.base}
-function renderUpg(){
-  $('upglist').innerHTML=TRACKS.map(t=>{const L=lvl[t.id],max=L>=3,tier=t.tiers[Math.min(L,2)],col=t.id==='churn'?'warn':BOARDS[t.board].col;
-    return `<button class="upg${max?' done':''}" id="u-${t.id}" style="--c:var(--${col})"${trackHidden(t)?' hidden':''}><b>${max?'Maxed':tier[0]}</b><span class="cost">${max?'—':fmt(costOf(t))}</span><small>${t.id==='churn'?'Paid churn':BOARDS[t.board].name} · ${max?p1(tierRate(t))+' '+t.label:`${t.label} ${p1(tierRate(t))} → ${p1(tier[1])}`} · tier ${Math.min(L+1,3)}/3</small></button>`}).join('');
-}
-function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(ipoFiled||L>=3||cash<costOf(t)||trackHidden(t))return;
-  const isChurn=id==='churn',was=isChurn?paidChurn():rateOf(t);
-  spendCash(costOf(t));const [name,rate,w]=t.tiers[L];lvl[id]++;syncBonus();
-  if(isChurn)churn=rate;else zone(t.board);applyPrice();
-  const d=Math.abs((isChurn?paidChurn():rateOf(t))-was)*100;celebrate(t.board,(isChurn?'−':'+')+d.toFixed(1)+' pts '+(isChurn?'churn':t.label),!isChurn);
-  say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(id==='churn'?paidChurn():rateOf(t))}${t.unit?' '+t.unit:''}.`);renderUpg()}
-// The upgrade track on board b; churn shares board 4 but isn't one. Undefined for a board without upgrades.
 const BASEW=BOARDS.map(B=>B.zones[0][1]-B.zones[0][0]);
-// Landing rate against slot width, one table per board. Widths up to the tier 3 point are the tuned ones above; the points beyond are
-// sim/sweep.js (boards 0-4) and sim/expansion.js (board 5) runs, each curve scaled to pass through the tier 3 point (tier values stay authoritative).
+// Landing rate against slot width, one table per board. The first four points are the base width and the tuned widths of the old upgrade tiers
+// (still authoritative); the points beyond are sim/sweep.js (boards 0-4) and sim/expansion.js (board 5) runs, each curve scaled to pass through the fourth point.
 // Upstream boards sat at base widths in the sims, so rates drift when several boards are upgraded (see CLAUDE.md).
 const RATES=[
   [[24,.073],[38,.105],[44,.125],[50,.145],[56,.155],[64,.190],[74,.228],[90,.270]],
@@ -531,11 +510,12 @@ const RATES=[
   [[48,.10],[91,.20],[106,.25],[113,.275],[120,.294],[140,.392],[165,.446],[200,.558]],
   [[116,.30],[156,.40],[172,.45],[180,.475],[200,.532],[230,.603],[260,.671],[300,.771]],
   [[43,.12],[56,.16],[67,.20],[80,.24],[95,.276],[110,.314],[130,.378],[160,.461]]
-].map((w,b)=>{const t=TRACKS.find(t=>t.board===b&&t.id!=='churn');return{id:t.id,board:b,label:t.label,unit:t.unit,base:t.base,w}});
+].map((w,b)=>({board:b,w,...[
+  {id:'acq',label:'sign-up',unit:'of visitors'},{id:'act',label:'activation',unit:'of sign-ups'},{id:'ret',label:'month-1 retention',unit:'of activated users'},
+  {id:'ref',label:'referral',unit:'of retained users'},{id:'rev',label:'paid conversion',unit:'of retained users'},{id:'exp',label:'upgrade',unit:'of checked customers'}][b],base:w[0][1]}));
 const trackOf=b=>RATES[b],rateCap=b=>RATES[b].w.at(-1)[1];
-// Rate points added by upgrades. Until the tech tree replaces lvl, syncBonus derives them from the bought tiers.
+// Rate points added by roadmap nodes, from FX.r0..r5 (refx).
 const bonus=Array(6).fill(0);
-function syncBonus(){TRACKS.forEach(t=>{if(t.id!=='churn')bonus[t.board]=lvl[t.id]?t.tiers[lvl[t.id]-1][1]-t.base:0})}
 function widthFor(b,r){const w=RATES[b].w;if(r<=w[0][1])return w[0][0];
   for(let i=1;i<w.length;i++)if(r<=w[i][1])return w[i-1][0]+(w[i][0]-w[i-1][0])*(r-w[i-1][1])/(w[i][1]-w[i-1][1]);
   return w.at(-1)[0]}
@@ -558,9 +538,54 @@ function applyPrice(){const t=trackOf(4);zone(4);
   $('p-val').textContent=fmt(price);$('p-meta').textContent=`At ${fmt(price)}: ${p1(rateOf(t))} paid conversion, ${p1(paidChurn())} monthly churn.`}
 function setPrice(v){if(!ipoFiled){price=v;applyPrice()}$('price').value=price}
 $('price').addEventListener('input',e=>setPrice(+e.target.value));
-$('upglist').addEventListener('click',e=>{const b=e.target.closest('.upg');if(b&&!b.disabled)buyUpg(b.id.slice(2))});
-renderUpg();
-const CSM={salary:6000,covers:150,mult:.75,at:5e5};let warnedNeg=0;
+// Roadmap (tech tree). Nodes cost roadmap points and cash. You can take a node linked to one you own; nodes sharing a fork id exclude each other.
+// area 0-5 is a funnel wedge, [a,b] a keystone between two; ring is the distance out, slot the angle inside the wedge (-1..1). al is hidden ([g,l], each -1..1).
+// fx holds the node's effects (see FX_KEYS); a repeatable (rep) can be bought again for a point more each time. Content beyond the ring 1 seeds is Task 7's.
+const RP_START=2;
+const mkNode=(id,name,desc,area,ring,slot,links,pts,cash,al,fx,fork=null,rep=false)=>({id,name,desc,area,ring,slot,links,fork,pts,cash,al,fx,rep});
+const NODES=[
+  mkNode('start','Founding idea','Where the product starts.',null,0,0,[],0,0,[0,0],{}),
+  // Ring 1 seeds: the old tier 1 upgrades, fork-free so old saves map onto them.
+  mkNode('acq1','Market research','Interview the people who sign up and the ones who leave. Sign-up rate +3.2 points.',0,1,0,['start'],1,2000,[0,.3],{r0:.032}),
+  mkNode('act1','Onboarding checklist','A short list of first steps in the app. Activation +9.5 points.',1,1,0,['start'],1,2000,[.2,.2],{r1:.095}),
+  mkNode('ret1','Lifecycle emails','Timed emails that bring new users back in their first month. Month-1 retention +5.5 points.',2,1,-.5,['start'],1,2000,[0,0],{r2:.055}),
+  mkNode('churn1','Cancellation save offers','Offer a discount or a pause before someone cancels. Paid churn 21.7% lower.',2,1,.5,['start'],1,2000,[-.3,0],{churn:-.2167}),
+  mkNode('ref1','Share button','One click to send the product to a colleague. Referral +10 points.',3,1,0,['start'],1,2000,[0,-.2],{r3:.10}),
+  mkNode('rev1','Pricing page','A clear page with plans and prices. Paid conversion +10 points.',4,1,0,['start'],1,2000,[.3,.2],{r4:.10}),
+  mkNode('exp1','Usage-based pricing','Customers who use more move up a plan. Upgrade rate +4 points.',5,1,0,['start'],1,5e4,[0,0],{r5:.04})
+];
+let NODE_IX={};
+// Two-way adjacency from each node's links, and the id index. Rerun after changing NODES.
+function linkNodes(){NODE_IX={};for(const n of NODES){n.adj=[];NODE_IX[n.id]=n}
+  for(const n of NODES)for(const l of n.links){const m=NODE_IX[l];if(!m)continue;if(!n.adj.includes(l))n.adj.push(l);if(!m.adj.includes(n.id))m.adj.push(n.id)}}
+linkNodes();
+const nodeOf=id=>NODE_IX[id];
+let owned={start:1},rp=RP_START;
+// Rebuild FX from owned, then everything derived from it. On buy, respec and load. Hot paths read FX, never owned.
+function refx(){for(const k of FX_KEYS)FX[k]=0;
+  for(const id in owned){const n=NODE_IX[id];if(!n)continue;for(const k in n.fx)FX[k]+=n.fx[k]*owned[id]}
+  for(let b=0;b<NB;b++)bonus[b]=FX['r'+b];churn=CHURN0*(1+FX.churn);for(let b=0;b<NB;b++)zone(b)}
+const inArea=(n,a)=>Array.isArray(n.area)?n.area.includes(a):n.area===a;
+// A repeatable you own stays available. Expansion is closed until the board opens; the losing side of a fork is locked.
+function nodeState(id){const n=NODE_IX[id];if(!n)return'unreachable';if(n.ring===0)return'owned';
+  if(owned[id]&&!n.rep)return'owned';if(inArea(n,5)&&!expOpen())return'closed';
+  if(n.fork&&NODES.some(m=>m.fork===n.fork&&m.id!==id&&owned[m.id]))return'locked';
+  return owned[id]||n.adj.some(a=>owned[a])?'available':'unreachable'}
+const nodeCash=n=>n.cash*mkt()**AD_PRICE_P,nodePts=n=>n.pts+(n.rep?owned[n.id]||0:0);
+// What a node does, in plain words: "sign-up +3.2 points, paid churn −21.7%".
+const FX_WORDS={churn:'paid churn',priceTol:'price sensitivity',adCost:'ad prices',adReach:'visitors per ad',refSize:'friends per referral',custRef:'customer referrals',
+  down:'downgrades',cts:'cost to serve',csm:'customers per CSM',seo:'search traffic',rp:'roadmap points',evGood:'chance of a lucky break'};
+const signed=(x,u)=>{const r=Math.round(x*10)/10;return(r<0?'−':'+')+Math.abs(r)+u};
+function fxText(fx){return Object.entries(fx).map(([k,v])=>/^r\d$/.test(k)?`${RATES[+k[1]].label} ${signed(v*100,' points')}`:k==='evGood'?`${FX_WORDS[k]} ${signed(v*100,' points')}`:k==='priceTol'?`${FX_WORDS[k]} ${signed(-v*100,'%')}`:`${FX_WORDS[k]} ${signed(v*100,'%')}`).join(', ')}
+function markShipped(){} // Task 3: resets the falling-behind timer.
+function buyNode(id){const n=NODE_IX[id];if(!n||ipoFiled||nodeState(id)!=='available')return false;
+  const k=nodeCash(n),pts=nodePts(n);if(rp<pts||cash<k)return false;
+  const was=RATES.map(rateOf),pc=paidChurn();
+  spendCash(k);rp-=pts;owned[id]=(owned[id]||0)+1;refx();applyPrice();markShipped();
+  for(let b=0;b<NB;b++){const d=rateOf(RATES[b])-was[b];if(Math.abs(d)>1e-9)celebrate(b,signed(d*100,' pts ')+RATES[b].label,true)}
+  if(Math.abs(paidChurn()-pc)>1e-9)celebrate(4,signed((paidChurn()-pc)*100,' pts churn'),false);
+  say(`<b>${n.name}</b> shipped: ${fxText(n.fx)}.`);return true}
+const CSM={salary:6000,covers:150,mult:.75,at:5e5},csmCovers=()=>Math.round(CSM.covers*(1+FX.csm));let warnedNeg=0;
 const MM={salary:6000,visitors:400,at:5e5};
 const ROLE_LIFT=.15,ROLE_MAX=3;
 const ROLES=[
@@ -605,7 +630,7 @@ function annualReview(){if(!staff.length)return;
   const lost=Object.entries(gone).map(([r,n])=>`${n} ${roleName(r)}${n>1?'s':''}`);
   const raise=!staff.length?'Payroll is now empty.':raised?`Raises for everyone with a full year in take payroll to ${fmt(teamCost())} a month, and they're slightly more effective.`:`No one has been here a full year yet, so payroll stays at ${fmt(teamCost())} a month.`;
   showEv(lost.length?'bad':'good',`Year ${month/12} review`,lost.length?'Staff headhunted':'Team stayed',lost.length?`${raise} You lost ${lost.join(', ')} to other companies, and their experience went with them.`:raise)}
-$('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:default"><b>Customer success manager<span class="hc" id="hc-csm"></span></b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
+$('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:default"><b>Customer success manager<span class="hc" id="hc-csm"></span></b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to <span id="csm-cov">${CSM.covers}</span> paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-hire10">+10</button><button class="campbtn" id="t-cover">Cover all</button><button class="campbtn" id="t-fire">Let go</button></span></div>
 <div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager<span class="hc" id="hc-mm"></span></b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: the first adds about ${Math.round(MM.visitors*MM_K*((1+1/MM_K)**MM_P-1)/MM_P/10)*10} free visitors a month once ramped up, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. Each extra one adds less: 10 do the work of about 7, 100 of about 27. <span id="m-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-hire10">+10</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}<span class="hc" id="hc-${r.id}"></span></b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
@@ -618,7 +643,7 @@ $('m-fire').addEventListener('click',()=>{if(!heads('mm'))return;fire('mm');say(
 $('t-hire').addEventListener('click',()=>{if(ipoFiled||cash<CSM.salary)return;hire('csm');const n=heads('csm');say(n===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${n} customer success managers.`)});
 $('t-fire').addEventListener('click',()=>{if(!heads('csm'))return;fire('csm');say('You let your newest customer success manager go. Their customers lose the extra attention.')});
 // Bulk hiring: needs a month's salary in cash for every new hire, and hires them one at a time.
-const csmGap=()=>Math.max(0,Math.ceil(paying/CSM.covers)-heads('csm'));
+const csmGap=()=>Math.max(0,Math.ceil(paying/csmCovers())-heads('csm'));
 function hireN(role,n){if(ipoFiled||n<1||cash<n*baseSalary(role))return 0;for(let i=0;i<n;i++)hire(role);return n}
 const hired=(role,n)=>{if(n)say(`You hired ${n} ${roleName(role)}s. They start at a quarter of full effect and ramp up over six months. You now have ${heads(role)}.`)};
 $('m-hire10').addEventListener('click',()=>hired('mm',hireN('mm',10)));
@@ -669,8 +694,8 @@ const EVENTS=[
 let pausedAt=0;
 function showEv(k,kind,name,t){sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
-function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()*(1-COST_TO_SERVE)-teamCost()-loanPay()>0?.5:-.5)))}
-function randomEvent(){const can=EVENTS.filter(e=>!e.when||e.when()),good=Math.random()<.4-.3*health(),sided=can.filter(e=>!!e.good===good),ok=sided.length?sided:can,e=ok[Math.random()*ok.length|0],t=e.run();showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
+function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()*(1-cts())-teamCost()-loanPay()>0?.5:-.5)))}
+function randomEvent(){const can=EVENTS.filter(e=>!e.when||e.when()),good=Math.random()<.4-.3*health()+FX.evGood,sided=can.filter(e=>!!e.good===good),ok=sided.length?sided:can,e=ok[Math.random()*ok.length|0],t=e.run();showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
 // Based on peak valuation, so a dip can't repeat one and msLvl needs no saving. Crossing several at once shows the highest.
 // A 4th entry replaces the usual "Next up" line.
 const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn','Next goal: an IPO. See IPO readiness under Company.']];let msLvl=0;
@@ -711,9 +736,9 @@ $('ipo-file').addEventListener('click',fileIPO);$('ipo-sum').addEventListener('c
 const wide=matchMedia('(min-width:860px)');
 function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matches){$('side').prepend(a);$('h-act').after(b);$('play').append(m)}else{$('top').append(b);$('boardcol').prepend(a);$('top').after(m)}}
 placeBuy();wide.addEventListener('change',placeBuy);
-// Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
+// Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,lvl,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,rp,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
@@ -725,12 +750,12 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   hist=s.histDays===10?hist.slice(-HIST_N):[];
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
   flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
-  into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
+  into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);owned={...s.owned,start:1};rp=s.rp??RP_START;
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
-  staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();churn=tierRate(TRACKS[5]);syncBonus();BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
+  staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
-  renderCh();renderUpg()}
+  renderCh()}
 function showMute(){$('mute').textContent=muted?'Unmute':'Mute';$('mute').setAttribute('aria-pressed',muted)}showMute();
 $('mute').addEventListener('click',()=>{muted=!muted;showMute();try{localStorage.setItem('funnel-drop-muted',muted?'1':'0')}catch{}});
 function showTheme(){setTheme();readColors();const dark=document.documentElement.dataset.theme==='dark',t=dark?'Switch to light mode':'Switch to dark mode';$('theme').textContent=dark?'\u2600\uFE0E':'\u263E\uFE0E';$('theme').title=t;$('theme').setAttribute('aria-label',t)}showTheme();

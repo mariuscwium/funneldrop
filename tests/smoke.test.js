@@ -23,14 +23,15 @@ test('a month passes in 10 s', () => {
 
 test('save round-trips', () => {
   const first=load();
-  first.g('cash=777;paying=3;subs={49:3};lvl.social=2');
+  first.g('cash=777;paying=3;subs={49:3};rp=9;buyNode("acq1");rp=4.5;cash=777');
   first.g('save()');
   const saved=JSON.parse(first.store.get('funnel-drop-save-v1'));
   const second=load({save:saved});
   assert.equal(second.g('cash'),777);
   assert.equal(second.g('paying'),3);
-  assert.equal(second.g('lvl.social'),2);
-  assert.equal(JSON.stringify(second.g('lvl')),JSON.stringify(first.g('lvl')));
+  assert.equal(second.g('rp'),4.5);
+  assert.equal(JSON.stringify(second.g('owned')),JSON.stringify(first.g('owned')));
+  assert.equal(second.g('rateOf(trackOf(0))'),first.g('rateOf(trackOf(0))'));
 });
 
 test('charts add a point every 10 days and keep the last 24 months', () => {

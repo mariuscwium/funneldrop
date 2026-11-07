@@ -35,14 +35,14 @@ function botStep(v){
   if(ipoFiled)return;
   const buy=(what,n=1)=>botBought[what]=(botBought[what]||0)+n;
   const net=()=>MRR()*(1-COST_TO_SERVE)-teamCost()-loanPay();
-  const reserve=()=>teamCost()+loanPay()+MRR()*COST_TO_SERVE; // keep a month of outgoings
+  const reserve=()=>teamCost()+loanPay()+MRR()*cts(); // keep a month of outgoings
   let next=Infinity; // cheapest purchase still to make
   if(ipoHold>=IPO.hold){fileIPO();return}
   if(performance.now()>=postReady)post();
   if(v==='idle'&&peak>=1e7)return;
-  // Cheapest affordable upgrade: board tracks, SEO tiers and channel unlocks.
+  // Cheapest affordable upgrade: roadmap nodes it has the points for, SEO tiers and channel unlocks.
   for(;;){const o=[];
-    for(const t of TRACKS)if(lvl[t.id]<3&&!trackHidden(t))o.push([costOf(t),()=>buyUpg(t.id),t.tiers[lvl[t.id]][0]]);
+    for(const n of NODES)if(nodeState(n.id)==='available'&&rp>=nodePts(n))o.push([nodeCash(n),()=>buyNode(n.id),n.name]);
     if(seoLvl<3)o.push([SEO[seoLvl][1],buySeo,SEO[seoLvl][0]]);
     for(const c of CHANNELS)if(!c.open)o.push([c.unlock,()=>unlockCh(c.id),c.name]);
     o.sort((a,b)=>a[0]-b[0]);next=o.length?o[0][0]:Infinity;if(!o.length||cash-reserve()<o[0][0])break;o[0][1]();buy(o[0][2])}
@@ -77,9 +77,9 @@ for(let m=1;m<=months;m++){
   if(filed==null&&t.g('ipoFiled'))filed=m;
   if(t.g('MRR()*12')>=1e8){const r=t.g('rule40()');if(r!=null){r40seen++;if(r<40)r40miss++}}
   if(m%12===0||filed===m){
-    const s=t.g(`({mrr:MRR(),val:MRR()*12*revMult(),cash,m:margin3(),nrr:NRR12(),y:yoy(),r40:rule40(),team:staff.length,csm:heads('csm'),mm:heads('mm'),paying,lv:TRACKS.map(t=>lvl[t.id]).join(''),ads:botAds,hold:ipoHold,bought:(()=>{const b=botBought;botBought={};return b})()})`);
+    const s=t.g(`({mrr:MRR(),val:MRR()*12*revMult(),cash,m:margin3(),nrr:NRR12(),y:yoy(),r40:rule40(),team:staff.length,csm:heads('csm'),mm:heads('mm'),paying,lv:Object.keys(owned).length-1,ads:botAds,hold:ipoHold,bought:(()=>{const b=botBought;botBought={};return b})()})`);
     const b=Object.entries(s.bought).map(([k,n])=>n>1?k+'×'+n:k).join(', ');
-    console.log(`m${String(m).padStart(3)} MRR ${money(s.mrr).padStart(8)} val ${money(s.val).padStart(8)} cash ${money(s.cash).padStart(8)} margin ${fm(s.m).padStart(5)} NRR ${fm(s.nrr).padStart(4)} yoy ${fm(s.y).padStart(5)} R40 ${s.r40==null?'–':Math.round(s.r40)} paying ${s.paying} team ${s.team} (csm ${s.csm}, mm ${s.mm}) lvl ${s.lv} ads ${s.ads} hold ${s.hold}${b?' | bought: '+b:''}`);
+    console.log(`m${String(m).padStart(3)} MRR ${money(s.mrr).padStart(8)} val ${money(s.val).padStart(8)} cash ${money(s.cash).padStart(8)} margin ${fm(s.m).padStart(5)} NRR ${fm(s.nrr).padStart(4)} yoy ${fm(s.y).padStart(5)} R40 ${s.r40==null?'–':Math.round(s.r40)} paying ${s.paying} team ${s.team} (csm ${s.csm}, mm ${s.mm}) nodes ${s.lv} ads ${s.ads} hold ${s.hold}${b?' | bought: '+b:''}`);
   }
   if(filed!=null)break;
 }

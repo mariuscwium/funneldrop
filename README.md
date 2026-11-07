@@ -11,11 +11,11 @@ Progress saves in your browser, so you can reload and carry on. **New game** sta
 ## How it works
 
 - **Get visitors.** Post for free, build SEO, or buy ads. Each ad reaches fewer people than the last, and content goes stale unless you keep publishing. Once you're worth more than $100k, ads cost more per visitor the bigger you get.
-- **Improve the funnel.** Upgrades widen the slots on each board, so more users land where you want them.
+- **Improve the funnel.** Roadmap items, paid for with roadmap points and cash, widen the slots on each board, so more users land where you want them, or cut churn. Cash prices rise as the company grows.
 - **Set your price.** Higher prices earn more per customer, but fewer users pay. Very cheap and very expensive plans both lose more customers.
 - **Build a team.** Each hire lifts part of the funnel, takes a few months to ramp up, gets a raise for every year they stay, and can be headhunted, taking their experience with them. Each extra marketing manager adds less than the last. Marketing managers and customer success managers can be hired 10 at a time, and Cover all hires enough customer success managers for every paying customer.
 - **Watch your margin.** Every customer costs about 22% of their payment to host and support, so lifetime value and payback use the 78% that's left. Spending is tracked month by month.
-- **Grow your customers.** From $1M valuation, each paying customer drops through the Expansion board about once a year. They can move up a plan (Base, Pro, Enterprise), stay put, or move down. Upgrades and account managers widen the Upgrade slot.
+- **Grow your customers.** From $1M valuation, each paying customer drops through the Expansion board about once a year. They can move up a plan (Base, Pro, Enterprise), stay put, or move down. Roadmap items and account managers widen the Upgrade slot.
 - **Track net revenue retention.** The Company panel shows how much of last year's recurring revenue you kept from existing customers, after upgrades, downgrades and churn. Over 100% means they grow without new sign-ups. It is a chained monthly approximation and appears after about 13 months.
 - **Borrow if you must.** Loans buy time, but repayments come out of cash every month.
 - **Go public.** From $1M valuation, the IPO readiness panel tracks four targets: $100M ARR, 110% net revenue retention, a Rule of 40 score of 40 (year-on-year growth plus profit margin) and 30% year-on-year growth. Hold all four for 3 months in a row and you can file for an IPO, which ends the game with a summary of your run. Growth alone won't get you there: 110% retention needs churn upgrades, customer success managers and Expansion working together.
