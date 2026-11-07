@@ -84,3 +84,29 @@ test('expCheck at 170k customers settles in bulk', () => {
   const ms=cpuMs(()=>g('expCheck()'));
   assert.ok(ms<5,'took '+ms+' ms');
 });
+
+test('ball paths are unchanged (slot widths are tuned against them)', () => {
+  // Seeded run; the numbers were recorded before physics only tested nearby peg rows. If physics changes on purpose, re-tune the slots and update this.
+  const {g}=load({seed:42});
+  const r=g(`peak=2e6;subs={'49:0':50,'49:1':20};paying=70;balls=[];for(let i=0;i<300;i++){const b=i%6,o=enter(b);if(b===5)o.sub=i%2?'49:0':'49:1';balls.push(o)}
+let h=0;for(let f=0;f<2000;f++){for(let k=0;k<3;k++)physics(1/180);for(const o of balls)h=(h*31+Math.round(o.x*1e6)+Math.round(o.y*1e6))%1e15;if(f%10===0)for(let i=0;i<5;i++)balls.push(enter(i%5))}
+JSON.stringify({h,out,into,n:balls.length})`);
+  assert.equal(r,'{"h":583237158630220,"out":[16,115,161,48,210,6],"into":[250,266,365,411,645,50],"n":69}');
+});
+
+test('ball cap adapts to frame time', () => {
+  const {g}=load();
+  const win=(ms,full)=>g(`${full?'balls=Array(ballCap).fill({b:9});':'balls=[];'}for(let i=0;i<30;i++)adaptCap(${ms});ballCap`);
+  assert.equal(g('ballCap'),400);
+  assert.equal(win(16.7,false),400,'no growth while the cap is not full');
+  assert.equal(win(16.7,true),440);
+  for(let i=0;i<60;i++)win(16.7,true);
+  assert.equal(g('ballCap'),g('BALL_MAX'),'grows to BALL_MAX');
+  assert.equal(win(25,true),4800,'slow frames shrink it by a fifth');
+  assert.ok(g('capCeil')<=5400);
+  for(let i=0;i<10;i++)win(16.7,true);
+  assert.ok(g('ballCap')<=g('capCeil'),'stays under the ceiling');
+  for(let i=0;i<30;i++)win(40,true);
+  assert.equal(g('ballCap'),g('BALL_MIN'),'never below BALL_MIN');
+  assert.equal(win(500,true),400,'ignores pauses over 100 ms');
+});

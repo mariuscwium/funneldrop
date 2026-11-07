@@ -14,8 +14,8 @@ function load(opts={}){
     setTimeout:()=>0,clearTimeout(){},setInterval:()=>0,performance:{now:()=>now},requestAnimationFrame:()=>0,
     localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)},
     matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){},confirm:()=>false,devicePixelRatio:1,
-    AudioContext:function(){return stub()},getComputedStyle:()=>({getPropertyValue:()=>'#000000'})};
-  ctx.document={documentElement:{dataset:{}},getElementById:el,querySelector:()=>stub(),querySelectorAll:()=>[],createElement:()=>stub(),addEventListener(){}};
+    AudioContext:function(){return stub()},Path2D:function(){return stub()},getComputedStyle:()=>({getPropertyValue:()=>'#000000'})};
+  ctx.document={hasFocus:()=>true,documentElement:{dataset:{}},getElementById:el,querySelector:()=>stub(),querySelectorAll:()=>[],createElement:()=>stub(),addEventListener(){}};
   ctx.window=ctx;vm.createContext(ctx);
   for(const s of scripts)vm.runInContext(s,ctx,{filename:FILE});
   const g=e=>vm.runInContext(e,ctx);
