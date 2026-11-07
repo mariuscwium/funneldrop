@@ -361,6 +361,11 @@ function hud(){
 let last=performance.now();
 // Rewriting a button's children mid-press swaps the <b> under the cursor and the browser drops the click.
 const setBtn=(b,h)=>{if(b.innerHTML!==h)b.innerHTML=h};
+function binom(n,p){if(n<=0||p<=0)return 0;if(p>=1)return n;
+  if(n<=50){let k=0;for(let i=0;i<n;i++)if(Math.random()<p)k++;return k}
+  let u=0,v=0;while(!u)u=Math.random();v=Math.random();
+  const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  return Math.max(0,Math.min(n,Math.round(n*p+Math.sqrt(n*p*(1-p))*z)))}
 function loop(now){
   if($('ev').open){last=now;draw();requestAnimationFrame(loop);return}
   const dt=Math.min(.05,(now-last)/1000);last=now;
@@ -382,8 +387,8 @@ function loop(now){
     if(cash>=due){l.bal-=due;cash-=due;l.late=0}else{const paid=Math.max(0,cash);cash=Math.min(cash,0);l.bal-=paid;l.bal+=(due-paid)*.25;
       if(!l.late){l.late=1;say(`You missed a ${l.name.toLowerCase()} repayment. Late fees of 25% of each missed amount are added to what you owe until you can pay again.`)}}
     if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
-  if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),refs=Math.min(paying,REFER_CAP);for(let i=0;i<refs;i++)if(Math.random()<q){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
-    const cov=Math.min(paying,csm*CSM.covers);let lost=0,i=0;for(const k in subs){const c=paidChurn(+k),pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH);let n=subs[k];for(let j=subs[k];j>0;j--,i++)if(Math.random()<(i<cov?pc:p)){n--;lost++}if(n)subs[k]=n;else delete subs[k]}
+  if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),nr=binom(Math.min(paying,REFER_CAP),q);for(let i=0;i<nr;i++){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
+    let cov=Math.min(paying,csm*CSM.covers),lost=0;for(const k in subs){const c=paidChurn(+k),pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH),n0=subs[k],nc=Math.min(n0,cov);cov-=nc;const l=binom(nc,pc)+binom(n0-nc,p);lost+=l;if(n0-l)subs[k]=n0-l;else delete subs[k]}
     if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:C.warn,life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
   if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
