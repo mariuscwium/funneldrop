@@ -410,8 +410,8 @@ $('fnl').innerHTML=STAGES.map(([n,c,,b],i)=>`<div class="fr${b===3?' branch':''}
 const revMult=()=>Math.max(2,Math.min(25,6+40*growth));
 // One point a game month. Past 240 points every other one is dropped and the sampling halves, so any game length fits the save.
 const CHARTS=[['MRR','--rev',fmt],['Paying','--acq',v=>v.toLocaleString('en')],['Cash','--ad',fmt],['Valuation','--act',fmt]];let hist=[];
-// Charts show a fixed window: one point a game month, HIST_N points spanning the last 24 months.
-const HIST_N=25;
+// Charts show a fixed window: a point every 10 game days (a third of a month), HIST_N points spanning the last 24 months.
+const HIST_PER=3,HIST_N=24*HIST_PER+1;let histTick=0;const histNow=()=>Math.floor((month*MONTH+eventT)/(MONTH/HIST_PER));
 $('charts').innerHTML=CHARTS.map(([n,c],i)=>`<div class="stat" style="--c:var(${c})"><span>${n}</span><b id="ch-v${i}">–</b><svg viewBox="0 0 100 32" preserveAspectRatio="none" role="img" aria-label="${n} over time"><line id="ch-z${i}" x1="0" x2="100" y1="31" y2="31"/><polyline id="ch-l${i}"/></svg></div>`).join('');
 function recordHist(){hist.push([MRR(),paying,Math.round(cash),Math.round(MRR()*12*revMult())]);if(hist.length>HIST_N)hist.splice(0,hist.length-HIST_N);drawCharts()}
 function drawCharts(){CHARTS.forEach(([,,f],i)=>{if(!hist.length)return;const v=hist.map(h=>h[i]),lo=Math.min(0,...v),hi=Math.max(1,...v),y=n=>31-(n-lo)/(hi-lo)*30,x=j=>j/(HIST_N-1)*100;
@@ -463,7 +463,7 @@ function loop(now){
   for(let i=0;i<3;i++)physics(dt/3);
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*COST_TO_SERVE*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;recordHist();refitRamping();rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}
+  eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
   {const tc=teamCost()/MONTH*dt;if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,staff.length){const e=newest();fire(e.role);say(`Payroll bounced, so you had to let ${aRole({name:roleName(e.role)})} go.${e.role==='csm'?' Their customers lose the extra attention.':''}`)}}}
@@ -680,7 +680,7 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,lvl,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,lvl,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
@@ -688,8 +688,8 @@ function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;f
   add('csm',s.csm);add('mm',s.mm);(s.roles||[]).forEach((n,i)=>ROLES[i]&&add(ROLES[i].id,n));return out}
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
   ({hist=[],month=0,eventT=0,seoFresh=1,seoRoll=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc}=s);
-  // Older saves thinned the chart history to every 2nd, 4th... month once it got long; those points can't fill a monthly window, so start the charts afresh.
-  hist=(s.histStep||1)>1?[]:hist.slice(-HIST_N);
+  // Older saves hold monthly (or thinned) chart points, which don't fit the 10-day axis, so their charts start afresh.
+  hist=s.histDays===10?hist.slice(-HIST_N):[];
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
   flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
   into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
@@ -705,7 +705,7 @@ $('theme').addEventListener('click',()=>{theme=document.documentElement.dataset.
 darkOS.addEventListener('change',showTheme);
 function newGame(){if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()}
 $('reset').addEventListener('click',newGame);$('sum-new').addEventListener('click',newGame);
-load();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
+load();histTick=histNow();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
 resize();window.addEventListener('resize',resize);hud();gateReady=true;if(ipoFiled)openSum();requestAnimationFrame(loop);
 </script>
 
