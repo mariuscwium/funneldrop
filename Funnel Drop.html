@@ -542,7 +542,9 @@ function widthFor(b,r){const w=RATES[b].w;if(r<=w[0][1])return w[0][0];
 const cur=t=>Math.min(rateCap(t.board),t.base+bonus[t.board]);
 const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*strength(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
 // Landing rate is close to linear in slot width on every board, so team and price scale the tuned width.
-function zone(b){const B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(340,widthFor(b,cur(RATES[b]))*teamMult(b)*(b===4?priceConv():1)));
+// Widest slot that keeps clear of the walls (4px), of its neighbour, and on Expansion of the Downgrade slots (2px).
+const maxW=b=>{const cs=CENTERS[b];let m=Math.min(340,2*Math.min(...cs.map(c=>Math.min(c,W-c)-4)));if(cs.length>1)m=Math.min(m,cs[1]-cs[0]-4);if(b===5)m=Math.min(m,2*(W/2-DOWN_ZONES[0][1]-2));return m};
+function zone(b){const B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(maxW(b),widthFor(b,cur(RATES[b]))*teamMult(b)*(b===4?priceConv():1)));
   if(gateReady&&from[0][1]-from[0][0]!==B.zones[0][1]-B.zones[0][0])B.anim={from,t0:performance.now()}}
 // Display only: the drawn slot springs from its old width with a slight overshoot. Physics reads B.zones, which changes at once.
 const SPRING=550,easeBack=p=>1+2.7*(p-1)**3+1.7*(p-1)**2;

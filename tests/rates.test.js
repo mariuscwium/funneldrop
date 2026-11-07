@@ -34,3 +34,13 @@ test('bought tiers still set the width through bonus', () => {
   g('cash=1e9;buyUpg("acq")');assert.ok(Math.abs(g('BOARDS[0].zones[0][1]-BOARDS[0].zones[0][0]')-38)<.01);
   g('buyUpg("churn")');assert.equal(g('churn'),.047);
 });
+test('slots stay clear of walls, each other and the Downgrade slots at the table end with full staff and best price', () => {
+  const {g}=load();
+  g('peak=1e9;cash=1e12;price=PRICE0;for(const r of ROLES)for(let i=0;i<30;i++)hire(r.id);month=1e3;restaff()');
+  for(let b=0;b<6;b++){
+    for(const pr of [30,49,55,80,150]){g(`price=${pr};bonus[${b}]=5;zone(${b})`);
+      const z=JSON.parse(g(`JSON.stringify(BOARDS[${b}].zones)`));
+      for(const [a,c] of z)assert.ok(a>=0&&c<=360&&c>a,`board ${b} price ${pr}`);
+      for(let i=1;i<z.length;i++)assert.ok(z[i][0]>z[i-1][1],`board ${b} overlap`);
+      if(b===5){const d=JSON.parse(g('JSON.stringify(DOWN_ZONES)'));assert.ok(z[0][0]>d[0][1]&&z[0][1]<d[1][0],'down overlap')}}}
+});
