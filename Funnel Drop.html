@@ -3,7 +3,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: sticky money strip + ad button. Phone: boards then panels stacked. Desktop: boards left, a sticky panel of company, metrics and economics right. Single light theme. */
+/* Layout: sticky money strip + ad button. Phone: boards then panels stacked. Desktop: boards directly under the header, a sticky panel of intro, actions, company, metrics and economics right. Single light theme. */
 :root{
   --bg:#eef1f7; --panel:#ffffff; --line:#d3d9e6; --fg:#1b2033; --muted:#646c86; --rail:#e3e8f2; --board:#fbfcfe; --peg:#b4bbcf;
   --ad:#f0b020; --acq:#1aa3d4; --act:#7a5ad8; --ret:#14a39a; --ref:#e8508f; --rev:#1ea862; --paid:#1ea862; --fail:#c9cfdd; --warn:#c2412f;
@@ -15,6 +15,7 @@ body{font-family:var(--display);padding-left:max(16px,env(safe-area-inset-left,0
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 .wrap{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
 h1{font-size:20px;margin:0;letter-spacing:.05em;text-transform:uppercase}
 h1 em{font-style:normal;color:var(--paid)}
 .hud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
@@ -77,16 +78,17 @@ i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6
 @media (min-width:860px){
   .wrap{max-width:920px}
   .top{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px}
-  .boardcol .channels{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);z-index:4;background:var(--bg);padding-bottom:6px}
+  .side .channels{position:sticky;top:0;z-index:4;background:var(--bg);padding-bottom:6px}
   .main{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:24px;align-items:start}
   .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
   .side h2:first-child{margin-top:0}
+  .side .msg{min-height:5lh}
 }
 </style>
 
 <div class="wrap">
   <div class="top" id="top">
-    <h1>Funnel <em>Drop</em></h1>
+    <div class="brand"><h1>Funnel <em>Drop</em></h1><button class="campbtn" id="reset">New game</button></div>
     <div class="hud">
       <div class="stat"><span>Cash</span><b id="vCash">$1,500</b></div>
       <div class="stat"><span>MRR</span><b id="vMrr">$0</b></div>
@@ -252,13 +254,15 @@ function hud(){
   const r=ltv/cac;$('eRatio').textContent=won?r.toFixed(1)+' : 1':'–';$('eRatio').className=won&&r<3?'warn':'';
 }
 let last=performance.now();
+// Rewriting a button's children mid-press swaps the <b> under the cursor and the browser drops the click.
+const setBtn=(b,h)=>{if(b.innerHTML!==h)b.innerHTML=h};
 function loop(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;
   while(queue.length&&queue[0]<=now){queue.shift();balls.push(enter(0))}
   organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;balls.push(enter(0))}
-  {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=left>0;b.innerHTML=left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>';
+  {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
    $('seo-meta').textContent=seoLvl?`${Math.round(organicRate())} free visitors a month, arriving steadily.`:'A steady stream of free visitors from search, once you invest in content.';
-   const sb=$('seo-btn');if(seoLvl>=3){sb.innerHTML='Maxed';sb.disabled=true}else{sb.innerHTML=`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`;sb.disabled=cash<SEO[seoLvl][1]}}
+   const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=cash<SEO[seoLvl][1]}}
   for(let i=0;i<3;i++)physics(dt/3);
   cash+=paying*PRICE/MONTH*dt;
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
@@ -272,7 +276,7 @@ function loop(now){
   cash=Math.max(0,cash);
   if(paying>0){const cov=Math.min(paying,csm*CSM.covers),pc=1-Math.pow(1-churn*CSM.mult,dt/MONTH),p=1-Math.pow(1-churn,dt/MONTH);let lost=0;for(let i=0;i<paying;i++)if(Math.random()<(i<cov?pc:p))lost++;
     if(lost){paying-=lost;churned+=lost;floats.push({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:'#c2412f',life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
-  if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. <b>Reload the page</b> to try again.');
+  if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
 }
 $('channels').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
@@ -333,8 +337,21 @@ LOANS.forEach(l=>{
   $('l-take-'+l.id).addEventListener('click',()=>{const lim=l.limit();if(l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)});
   $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;cash-=l.bal;l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
 const wide=matchMedia('(min-width:860px)');
-function placeBuy(){const b=$('channels'),u=$('upgrades');if(wide.matches){if(b.parentNode!==$('boardcol'))$('boardcol').prepend(b);if(u.parentNode!==$('side'))$('side').prepend(u)}else{if(b.parentNode!==$('top'))$('top').append(b);if(u.parentNode!==$('boardcol'))$('boardcol').prepend(u)}}
+function placeBuy(){const b=$('channels'),u=$('upgrades'),m=$('msg');if(wide.matches)$('side').prepend(m,b,u);else{$('top').append(b);$('boardcol').prepend(u);$('top').after(m)}}
 placeBuy();wide.addEventListener('change',placeBuy);
+// Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
+const SAVE='funnel-drop-save-v1';let saving=true;
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,csm,mm,lvl,balls,queued:queue.length,postLeft:Math.max(0,postReady-performance.now()),
+  channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}))}catch{}}
+function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
+  ({cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm,balls}=s);
+  into.splice(0,NB,...s.into);out.splice(0,NB,...s.out);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
+  CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
+  for(const t of TRACKS)if(lvl[t.id]){if(t.id==='churn')churn=cur(t);else BOARDS[t.board].zones=slots(t.board,t.tiers[lvl[t.id]-1][2])}
+  const now=performance.now();postReady=now+s.postLeft;for(let i=0;i<s.queued;i++)queue.push(now+i*22);
+  renderCh();renderUpg()}
+$('reset').addEventListener('click',()=>{if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()});
+load();setInterval(save,5000);addEventListener('pagehide',save);
 resize();window.addEventListener('resize',resize);hud();requestAnimationFrame(loop);
 </script>
 
