@@ -152,7 +152,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     </div>
     <div class="channels" id="channels"></div>
   </div>
-  <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month). You can change the price. A month passes every 10 seconds.</p>
+  <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month), and about 22% of that goes on hosting and support. You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
   <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2 id="h-team">Team</h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
@@ -179,14 +179,15 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     <span>Cost per paying customer</span><span id="eCac">–</span>
     <span>Months to earn it back</span><span id="ePay">–</span>
     <span>Customers churned</span><span id="eChurn">0</span>
+    <span>Cost to serve per month</span><span id="eServe">$0</span>
     <span>Team cost per month</span><span id="eTeam">$0</span>
     <span>Loan repayments per month</span><span id="eLoan">$0</span>
     <span>Net cash flow per month</span><span id="eNet">$0</span>
-    <span>Lifetime value per customer</span><span id="eLtv">$817</span>
+    <span>Lifetime value per customer</span><span id="eLtv">$637</span>
     <span>LTV : CAC</span><span id="eRatio">–</span>
     <span>Free users (retained, not paying)</span><span id="eFree">0</span>
   </div>
-  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. Typical SaaS margins are near this, but the exact figure here is a game simplification, not a cited benchmark. Lifetime value and payback use gross margin. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
   </div></div></div>
 </div>
 
@@ -227,7 +228,10 @@ const SFX={tick:[125,()=>tone(900,0,.03,.015)],ching:[250,()=>notes([1320,1760],
 function sfx(name){if(muted||!ac)return;const n=performance.now(),[gap,play]=SFX[name];if(n-(sfxLast[name]||0)<gap)return;sfxLast[name]=n;play()}
 for(const type of ['pointerdown','keydown'])addEventListener(type,()=>{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;ac??=new A();ac.resume()});
 
-let cash=1500,ads=0,spend=0,balls=[],floats=[],queue=[];
+let cash=1500,ads=0,spend=0,ledger=[],monthOut=0,monthRev=0,balls=[],floats=[],queue=[];
+const COST_TO_SERVE=.22;
+function spendCash(n){cash-=n;monthOut+=n}
+function margin3(){const l=ledger.slice(-3),rv=l.reduce((t,e)=>t+e.rev,0);return rv>0?(rv-l.reduce((t,e)=>t+e.out,0))/rv:null}
 const into=[0,0,0,0,0],out=[0,0,0,0,0];let eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
 
 let textK=1;const mono=(w,s)=>`${w} ${s*textK}px JetBrains Mono, monospace`;
@@ -242,8 +246,8 @@ function post(){const now=performance.now();if(now<postReady)return;postReady=no
   const viral=Math.random()<.04,n=Math.round((viral?80+Math.random()*70:3+Math.random()*7)*m);
   const t=now;for(let i=0;i<n;i++)queue.push({t:t+i*22});
   say(viral?`Your post took off: ${n} visitors are on their way.`:`Posted. ${n} people clicked through.`)}
-function buySeo(){if(seoLvl>=3||cash<SEO[seoLvl][1])return;cash-=SEO[seoLvl][1];const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;say(`${name} done. About ${Math.round(organicRate())} free visitors a month will now arrive from search, until the content goes stale.`)}
-function publish(){if(!seoLvl||cash<seoCost()||seoFresh>=.99)return;cash-=seoCost();spend+=seoCost();seoFresh=1;say(`Fresh content is live. Search traffic is back to about ${Math.round(organicRate())} free visitors a month.`)}
+function buySeo(){if(seoLvl>=3||cash<SEO[seoLvl][1])return;spendCash(SEO[seoLvl][1]);const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;say(`${name} done. About ${Math.round(organicRate())} free visitors a month will now arrive from search, until the content goes stale.`)}
+function publish(){if(!seoLvl||cash<seoCost()||seoFresh>=.99)return;spendCash(seoCost());spend+=seoCost();seoFresh=1;say(`Fresh content is live. Search traffic is back to about ${Math.round(organicRate())} free visitors a month.`)}
 const CHANNELS=[
   {id:'social',name:'Social ads',cost:100,base:100,camp:500,unlock:0},
   // aim/pull/lift: these visitors enter board aim pulled toward its slot, measured with chained drops to land about lift times as often.
@@ -255,12 +259,12 @@ CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0});
 const RECOVER=.10;
 function runAd(c,t=performance.now()){const v=Math.max(1,Math.round(c.reach));c.reach*=DECAY;for(let i=0;i<v;i++)queue.push({t:t+i*22,src:c.id});return v}
 function buyAd(id){const c=CHANNELS.find(x=>x.id===id);
-  if(!c.open||cash<c.cost)return;cash-=c.cost;spend+=c.cost;ads++;c.ads++;runAd(c);
+  if(!c.open||cash<c.cost)return;spendCash(c.cost);spend+=c.cost;ads++;c.ads++;runAd(c);
   if(ads===1)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
   if(c.ads===12)say(`Each ${c.name.toLowerCase()} ad reaches 8% fewer people than the last. Give the channel time to recover, or pay for a new campaign.`);
 }
-function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);if(!c.open||cash<c.camp||c.reach>=c.base-.5)return;cash-=c.camp;spend+=c.camp;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to ${c.base} visitors per ad.`)}
-function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(c.open||cash<c.unlock)return;cash-=c.unlock;c.open=true;say(`${c.name} unlocked: a fresh audience of ${c.base} visitors per ad, at ${fmt(c.cost)} an ad.`);renderCh()}
+function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);if(!c.open||cash<c.camp||c.reach>=c.base-.5)return;spendCash(c.camp);spend+=c.camp;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to ${c.base} visitors per ad.`)}
+function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience of ${c.base} visitors per ad, at ${fmt(c.cost)} an ad.`);renderCh()}
 function visibleCh(){const out=[];for(const c of CHANNELS){out.push(c);if(!c.open)break}return out}
 function renderCh(){
   $('channels').innerHTML=`<div class="chan organic"><div class="nm"><b>Organic social post</b><small id="op-meta">Free. Usually a handful of visitors; now and then a post takes off.</small></div><button class="adbtn" data-post="1" id="op-btn">Post <b>Free</b></button></div>
@@ -356,11 +360,11 @@ function hud(){
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,csm,'Customer success manager'),gate('mm',MM.at,mm,'Marketing manager'),...ROLES.map(r=>gate(r.id,r.at,r.n,r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
-  {const lp=loanPay(),net=MRR()-teamCost()-lp;$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
+  {const lp=loanPay(),net=MRR()*(1-COST_TO_SERVE)-teamCost()-lp;$('eServe').textContent=fmt(MRR()*COST_TO_SERVE);$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
    $('t-csm-meta').textContent=`${csm} on the team · covering ${Math.min(paying,csm*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<pay('csm',CSM.salary);$('s-csm').textContent=fmt(pay('csm',CSM.salary))+'/mo';$('s-mm').textContent=fmt(pay('mm',MM.salary))+'/mo';$('m-meta').textContent=`${mm} on the team · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<pay('mm',MM.salary);$('m-fire').disabled=mm===0;$('t-fire').disabled=csm===0;
    for(const r of ROLES){$('r-meta-'+r.id).textContent=`${r.n} on the team · ${r.label} about ${p1(rateOf(TRACKS[r.board]))}`;$('s-'+r.id).textContent=fmt(pay(r.id,r.salary))+'/mo';$('r-hire-'+r.id).disabled=cash<pay(r.id,r.salary)||r.n>=ROLE_MAX;$('r-fire-'+r.id).disabled=!r.n}}
-  const won=out[4],cac=won?spend/won:0,ltv=price/(paying&&csm?paidChurn()*(1-Math.min(paying,csm*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
-  const pb=cac/price;$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
+  const won=out[4],cac=won?spend/won:0,ltv=price*(1-COST_TO_SERVE)/(paying&&csm?paidChurn()*(1-Math.min(paying,csm*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
+  const pb=cac/(price*(1-COST_TO_SERVE));$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
   const r=ltv/cac;$('eRatio').textContent=won?r.toFixed(1)+' : 1':'–';$('eRatio').className=won&&r<3?'warn':'';
 }
 let last=performance.now();
@@ -383,14 +387,14 @@ function loop(now){
    $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=cash<seoCost()||seoFresh>=.99}
    const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=cash<SEO[seoLvl][1]}}
   for(let i=0;i<3;i++)physics(dt/3);
-  cash+=MRR()/MONTH*dt;
+  {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*COST_TO_SERVE*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;recordHist();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
+  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR()});if(ledger.length>13)ledger.shift();monthRev=monthOut=0;recordHist();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
-  {const tc=teamCost()/MONTH*dt,r=ROLES.find(x=>x.n);if(!tc||cash>=tc)cash-=tc;else{cash=Math.min(cash,0);if(now<nextCut);else if(nextCut=now+MONTH*1000,r){r.n--;zone(r.board);applyPrice();say(`Payroll bounced, so you had to let ${aRole(r)} go.`)}else if(mm>0){mm--;say('Payroll bounced, so you had to let a marketing manager go.')}else if(csm>0){csm--;say('Payroll bounced, so you had to let a customer success manager go. Their customers lose the extra attention.')}}}
+  {const tc=teamCost()/MONTH*dt,r=ROLES.find(x=>x.n);if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,r){r.n--;zone(r.board);applyPrice();say(`Payroll bounced, so you had to let ${aRole(r)} go.`)}else if(mm>0){mm--;say('Payroll bounced, so you had to let a marketing manager go.')}else if(csm>0){csm--;say('Payroll bounced, so you had to let a customer success manager go. Their customers lose the extra attention.')}}}
   for(const l of LOANS)if(l.bal>0){const r=l.apr/12;l.bal+=l.bal*r*dt/MONTH;const due=Math.min(l.bal,l.pay*dt/MONTH);
-    if(cash>=due){l.bal-=due;cash-=due;l.late=0}else{const paid=Math.max(0,cash);cash=Math.min(cash,0);l.bal-=paid;l.bal+=(due-paid)*.25;
+    if(cash>=due){l.bal-=due;spendCash(due);l.late=0}else{const paid=Math.max(0,cash);spendCash(paid);l.bal-=paid;l.bal+=(due-paid)*.25;
       if(!l.late){l.late=1;say(`You missed a ${l.name.toLowerCase()} repayment. Late fees of 25% of each missed amount are added to what you owe until you can pay again.`)}}
     if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
   if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),nr=binom(Math.min(paying,REFER_CAP),q);for(let i=0;i<nr;i++){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
@@ -421,7 +425,7 @@ function renderUpg(){
 }
 function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<COSTS[L])return;
   const isChurn=id==='churn',was=isChurn?paidChurn():rateOf(t);
-  cash-=COSTS[L];const [name,rate,w]=t.tiers[L];lvl[id]++;
+  spendCash(COSTS[L]);const [name,rate,w]=t.tiers[L];lvl[id]++;
   if(isChurn)churn=rate;else zone(t.board);applyPrice();
   const d=Math.abs((isChurn?paidChurn():rateOf(t))-was)*100;celebrate(t.board,(isChurn?'−':'+')+d.toFixed(1)+' pts '+(isChurn?'churn':t.label),!isChurn);
   say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(id==='churn'?paidChurn():rateOf(t))}${t.unit?' '+t.unit:''}.`);renderUpg()}
@@ -495,7 +499,7 @@ function updLoans(){let debt=0;for(const l of LOANS){debt+=l.bal;const lim=l.lim
   $('cDebt').textContent=fmt(debt)}
 LOANS.forEach(l=>{
   $('l-take-'+l.id).addEventListener('click',()=>{const lim=l.limit();if(l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)});
-  $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;cash-=l.bal;l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
+  $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;spendCash(l.bal);l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
 // Rolled once a game month. Sizes scale with the company so events still matter late on.
 const EVENT_CHANCE=.15,evScale=()=>Math.max(1,Math.min(10,MRR()/5000));
 const burst=n=>{const t=performance.now();for(let i=0;i<n;i++)queue.push({t:t+i*22})};
@@ -512,14 +516,14 @@ const EVENTS=[
   {name:'Search update',when:()=>seoLvl>0,run(){seoFresh=Math.max(SEO_FLOOR,seoFresh*.4);return 'A search engine update buried your rankings. Search traffic fell by up to 60%.'}},
   {name:'Outage',when:()=>paying>0,run(){return `A long outage cost you customers. ${loseCustomers(.08,.12)} cancelled.`}},
   {name:'Cheaper rival',when:()=>paying>0,run(){return `A competitor launched a cheaper plan. ${loseCustomers(.15,.25)} left.`}},
-  {name:'Tax bill',run(){const n=Math.max(500,MRR()*1.5,cash*.2);cash-=n;return `An unexpected tax bill cost you ${fmt(n)}.${cash<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
+  {name:'Tax bill',run(){const n=Math.max(500,MRR()*1.5,cash*.2);spendCash(n);return `An unexpected tax bill cost you ${fmt(n)}.${cash<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
   {name:'Ad policy change',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach*=.5;return 'An ad platform tightened its targeting. Reach halved on every open channel.'}}
 ];
 // Saved as soon as it fires, so reloading can't dodge a bad one. Timers shift on resume so bursts and cooldowns don't run out during the pause.
 let pausedAt=0;
 function showEv(k,kind,name,t){sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
-function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()-teamCost()-loanPay()>0?.5:-.5)))}
+function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()*(1-COST_TO_SERVE)-teamCost()-loanPay()>0?.5:-.5)))}
 function randomEvent(){const can=EVENTS.filter(e=>!e.when||e.when()),good=Math.random()<.4-.3*health(),sided=can.filter(e=>!!e.good===good),ok=sided.length?sided:can,e=ok[Math.random()*ok.length|0],t=e.run();showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
 // Based on peak valuation, so a dip can't repeat one and msLvl needs no saving. Crossing several at once shows the highest.
 const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn']];let msLvl=0;
@@ -532,10 +536,10 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histStep,month,tenure,eventT,seoFresh,subs,custRefs,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,csm,mm,lvl,balls,roles:ROLES.map(r=>r.n),queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histStep,month,tenure,eventT,seoFresh,subs,custRefs,ledger,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,csm,mm,lvl,balls,roles:ROLES.map(r=>r.n),queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
-  ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,custRefs=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm}=s);
+  ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm}=s);
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
   into.splice(0,NB,...s.into);out.splice(0,NB,...s.out);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));

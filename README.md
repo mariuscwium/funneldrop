@@ -14,6 +14,7 @@ Progress saves in your browser, so you can reload and carry on. **New game** sta
 - **Improve the funnel.** Upgrades widen the slots on each board, so more users land where you want them.
 - **Set your price.** Higher prices earn more per customer, but fewer users pay. Very cheap and very expensive plans both lose more customers.
 - **Build a team.** Staff lift different parts of the funnel, get raises every year, and can be headhunted.
+- **Watch your margin.** Every customer costs about 22% of their payment to host and support, so lifetime value and payback use the 78% that's left. Spending is tracked month by month.
 - **Borrow if you must.** Loans buy time, but repayments come out of cash every month.
 - **Expect surprises.** Random events can help or hurt, and they're more likely to go against you when things are going well.
 
