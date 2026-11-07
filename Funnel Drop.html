@@ -498,7 +498,8 @@ function celebrate(b,text,slot){const B=BOARDS[b],y0=b*BH;sfx('upgrade');addFloa
   for(const [a,c] of B.zones)for(const [x,dir] of [[a,-1],[c,1]])for(let i=0;i<9;i++)sparks.push({x,y:y0+WALLTOP+Math.random()*(FLOOR-WALLTOP),vx:dir*(40+Math.random()*120),vy:-(40+Math.random()*130),life:1,c:C[B.col]})}
 function applyPrice(){const t=trackOf(4);zone(4);
   $('p-val').textContent=fmt(price);$('p-meta').textContent=`At ${fmt(price)}: ${p1(rateOf(t))} paid conversion, ${p1(paidChurn())} monthly churn.`}
-$('price').addEventListener('input',e=>{if(ipoFiled){e.target.value=price;return}price=+e.target.value;applyPrice()});
+function setPrice(v){if(!ipoFiled){price=v;applyPrice()}$('price').value=price}
+$('price').addEventListener('input',e=>setPrice(+e.target.value));
 $('upglist').addEventListener('click',e=>{const b=e.target.closest('.upg');if(b&&!b.disabled)buyUpg(b.id.slice(2))});
 renderUpg();
 const CSM={salary:6000,covers:150,mult:.75,at:5e5};let warnedNeg=0;
@@ -570,8 +571,9 @@ function updLoans(){let debt=0;for(const l of LOANS){debt+=l.bal;const lim=l.lim
   else{$('l-fig-'+l.id).textContent='—';$('l-st-'+l.id).textContent=l.why}
   $('l-take-'+l.id).disabled=ipoFiled||l.bal>0||!l.ok()||lim<=0;$('l-off-'+l.id).disabled=!(l.bal>0)||cash<l.bal}
   $('cDebt').textContent=fmt(debt)}
+function borrow(id){const l=LOANS.find(x=>x.id===id),lim=l.limit();if(ipoFiled||l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)}
 LOANS.forEach(l=>{
-  $('l-take-'+l.id).addEventListener('click',()=>{const lim=l.limit();if(ipoFiled||l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)});
+  $('l-take-'+l.id).addEventListener('click',()=>borrow(l.id));
   $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;spendCash(l.bal);l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
 // Rolled once a game month. Sizes scale with the company so events still matter late on.
 const EVENT_CHANCE=.15,evScale=()=>Math.max(1,Math.min(10,MRR()/5000));
@@ -600,7 +602,7 @@ function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()*(1-COST_TO_SERV
 function randomEvent(){const can=EVENTS.filter(e=>!e.when||e.when()),good=Math.random()<.4-.3*health(),sided=can.filter(e=>!!e.good===good),ok=sided.length?sided:can,e=ok[Math.random()*ok.length|0],t=e.run();showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
 // Based on peak valuation, so a dip can't repeat one and msLvl needs no saving. Crossing several at once shows the highest.
 // A 4th entry replaces the usual "Next up" line.
-const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn','That is the last milestone. The next goal is an IPO: see IPO readiness under Company.']];let msLvl=0;
+const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn','Next goal: an IPO. See IPO readiness under Company.']];let msLvl=0;
 // Game month each milestone was first reached, by MILES index. Saves from before this leave earlier ones empty.
 let mileMonth=[];
 const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;

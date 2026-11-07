@@ -34,14 +34,20 @@ test('files after 3', () => {
 });
 test('filed blocks buying', () => {
   const a=load();quiet(a.g);a.g('ipoFiled=true;cash=1e5');a.frames(32);
-  const c=a.g('cash');a.g('buyAd("social");newCampaign("social");unlockCh("search");buySeo();buyUpg("acq");hire("csm")');
+  a.g('subs={"49:0":200};paying=200;seoLvl=1;seoFresh=.5;postReady=0;queue=[]');
+  const c=a.g('cash');a.g('buyAd("social");newCampaign("social");unlockCh("search");buySeo();buyUpg("acq");hire("csm");borrow("card");borrow("online");setPrice(99);post();publish()');
   assert.equal(a.g('cash'),c);assert.equal(a.g('ads'),0);assert.equal(a.g('staff.length'),0);
+  assert.equal(a.g('LOANS.every(l=>l.bal===0)'),true);assert.equal(a.g('price'),49);assert.equal(a.el('price').value,49);
+  assert.equal(a.g('queue.length'),0);assert.equal(a.g('seoFresh'),.5);assert.equal(a.g('seoLvl'),1);
   assert.equal(a.el('ca-social').disabled,true);
 });
 test('filed survives reload', () => {
   const a=load();quiet(a.g);a.g(allOk);a.months(3.05);a.g('fileIPO()');
-  const b=load({save:JSON.parse(a.store.get('funnel-drop-save-v1'))});
+  const b=load({save:JSON.parse(a.store.get('funnel-drop-save-v1')),dialogs:true});quiet(b.g);
   assert.equal(b.g('ipoFiled'),true);assert.match(String(b.el('sum-stats').innerHTML),/ARR/);
+  assert.equal(b.el('sum').open,true);const m=b.g('month'),e=b.g('eventT');b.months(1.5);
+  assert.equal(b.g('month'),m);assert.equal(b.g('eventT'),e);
+  b.el('sum').close();b.months(1.05);assert.equal(b.g('month'),m+1);
 });
 test('old saves load with IPO defaults', () => {
   const a=load();a.g('save()');const s=JSON.parse(a.store.get('funnel-drop-save-v1'));
@@ -56,5 +62,5 @@ test('play time counts frames', () => {
   const a=load();quiet(a.g);a.frames(1600);assert.ok(Math.abs(a.g('playMs')-1600)<1,String(a.g('playMs')));
 });
 test('Unicorn text points at the IPO', () => {
-  const {g}=load();assert.match(g('MILES[MILES.length-1][3]'),/IPO/);
+  const {g}=load();const t=g('MILES[MILES.length-1][3]');assert.match(t,/IPO/);assert.doesNotMatch(t,/last milestone/i);
 });
