@@ -20,6 +20,9 @@ node sim/sim.js '[[[168,192]],[[51,131],[229,309]],[[42,122],[238,318]],[[156,20
 
 # Landing rate per slot width for one board (0-4), upstream boards at base widths.
 node sim/sweep.js 0 23 28 31 34
+
+# Expansion board: Upgrade and Downgrade rates for Downgrade width 9 (12px from the walls) and centre widths 43 and 56.
+G=12 node sim/expansion.js 9 43 56
 ```
 
 `sweep.js` still chains upstream boards from the old base widths (Acquisition 16, Activation 72), so its results for boards 1-4 are slightly off.
@@ -30,7 +33,7 @@ The sims differ from the game: fixed 1/180s timestep, no 600 speed cap, a 22s ti
 
 The script is one top-level block, in this order:
 
-- Constants, `BOARDS` (slot zones, benchmarks) and peg layout, synthesised sound (`SFX`, `sfx`)
+- Constants, `BOARDS` (six boards: the five pirate metrics, then Expansion; slot zones, benchmarks) and peg layout, synthesised sound (`SFX`, `sfx`)
 - Channels and organic traffic: `CHANNELS`, `SEO`, `buyAd`, `post`
 - Simulation: `enter`, `land`, `physics`
 - Rendering: `draw` (canvas), `hud` (DOM), `CHARTS` (SVG lines fed by `hist`, one point a game month), `STAGES` (the pirate metrics funnel)
@@ -57,7 +60,8 @@ The script is one top-level block, in this order:
 - **Events roll once a game month** at `EVENT_CHANCE`, with good news from 10% to 70% depending on `health()`, and only after the first ad or customer. Each is one-off, not a timed effect, and `when` hides it if it can't apply. Their sizes are invented. An event opens the `#ev` dialog, which pauses `loop`; any new `performance.now()` timer must shift in its `close` handler.
 - **Channels differ by `aim`.** Search and LinkedIn visitors enter their aimed board pulled toward its slot by `pull`, and `lift` is the matching rate for the odds path. Pulling only works where incoming x is spread out: Acquisition and Revenue doubled or so, while Activation and Retention barely moved. `queue` holds `{t,src}`.
 - **At most `MAX_BALLS` users animate.** `spawn` lands the rest by the odds, so always add users through it. This also keeps the save small.
-- **`zone(b)` is the only place that sets a board's slot width.** It combines the upgrade tier, `ROLES` staff (+15% per unit of `strength`) and price. Physics uses the new width at once; `shown(B)` springs the drawn slot over `SPRING` ms. Upgrades also call `celebrate` for the glow, sparks, floating gain and chime, which hires and price changes skip. Team lifts assume near-linear rate against width, and `TRACKS` indexes 0-4 line up with boards.
+- **`zone(b)` is the only place that sets a board's slot width.** It combines the upgrade tier, `ROLES` staff (+15% per unit of `strength`) and price. Physics uses the new width at once; `shown(B)` springs the drawn slot over `SPRING` ms. Upgrades also call `celebrate` for the glow, sparks, floating gain and chime, which hires and price changes skip. Team lifts assume near-linear rate against width. Find a board's upgrade track with `trackOf(b)`, never `TRACKS[b]`: churn sits at `TRACKS[5]` on board 4, and a board without a track (Expansion, for now) uses `BASEW[b]`.
 - **Customers keep their sign-up price.** `subs` maps `"price:plan"` keys (`key`, `unkey`) to customer counts, and each group churns at its own price times `PLANS[plan].stick`. Add customers with `addSub` and change plan with `moveSub`, the one place a customer changes plan. Change `paying` and `subs` together, and use `MRR()` (price × plan multiple) rather than `paying*price`. `load` rewrites old bare price keys as Base.
-- **The board scales to fit the screen from 860px up.** CSS clamps the canvas to 220-400px wide from the viewport height, down to about 750px tall. Below 860px it stays full width. It only changes display size: physics stays at 360x1020, so tuned widths are unaffected. Canvas text uses `mono()`, which grows by `textK` (set in `resize`) as the board shrinks.
+- **The board scales to fit the screen from 860px up.** CSS clamps the canvas to 220-400px wide from the viewport height, down to about 900px tall (below that the page scrolls). Below 860px it stays full width. It only changes display size: physics stays at 360x1224 (`360/1224` in the aspect ratio and the fit `clamp`), so tuned widths are unaffected. Canvas text uses `mono()`, which grows by `textK` (set in `resize`) as the board shrinks.
+- **Expansion (board 5) is locked until `EXP_AT` ($1M peak valuation, `expOpen()`).** It's drawn greyed out with an unlock label until then. Nothing flows into it from Revenue: `land` ends paying users at board 4. Its widths come from `sim/expansion.js` (uniform entry): `EXP_W0` centre Upgrade slot (about 12%, `EXP_RATE0`) and two `DOWN_ZONES` of `DOWN_W` 12px in from the walls (about 3.8%, `DOWN_RATE`), which also act as walls in `physics`. Slots flush with the walls don't work: at 4px or less nothing lands, and at 5px already 6%. `BOARDS[5].bench` is null, so the header shows only "yours". `into`/`out` have `NB` entries; `load` pads old 5-entry saves with 0.
 - **One game month is 10 real seconds** (`MONTH`). Monthly rates are scaled by `dt/MONTH`.

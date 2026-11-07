@@ -1,6 +1,6 @@
 # Funnel Drop
 
-A product management simulator. Visitors fall through five Plinko-style boards, one for each pirate metric: Acquisition, Activation, Retention, Referral and Revenue. You spend cash to grow recurring revenue and valuation, and watch where your users actually go.
+A product management simulator. Visitors fall through five Plinko-style boards, one for each pirate metric: Acquisition, Activation, Retention, Referral and Revenue. You spend cash to grow recurring revenue and valuation, and watch where your users actually go. A sixth board, Expansion, is shown locked until your company is worth $1M.
 
 ## Play
 

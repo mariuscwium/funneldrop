@@ -8,14 +8,14 @@ const darkOS=matchMedia('(prefers-color-scheme:dark)'),setTheme=()=>{document.do
 /* Layout: sticky money strip + ad button. Phone: boards then panels stacked. Desktop: boards directly under the header, then sticky columns: one shared panel from 860px, actions and stats from 1200px, play, upgrades and stats from 1600px. Light and dark themes: colours are tokens on :root, overridden under [data-theme=dark]. */
 :root{
   --bg:#eef1f7; --panel:#ffffff; --line:#d3d9e6; --fg:#1b2033; --muted:#646c86; --rail:#e3e8f2; --board:#fbfcfe; --peg:#b4bbcf;
-  --ad:#f0b020; --acq:#1aa3d4; --act:#7a5ad8; --ret:#14a39a; --ref:#e8508f; --rev:#1ea862; --paid:#1ea862; --fail:#c9cfdd; --warn:#c2412f;
+  --ad:#f0b020; --acq:#1aa3d4; --act:#7a5ad8; --ret:#14a39a; --ref:#e8508f; --rev:#1ea862; --paid:#1ea862; --fail:#c9cfdd; --warn:#c2412f; --exp:#b58616;
   --on-ad:#1b2033; --shadow:rgba(27,32,51,.18); --scrim:rgba(27,32,51,.45);
   --display:'Chakra Petch',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
   color-scheme:light;
 }
 :root[data-theme=dark]{
   --bg:#11141d; --panel:#1a1f2d; --line:#2e3547; --fg:#e7eaf3; --muted:#9aa3bc; --rail:#262c3d; --board:#151925; --peg:#5b6480;
-  --acq:#3bb9e8; --act:#a48ff2; --ret:#2fc7ba; --ref:#f272a9; --rev:#3ccb84; --paid:#3ccb84; --fail:#3a4258; --warn:#f2755f;
+  --acq:#3bb9e8; --act:#a48ff2; --ret:#2fc7ba; --ref:#f272a9; --rev:#3ccb84; --paid:#3ccb84; --fail:#3a4258; --warn:#f2755f; --exp:#e6b84a;
   --shadow:rgba(0,0,0,.45); --scrim:rgba(0,0,0,.6);
   color-scheme:dark;
 }
@@ -70,7 +70,7 @@ h1 em{font-style:normal;color:var(--paid)}
 #ev b{display:block;font-size:20px;margin-top:2px}
 #ev p{font-size:14px;line-height:1.45;margin:8px 0 14px}
 #ev .buy{width:100%;justify-content:center}
-canvas{display:block;width:100%;aspect-ratio:360/1020;background:var(--board);border:1px solid var(--line);border-radius:10px}
+canvas{display:block;width:100%;aspect-ratio:360/1224;background:var(--board);border:1px solid var(--line);border-radius:10px}
 h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
 .fnl{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
 .fr{display:grid;grid-template-columns:66px minmax(0,1fr) 88px;gap:8px;align-items:center}
@@ -112,7 +112,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   .top{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px}
   .side .channels{position:sticky;top:0;z-index:4;background:var(--bg);padding-bottom:6px}
   .main{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:start}
-  canvas{width:clamp(220px,calc((100dvh - 146px - env(safe-area-inset-top,0px))*360/1020),400px)}
+  canvas{width:clamp(220px,calc((100dvh - 146px - env(safe-area-inset-top,0px))*360/1224),400px)}
   .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
   .side h2:first-child,.boardcol h2:first-child{margin-top:0}
   #h-act{display:block}
@@ -156,7 +156,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   <div class="main"><div class="boardcol" id="boardcol">
   <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Upgrades quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2 id="h-team">Team</h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
-  <canvas id="cv" aria-label="Five stacked boards, one per pirate metric: acquisition, activation, retention, referral and revenue."></canvas>
+  <canvas id="cv" aria-label="Six stacked boards: one per pirate metric (acquisition, activation, retention, referral and revenue), then expansion, locked until a $1M valuation."></canvas>
   </div><div class="side" id="side"><div class="stats">
   <h2>Over time</h2>
   <div class="charts" id="charts"></div>
@@ -192,7 +192,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 </div>
 
 <script>
-const W=360,BH=204,NB=5,H=BH*NB,BR=3.5,PR=3,GRAV=820,PER_AD=100,DECAY=.92,PRICE0=49,MONTH=10,AD0=100,AD_GROWTH=1.08;
+const W=360,BH=204,NB=6,H=BH*NB,BR=3.5,PR=3,GRAV=820,PER_AD=100,DECAY=.92,PRICE0=49,MONTH=10,AD0=100,AD_GROWTH=1.08;
 const WALLTOP=160,FLOOR=196;let churn=.06,price=PRICE0;
 // Game simplification, not a measured benchmark: 1 at $49, so tuned rates hold there. Revenue landing rate scales with slot width (sim/sweep.js).
 const wtp=p=>1/(1+(p/79)**3),priceConv=()=>wtp(price)/wtp(PRICE0); // S-curve: demand falls away past about $79
@@ -206,13 +206,18 @@ const moveSub=(k,to)=>{if(!(subs[k]>0))return false;const [p]=unkey(k),t=key(p,t
 const MRR=()=>Object.entries(subs).reduce((t,[k,n])=>{const [p,pl]=unkey(k);return t+p*PLANS[pl].mult*n},0);
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const C={},readColors=()=>{for(const k of ['ad','acq','act','ret','ref','rev','fail','peg','fg','muted','rail','line','panel','warn'])C[k]=css('--'+k)};readColors();
+const C={},readColors=()=>{for(const k of ['ad','acq','act','ret','ref','rev','fail','peg','fg','muted','rail','line','panel','warn','exp'])C[k]=css('--'+k)};readColors();
+// Expansion (board 5): paying customers only, uniform entry, no carryover from Revenue. Locked until EXP_AT peak valuation.
+// Tuned with sim/expansion.js: a 43px centre slot lands about 12% (EXP_RATE0), and two 9px Downgrade slots 12px in from the walls about 3.8% together (DOWN_RATE).
+// Wall-flush Downgrade slots can't reach 4%: 4px or less lands none, 5px already 6%.
+const EXP_W0=43,DOWN_W=9,DOWN_ZONES=[[12,12+DOWN_W],[348-DOWN_W,348]],EXP_RATE0=.12,DOWN_RATE=.038,EXP_AT=1e6,expOpen=()=>peak>=EXP_AT;
 const BOARDS=[
   {name:'Acquisition',title:'A · ACQUISITION',zones:[[168,192]],pass:'SIGN UP',fail:'BOUNCED',col:'acq',bench:.05,inL:'visitors',outL:'sign-ups'},
   {name:'Activation',title:'A · ACTIVATION',zones:[[51,131],[229,309]],pass:'ACTIVATED',fail:'NEVER ACTIVATED',col:'act',bench:.36,inL:'sign-ups',outL:'activated'},
   {name:'Retention',title:'R · RETENTION',zones:[[42,122],[238,318]],pass:'RETAINED',fail:'CHURNED',col:'ret',bench:.47,inL:'activated',outL:'retained'},
   {name:'Referral',title:'R · REFERRAL',zones:[[156,204]],pass:'REFERS',fail:'NO REFERRAL',col:'ref',bench:.10,inL:'retained',outL:'referrals'},
-  {name:'Revenue',title:'R · REVENUE',zones:[[122,238]],pass:'PAID',fail:'STAYS FREE',col:'rev',bench:.30,inL:'retained',outL:'paying'}
+  {name:'Revenue',title:'R · REVENUE',zones:[[122,238]],pass:'PAID',fail:'STAYS FREE',col:'rev',bench:.30,inL:'retained',outL:'paying'},
+  {name:'Expansion',title:'E · EXPANSION',zones:[[180-EXP_W0/2,180+EXP_W0/2]],pass:'UPGRADE',fail:'SAME PLAN',down:'DOWNGRADE',col:'exp',bench:null,inL:'customers',outL:'upgrades'}
 ];
 const pegs=[];
 BOARDS.forEach((_,b)=>{const y0=b*BH;for(let r=0;r<5;r++){const odd=r%2,n=odd?11:12,x0=15+(odd?15:0);for(let i=0;i<n;i++)pegs.push({b,x:x0+i*30,y:y0+36+r*26,flash:0})}});
@@ -232,7 +237,7 @@ let cash=1500,ads=0,spend=0,ledger=[],monthOut=0,monthRev=0,balls=[],floats=[],q
 const COST_TO_SERVE=.22;
 function spendCash(n){cash-=n;monthOut+=n}
 function margin3(){const l=ledger.slice(-3),rv=l.reduce((t,e)=>t+e.rev,0);return rv>0?(rv-l.reduce((t,e)=>t+e.out,0))/rv:null}
-const into=[0,0,0,0,0],out=[0,0,0,0,0];let staff=[],eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
+const into=Array(NB).fill(0),out=Array(NB).fill(0);let staff=[],eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
 
 let textK=1;const mono=(w,s)=>`${w} ${s*textK}px JetBrains Mono, monospace`;
 // The board scales down to fit short screens, so canvas text grows to stay readable.
@@ -282,7 +287,8 @@ const referred=()=>Math.round(1+24*Array.from({length:8},Math.random).sort((a,b)
 const MAX_BALLS=400,addFloat=f=>{if(floats.length<40)floats.push(f)};
 function spawn(o){if(balls.length<MAX_BALLS){balls.push(o);return}
   const zs=BOARDS[o.b].zones,inZone=x=>zs.some(([a,c])=>x>=a&&x<c);
-  if(Math.random()<rateOf(TRACKS[o.b])*(aimed(o.src,o.b)?.lift||1)){const [a,c]=zs[Math.random()*zs.length|0];o.x=(a+c)/2}else do o.x=Math.random()*W;while(inZone(o.x));
+  const t=trackOf(o.b);
+  if(Math.random()<(t?rateOf(t):EXP_RATE0)*(aimed(o.src,o.b)?.lift||1)){const [a,c]=zs[Math.random()*zs.length|0];o.x=(a+c)/2}else do o.x=Math.random()*W;while(inZone(o.x));
   land(o)}
 // Flat and capped so customers can't compound: friends never refer, and this adds at most 10 referrals a month.
 const CUST_REFER=.01,REFER_CAP=1000;
@@ -292,7 +298,7 @@ function land(o){
   if(hit){out[o.b]++;sfx('tick');for(const z of B.zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1}
   if(o.b<=2){if(hit)spawn(enter(o.b+1,o.friend,o.x,o.src))}
   else if(o.b===3){spawn(enter(4,o.friend,o.x,o.src));if(hit&&!o.friend){const n=refer(o.x,fy);if(out[3]===1)say(`A user told ${n} friends. They skip Acquisition and land straight in Activation.`)}}
-  else{if(hit){paying++;addSub(price);sfx('ching');addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
+  else if(o.b===4){if(hit){paying++;addSub(price);sfx('ching');addFloat({x:o.x,y:fy,t:'+'+fmt(price)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
 }
 function physics(dt){
   for(const o of balls){
@@ -303,7 +309,7 @@ function physics(dt){
     for(const p of pegs){if(p.b!==o.b)continue;const dx=o.x-p.x,dy=o.y-p.y,rr=BR+PR,d2=dx*dx+dy*dy;
       if(d2<rr*rr){const d=Math.sqrt(d2)||.01,nx=dx/d,ny=dy/d;o.x=p.x+nx*rr;o.y=p.y+ny*rr;const vn=o.vx*nx+o.vy*ny;
         if(vn<0){o.vx-=1.5*vn*nx;o.vy-=1.5*vn*ny}o.vx+=(Math.random()-.5)*24;p.flash=1}}
-    if(o.y>y0+WALLTOP-BR)for(const [a,c] of BOARDS[o.b].zones)for(const w of [a,c])if(Math.abs(o.x-w)<BR+1){o.x=o.x<w?w-BR-1:w+BR+1;o.vx*=-.4}
+    if(o.y>y0+WALLTOP-BR)for(const zs of o.b===5?[BOARDS[5].zones,DOWN_ZONES]:[BOARDS[o.b].zones])for(const [a,c] of zs)for(const w of [a,c])if(Math.abs(o.x-w)<BR+1){o.x=o.x<w?w-BR-1:w+BR+1;o.vx*=-.4}
     if(o.y>y0+FLOOR||o.age>12){o.done=1;land(o)}
   }
   balls=balls.filter(o=>!o.done);
@@ -311,24 +317,30 @@ function physics(dt){
 function ballCol(o){return o.friend&&o.b===1?C.ref:o.b===0?C.ad:C[BOARDS[o.b-1].col]}
 function draw(){
   ctx.clearRect(0,0,W,H);
-  BOARDS.forEach((B,b)=>{const y0=b*BH;
+  BOARDS.forEach((B,b)=>{const y0=b*BH,locked=b===5&&!expOpen(),col=locked?C.muted:C[B.col];
     ctx.fillStyle=C.rail;ctx.fillRect(0,y0,W,22);
-    ctx.fillStyle=C[B.col];ctx.fillRect(0,y0,4,22);
-    ctx.fillStyle=C.fg;ctx.font=mono(700,10);ctx.textAlign='left';ctx.fillText(B.title,10,y0+15);
-    ctx.textAlign='right';ctx.fillStyle=C.muted;ctx.font=mono(600,10);ctx.fillText(`yours ${pct(out[b],into[b])} · bench ${B.bench*100}%`,W-8,y0+15);
+    ctx.fillStyle=col;ctx.fillRect(0,y0,4,22);
+    ctx.fillStyle=locked?C.muted:C.fg;ctx.font=mono(700,10);ctx.textAlign='left';ctx.fillText(B.title,10,y0+15);
+    ctx.textAlign='right';ctx.fillStyle=C.muted;ctx.font=mono(600,10);ctx.fillText(locked?'locked':`yours ${pct(out[b],into[b])}`+(B.bench==null?'':` · bench ${B.bench*100}%`),W-8,y0+15);
+    if(locked){ctx.globalAlpha=.35;ctx.fillStyle=C.fail;ctx.fillRect(0,y0+22,W,BH-22);ctx.globalAlpha=1}
     ctx.globalAlpha=.35;ctx.fillStyle=C.fail;ctx.fillRect(0,y0+WALLTOP,W,FLOOR-WALLTOP);ctx.globalAlpha=1;
+    if(b===5)for(const [i,[a,c]] of DOWN_ZONES.entries()){ctx.globalAlpha=.2;ctx.fillStyle=locked?C.muted:C.warn;ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);ctx.globalAlpha=1;
+      ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=2;ctx.beginPath();for(const x of [a,c]){ctx.moveTo(x,y0+WALLTOP-4);ctx.lineTo(x,y0+FLOOR)}ctx.stroke();ctx.lineWidth=1;
+      if(!locked){ctx.font=mono(700,9);ctx.textAlign=i?'right':'left';ctx.fillText(i?'▼ '+B.down:B.down+' ▼',i?c:a,y0+WALLTOP-7)}}
     ctx.fillStyle=C.muted;ctx.font=mono(600,9);ctx.textAlign='center';
     if(B.zones.length>1)ctx.fillText(B.fail,W/2,y0+FLOOR-8,B.zones[1][0]-B.zones[0][1]-8);else{ctx.fillText(B.fail,70,y0+FLOOR-8);ctx.fillText(B.fail,W-70,y0+FLOOR-8)}
     const glow=B.glow||0;B.glow=Math.max(0,glow-.02);
     for(const [i,z] of B.zones.entries()){const [a,c]=shown(B)[i];ctx.fillStyle=C.panel;ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);
-      if(glow){ctx.save();ctx.shadowColor=C[B.col];ctx.shadowBlur=24*glow;ctx.globalAlpha=glow;ctx.fillStyle=C[B.col];ctx.fillRect(a,y0+WALLTOP-4,c-a,FLOOR-WALLTOP+4);ctx.restore()}
-      ctx.globalAlpha=.25+Math.max(z.flash||0,glow)*.5;ctx.fillStyle=C[B.col];ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);ctx.globalAlpha=1;z.flash=Math.max(0,(z.flash||0)-.05);
-      ctx.strokeStyle=C[B.col];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a,y0+WALLTOP-4);ctx.lineTo(a,y0+FLOOR);ctx.moveTo(c,y0+WALLTOP-4);ctx.lineTo(c,y0+FLOOR);ctx.stroke();ctx.lineWidth=1;
-      ctx.fillStyle=C[B.col];ctx.font=mono(700,9);
+      if(glow){ctx.save();ctx.shadowColor=col;ctx.shadowBlur=24*glow;ctx.globalAlpha=glow;ctx.fillStyle=col;ctx.fillRect(a,y0+WALLTOP-4,c-a,FLOOR-WALLTOP+4);ctx.restore()}
+      ctx.globalAlpha=.25+Math.max(z.flash||0,glow)*.5;ctx.fillStyle=col;ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);ctx.globalAlpha=1;z.flash=Math.max(0,(z.flash||0)-.05);
+      ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a,y0+WALLTOP-4);ctx.lineTo(a,y0+FLOOR);ctx.moveTo(c,y0+WALLTOP-4);ctx.lineTo(c,y0+FLOOR);ctx.stroke();ctx.lineWidth=1;
+      ctx.fillStyle=col;ctx.font=mono(700,9);ctx.textAlign='center';
       if(c-a>60)ctx.fillText(B.pass,(a+c)/2,y0+FLOOR-8);else ctx.fillText(B.pass+' ▼',(a+c)/2,y0+WALLTOP-7)}
     if(b<NB-1){ctx.fillStyle=C.line;ctx.fillRect(0,y0+BH-4,W,4)}
   });
   for(const p of pegs){ctx.fillStyle=C.peg;ctx.beginPath();ctx.arc(p.x,p.y,PR+p.flash,0,7);ctx.fill();p.flash=Math.max(0,p.flash-.1)}
+  if(!expOpen()){const y=5*BH+100,t='Unlocks at $1M valuation';ctx.font=mono(700,11);const w=ctx.measureText(t).width+20;
+    ctx.fillStyle=C.panel;ctx.fillRect(W/2-w/2,y-16,w,26);ctx.strokeStyle=C.line;ctx.strokeRect(W/2-w/2,y-16,w,26);ctx.fillStyle=C.muted;ctx.textAlign='center';ctx.fillText(t,W/2,y+2)}
   for(const p of sparks){ctx.globalAlpha=p.life;ctx.fillStyle=p.c;ctx.fillRect(p.x-1.5,p.y-1.5,3,3);p.x+=p.vx/60;p.y+=p.vy/60;p.vy+=6;p.life-=.025}
   ctx.globalAlpha=1;sparks=sparks.filter(p=>p.life>0);
   for(const o of balls){ctx.fillStyle=ballCol(o);ctx.beginPath();ctx.arc(o.x,o.y,BR,0,7);ctx.fill()}
@@ -362,7 +374,7 @@ function hud(){
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=MRR()*(1-COST_TO_SERVE)-teamCost()-lp;$('eServe').textContent=fmt(MRR()*COST_TO_SERVE);$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
    $('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
-   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(TRACKS[r.board]))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
+   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
   const won=out[4],cac=won?spend/won:0,ltv=price*(1-COST_TO_SERVE)/(paying&&heads('csm')?paidChurn()*(1-Math.min(paying,heads('csm')*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
   const pb=cac/(price*(1-COST_TO_SERVE));$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
   const r=ltv/cac;$('eRatio').textContent=won?r.toFixed(1)+' : 1':'–';$('eRatio').className=won&&r<3?'warn':'';
@@ -406,7 +418,7 @@ function loop(now){
 $('channels').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.dataset.ad)buyAd(b.dataset.ad);else if(b.dataset.camp)newCampaign(b.dataset.camp);else if(b.dataset.unlock)unlockCh(b.dataset.unlock);else if(b.dataset.post)post();else if(b.dataset.seo)buySeo();else if(b.dataset.fresh)publish()});
 renderCh();
-const COSTS=[2000,5000,12500],CENTERS=[[180],[91,269],[82,278],[180],[180]];
+const COSTS=[2000,5000,12500],CENTERS=[[180],[91,269],[82,278],[180],[180],[180]];
 const slots=(b,w)=>CENTERS[b].map(c=>[c-w/2,c+w/2]);
 const TRACKS=[
   {id:'acq',board:0,label:'sign-up',unit:'of visitors',base:.073,tiers:[['Market research',.105,38],['Landing page rewrite',.125,44],['Positioning overhaul',.145,50]]},
@@ -429,10 +441,12 @@ function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<CO
   if(isChurn)churn=rate;else zone(t.board);applyPrice();
   const d=Math.abs((isChurn?paidChurn():rateOf(t))-was)*100;celebrate(t.board,(isChurn?'−':'+')+d.toFixed(1)+' pts '+(isChurn?'churn':t.label),!isChurn);
   say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(id==='churn'?paidChurn():rateOf(t))}${t.unit?' '+t.unit:''}.`);renderUpg()}
+// The upgrade track on board b; churn shares board 4 but isn't one. Undefined for a board without upgrades.
+const trackOf=b=>TRACKS.find(t=>t.board===b&&t.id!=='churn');
 const BASEW=BOARDS.map(B=>B.zones[0][1]-B.zones[0][0]);
 const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*strength(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
 // Landing rate is close to linear in slot width on every board, so team and price scale the tuned width.
-function zone(b){const t=TRACKS[b],B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(340,(lvl[t.id]?t.tiers[lvl[t.id]-1][2]:BASEW[b])*teamMult(b)*(b===4?priceConv():1)));
+function zone(b){const t=trackOf(b),B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(340,(t&&lvl[t.id]?t.tiers[lvl[t.id]-1][2]:BASEW[b])*teamMult(b)*(b===4?priceConv():1)));
   if(gateReady&&from[0][1]-from[0][0]!==B.zones[0][1]-B.zones[0][0])B.anim={from,t0:performance.now()}}
 // Display only: the drawn slot springs from its old width with a slight overshoot. Physics reads B.zones, which changes at once.
 const SPRING=550,easeBack=p=>1+2.7*(p-1)**3+1.7*(p-1)**2;
@@ -442,7 +456,7 @@ function shown(B){if(!B.anim)return B.zones;const p=(performance.now()-B.anim.t0
 let sparks=[];
 function celebrate(b,text,slot){const B=BOARDS[b],y0=b*BH;sfx('upgrade');addFloat({x:W/2,y:y0+WALLTOP-26,t:text,c:C[B.col],life:1.4,size:14});if(!slot)return;B.glow=1;
   for(const [a,c] of B.zones)for(const [x,dir] of [[a,-1],[c,1]])for(let i=0;i<9;i++)sparks.push({x,y:y0+WALLTOP+Math.random()*(FLOOR-WALLTOP),vx:dir*(40+Math.random()*120),vy:-(40+Math.random()*130),life:1,c:C[B.col]})}
-function applyPrice(){const t=TRACKS[4];zone(4);
+function applyPrice(){const t=trackOf(4);zone(4);
   $('p-val').textContent=fmt(price);$('p-meta').textContent=`At ${fmt(price)}: ${p1(rateOf(t))} paid conversion, ${p1(paidChurn())} monthly churn.`}
 $('price').addEventListener('input',e=>{price=+e.target.value;applyPrice()});
 $('upglist').addEventListener('click',e=>{const b=e.target.closest('.upg');if(b&&!b.disabled)buyUpg(b.id.slice(2))});
@@ -491,7 +505,7 @@ $('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:de
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
 ROLES.forEach(r=>{
-  $('r-hire-'+r.id).addEventListener('click',()=>{if(cash<r.salary||heads(r.id)>=ROLE_MAX)return;hire(r.id);say(`You hired ${aRole(r)}. They start at a quarter of full effect and take about six months to ramp up. ${r.label[0].toUpperCase()+r.label.slice(1)} is now about ${p1(rateOf(TRACKS[r.board]))}.`)});
+  $('r-hire-'+r.id).addEventListener('click',()=>{if(cash<r.salary||heads(r.id)>=ROLE_MAX)return;hire(r.id);say(`You hired ${aRole(r)}. They start at a quarter of full effect and take about six months to ramp up. ${r.label[0].toUpperCase()+r.label.slice(1)} is now about ${p1(rateOf(trackOf(r.board)))}.`)});
   $('r-fire-'+r.id).addEventListener('click',()=>{if(!heads(r.id))return;fire(r.id);say(`You let your newest ${r.name.toLowerCase()} go.`)})});
 $('m-hire').addEventListener('click',()=>{if(cash<MM.salary)return;hire('mm');const n=heads('mm');say(n===1?'Your first marketing manager starts Monday. Organic traffic should climb as they ramp up, but their salary only pays off if your funnel converts well.':`You now have ${n} marketing managers.`)});
 $('m-fire').addEventListener('click',()=>{if(!heads('mm'))return;fire('mm');say('You let your newest marketing manager go. Organic traffic will fall back.')});
@@ -562,7 +576,7 @@ function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;f
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
   ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc}=s);
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
-  into.splice(0,NB,...s.into);out.splice(0,NB,...s.out);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
+  into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
