@@ -1,0 +1,341 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Funnel Drop</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky money strip + ad button. Phone: boards then panels stacked. Desktop: boards left, a sticky panel of company, metrics and economics right. Single light theme. */
+:root{
+  --bg:#eef1f7; --panel:#ffffff; --line:#d3d9e6; --fg:#1b2033; --muted:#646c86; --rail:#e3e8f2; --board:#fbfcfe; --peg:#b4bbcf;
+  --ad:#f0b020; --acq:#1aa3d4; --act:#7a5ad8; --ret:#14a39a; --ref:#e8508f; --rev:#1ea862; --paid:#1ea862; --fail:#c9cfdd; --warn:#c2412f;
+  --display:'Chakra Petch',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--display);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
+h1{font-size:20px;margin:0;letter-spacing:.05em;text-transform:uppercase}
+h1 em{font-style:normal;color:var(--paid)}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.stat.val b{color:var(--rev)}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-width:0}
+.stat span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font-family:var(--mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.buy{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--ad);color:var(--fg);border:0;border-radius:10px;padding:12px 16px;font:700 16px var(--display);letter-spacing:.05em;text-transform:uppercase;cursor:pointer;box-shadow:0 2px 0 rgba(27,32,51,.18)}
+.buy small{display:block;font:500 11px var(--mono);letter-spacing:0;text-transform:none;opacity:.8}
+.buy b{font-family:var(--mono);font-size:16px}
+.buy:active:not(:disabled){transform:translateY(1px);box-shadow:none}
+.buy:disabled{background:var(--rail);color:var(--muted);cursor:not-allowed;box-shadow:none}
+.buy:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.channels{display:flex;flex-direction:column;gap:6px}
+.chan{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 6px 6px 10px}
+.chan.locked{grid-template-columns:minmax(0,1fr) auto;border-style:dashed}
+.chan.organic{grid-template-columns:minmax(0,1fr) auto}
+.chan .nm{min-width:0;display:flex;flex-direction:column;gap:2px}
+.chan .nm b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chan .nm small{font:500 11px var(--mono);color:var(--muted);line-height:1.3}
+.reach{display:block;height:4px;background:var(--rail);border-radius:2px;overflow:hidden}
+.reach i{display:block;height:100%;width:100%;background:var(--ad)}
+.adbtn,.campbtn{border-radius:7px;padding:8px 10px;font:700 12px var(--display);letter-spacing:.03em;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
+.adbtn b,.campbtn b{font:600 12px var(--mono);text-transform:none}
+.adbtn{background:var(--ad);color:var(--fg);border:0;box-shadow:0 2px 0 rgba(27,32,51,.18)}
+.adbtn:active:not(:disabled){transform:translateY(1px);box-shadow:none}
+.campbtn{background:var(--panel);color:var(--fg);border:1px solid var(--line)}
+.adbtn:disabled,.campbtn:disabled{background:var(--rail);color:var(--muted);box-shadow:none;cursor:not-allowed;border-color:var(--rail)}
+.adbtn:focus-visible,.campbtn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+@media (max-width:420px){.adbtn,.campbtn{padding:7px 8px;font-size:11px}}
+.msg{font-size:14px;line-height:1.45;color:var(--muted);margin:0}
+.msg b{color:var(--fg)}
+canvas{display:block;width:100%;aspect-ratio:360/1020;background:var(--board);border:1px solid var(--line);border-radius:10px}
+h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:11px}
+tr:last-child td{border-bottom:0}
+i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.econ{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.econ span:nth-child(odd){color:var(--muted)}
+.warn{color:var(--warn)}
+.src{font-size:12px;line-height:1.5;color:var(--muted);margin:0}
+.src a{color:var(--muted)}
+.upgrades{display:flex;flex-direction:column;gap:6px}
+.upg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;text-align:left;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c,var(--acq));border-radius:8px;padding:9px 12px;color:var(--fg);font:inherit;cursor:pointer}
+.upg b{font-size:14px}
+.upg small{grid-column:1;font-size:12px;color:var(--muted);line-height:1.35}
+.upg .cost{grid-row:1/3;grid-column:2;font:600 14px var(--mono);color:var(--fg)}
+.upg:hover:not(:disabled){border-color:var(--muted);border-left-color:var(--c,var(--acq))}
+.upg:disabled{cursor:not-allowed}
+.upg:disabled .cost{color:var(--muted)}
+.upg.done{opacity:.6}
+.upg:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.main{display:flex;flex-direction:column;gap:12px}
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.boardcol{display:flex;flex-direction:column;gap:12px;min-width:0}
+@media (min-width:860px){
+  .wrap{max-width:920px}
+  .top{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px}
+  .boardcol .channels{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);z-index:4;background:var(--bg);padding-bottom:6px}
+  .main{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:24px;align-items:start}
+  .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
+  .side h2:first-child{margin-top:0}
+}
+</style>
+
+<div class="wrap">
+  <div class="top" id="top">
+    <h1>Funnel <em>Drop</em></h1>
+    <div class="hud">
+      <div class="stat"><span>Cash</span><b id="vCash">$1,500</b></div>
+      <div class="stat"><span>MRR</span><b id="vMrr">$0</b></div>
+      <div class="stat"><span>Paying</span><b id="vPaying">0</b></div>
+      <div class="stat val"><span>Valuation</span><b id="vVal">$0</b></div>
+    </div>
+    <div class="channels" id="channels"></div>
+  </div>
+  <p class="msg" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> until they cancel (5% a month). A month passes every 10 seconds.</p>
+  <div class="main"><div class="boardcol" id="boardcol">
+  <div class="upgrades" id="upgrades"><h2>Upgrades</h2><div class="upgrades" id="upglist"></div><h2>Team</h2><div class="upgrades" id="team"></div><h2>Financing</h2><div class="upgrades" id="loans"></div></div>
+  <canvas id="cv" aria-label="Five stacked boards, one per pirate metric: acquisition, activation, retention, referral and revenue."></canvas>
+  </div><div class="side" id="side">
+  <h2>Company</h2>
+  <div class="econ">
+    <span>Valuation</span><span id="cVal">$0</span>
+    <span>ARR</span><span id="cArr">$0</span>
+    <span>MRR growth, per month</span><span id="cGrowth">–</span>
+    <span>Revenue multiple</span><span id="cMult">6.0×</span>
+    <span>Peak valuation</span><span id="cPeak">$0</span>
+    <span>Debt outstanding</span><span id="cDebt">$0</span>
+  </div>
+  <h2>Pirate metrics</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Metric</th><th>In</th><th>Out</th><th>Yours</th><th>Bench</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table></div>
+  <h2>Unit economics</h2>
+  <div class="econ">
+    <span>Ads bought</span><span id="eAds">0</span>
+    <span>Total ad spend</span><span id="eSpend">$0</span>
+    <span>Cost per paying customer</span><span id="eCac">–</span>
+    <span>Months to earn it back</span><span id="ePay">–</span>
+    <span>Customers churned</span><span id="eChurn">0</span>
+    <span>Team cost per month</span><span id="eTeam">$0</span>
+    <span>Loan repayments per month</span><span id="eLoan">$0</span>
+    <span>Net cash flow per month</span><span id="eNet">$0</span>
+    <span>Lifetime value per customer</span><span id="eLtv">$980</span>
+    <span>LTV : CAC</span><span id="eRatio">–</span>
+    <span>Free users (retained, not paying)</span><span id="eFree">0</span>
+  </div>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 10 friends, who arrive already signed up. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 5% a month</b>: the top of the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two.</p>
+  </div></div>
+</div>
+
+<script>
+const W=360,BH=204,NB=5,H=BH*NB,BR=3.5,PR=3,GRAV=820,PER_AD=100,DECAY=.92,PRICE=49,MONTH=10,AD0=100,AD_GROWTH=1.08;
+const WALLTOP=160,FLOOR=196;let churn=.05;
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C={ad:css('--ad'),acq:css('--acq'),act:css('--act'),ret:css('--ret'),ref:css('--ref'),rev:css('--rev'),fail:css('--fail'),peg:css('--peg'),fg:css('--fg'),muted:css('--muted'),rail:css('--rail'),line:css('--line')};
+const BOARDS=[
+  {name:'Acquisition',title:'A · ACQUISITION',zones:[[172,188]],pass:'SIGN UP',fail:'BOUNCED',col:'acq',bench:.05,inL:'visitors',outL:'sign-ups'},
+  {name:'Activation',title:'A · ACTIVATION',zones:[[55,127],[233,305]],pass:'ACTIVATED',fail:'NEVER ACTIVATED',col:'act',bench:.36,inL:'sign-ups',outL:'activated'},
+  {name:'Retention',title:'R · RETENTION',zones:[[42,122],[238,318]],pass:'RETAINED',fail:'CHURNED',col:'ret',bench:.47,inL:'activated',outL:'retained'},
+  {name:'Referral',title:'R · REFERRAL',zones:[[156,204]],pass:'REFERS',fail:'NO REFERRAL',col:'ref',bench:.10,inL:'retained',outL:'referrals'},
+  {name:'Revenue',title:'R · REVENUE',zones:[[122,238]],pass:'PAID',fail:'STAYS FREE',col:'rev',bench:.30,inL:'retained',outL:'paying'}
+];
+const pegs=[];
+BOARDS.forEach((_,b)=>{const y0=b*BH;for(let r=0;r<5;r++){const odd=r%2,n=odd?11:12,x0=15+(odd?15:0);for(let i=0;i<n;i++)pegs.push({b,x:x0+i*30,y:y0+36+r*26,flash:0})}});
+const fmt=v=>{const a=Math.abs(v),s=v<0?'−$':'$';if(a>=1e6)return s+(a/1e6).toFixed(2)+'M';if(a>=1e4)return s+(a/1e3).toFixed(1)+'k';return s+Math.round(a).toLocaleString('en')};
+const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'–';
+const $=id=>document.getElementById(id);
+
+let cash=1500,ads=0,spend=0,balls=[],floats=[],queue=[];
+const into=[0,0,0,0,0],out=[0,0,0,0,0];let free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
+
+function resize(){const d=window.devicePixelRatio||1;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
+const SEO=[['Start a blog',2000,60],['SEO foundations',5000,180],['Content library',12500,420]];let seoLvl=0,organicAcc=0,postReady=0;
+const POST_CD=15000;
+function organicRate(){const base=seoLvl?SEO[seoLvl-1][2]:0;return base*(1+.5*(typeof mm==='number'?mm:0))+(typeof mm==='number'?mm:0)*400}
+function post(){const now=performance.now();if(now<postReady)return;postReady=now+POST_CD;const m=1+(typeof mm==='number'?mm:0);
+  const viral=Math.random()<.04,n=Math.round((viral?80+Math.random()*70:3+Math.random()*7)*m);
+  const t=now;for(let i=0;i<n;i++)queue.push(t+i*22);
+  say(viral?`Your post took off: ${n} visitors are on their way.`:`Posted. ${n} people clicked through.`)}
+function buySeo(){if(seoLvl>=3||cash<SEO[seoLvl][1])return;cash-=SEO[seoLvl][1];const [name]=SEO[seoLvl];seoLvl++;say(`${name} done. About ${Math.round(organicRate())} free visitors a month will now trickle in from search.`)}
+const CHANNELS=[
+  {id:'social',name:'Social ads',cost:100,base:100,camp:500,unlock:0},
+  {id:'search',name:'Search ads',cost:200,base:100,camp:1000,unlock:3000},
+  {id:'linkedin',name:'LinkedIn ads',cost:400,base:100,camp:2000,unlock:8000},
+  {id:'podcast',name:'Podcast sponsorships',cost:1500,base:200,camp:5000,unlock:20000}
+];
+CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0});
+const RECOVER=.10;
+function buyAd(id){const c=CHANNELS.find(x=>x.id===id);
+  if(!c.open||cash<c.cost)return;cash-=c.cost;spend+=c.cost;ads++;c.ads++;const v=Math.max(1,Math.round(c.reach));c.reach*=DECAY;
+  const t=performance.now();for(let i=0;i<v;i++)queue.push(t+i*22);
+  if(ads===1)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
+  if(c.ads===12)say(`Each ${c.name.toLowerCase()} ad reaches 8% fewer people than the last. Give the channel time to recover, or pay for a new campaign.`);
+}
+function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);if(!c.open||cash<c.camp||c.reach>=c.base-.5)return;cash-=c.camp;spend+=c.camp;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to ${c.base} visitors per ad.`)}
+function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(c.open||cash<c.unlock)return;cash-=c.unlock;c.open=true;say(`${c.name} unlocked: a fresh audience of ${c.base} visitors per ad, at ${fmt(c.cost)} an ad.`);renderCh()}
+function visibleCh(){const out=[];for(const c of CHANNELS){out.push(c);if(!c.open)break}return out}
+function renderCh(){
+  $('channels').innerHTML=`<div class="chan organic"><div class="nm"><b>Organic social post</b><small id="op-meta">Free. Usually a handful of visitors; now and then a post takes off.</small></div><button class="adbtn" data-post="1" id="op-btn">Post <b>Free</b></button></div>
+  <div class="chan organic"><div class="nm"><b>SEO &amp; content</b><small id="seo-meta"></small></div><button class="campbtn" data-seo="1" id="seo-btn"></button></div>`+visibleCh().map(c=>c.open?`<div class="chan"><div class="nm"><b>${c.name}</b><small id="cr-${c.id}"></small><i class="reach"><i id="cb-${c.id}"></i></i></div>
+    <button class="adbtn" data-ad="${c.id}" id="ca-${c.id}">Buy ad <b>${fmt(c.cost)}</b></button>
+    <button class="campbtn" data-camp="${c.id}" id="cc-${c.id}">New campaign <b>${fmt(c.camp)}</b></button></div>`
+   :`<div class="chan locked"><div class="nm"><b>${c.name}</b><small>A fresh audience of ${c.base} visitors per ad, at ${fmt(c.cost)} an ad.</small></div><button class="campbtn" data-unlock="${c.id}" id="cu-${c.id}">Unlock <b>${fmt(c.unlock)}</b></button></div>`).join('');
+}
+function say(t){$('msg').innerHTML=t}
+function enter(b,friend,x){into[b]++;return{b,friend,x:x??12+Math.random()*(W-24),y:b*BH+12,vx:(Math.random()-.5)*30,vy:0,age:0}}
+function land(o){
+  const B=BOARDS[o.b],hit=B.zones.some(([a,c])=>o.x>=a&&o.x<c),fy=o.b*BH+WALLTOP-6;
+  if(hit){out[o.b]++;for(const z of B.zones)if(o.x>=z[0]&&o.x<z[1])z.flash=1}
+  if(o.b<=2){if(hit)balls.push(enter(o.b+1,0,o.x))}
+  else if(o.b===3){balls.push(enter(4,0,o.x));if(hit){for(let i=0;i<10;i++)setTimeout(()=>balls.push(enter(1,1)),i*60);floats.push({x:o.x,y:fy,t:'+10 friends',c:C.ref,life:1});if(out[3]===1)say('A user told ten friends. They skip Acquisition and land straight in Activation.')}}
+  else{if(hit){paying++;floats.push({x:o.x,y:fy,t:'+'+fmt(PRICE)+'/mo',c:C.rev,life:1});if(out[4]===1)say('Your first paying customer. Look how many visitors it took.')}else free++}
+}
+function physics(dt){
+  for(const o of balls){
+    o.age+=dt;o.vy+=GRAV*dt;const sp=Math.hypot(o.vx,o.vy);if(sp>600){o.vx*=600/sp;o.vy*=600/sp}
+    o.x+=o.vx*dt;o.y+=o.vy*dt;
+    if(o.x<BR){o.x=BR;o.vx=Math.abs(o.vx)*.5}if(o.x>W-BR){o.x=W-BR;o.vx=-Math.abs(o.vx)*.5}
+    const y0=o.b*BH;
+    for(const p of pegs){if(p.b!==o.b)continue;const dx=o.x-p.x,dy=o.y-p.y,rr=BR+PR,d2=dx*dx+dy*dy;
+      if(d2<rr*rr){const d=Math.sqrt(d2)||.01,nx=dx/d,ny=dy/d;o.x=p.x+nx*rr;o.y=p.y+ny*rr;const vn=o.vx*nx+o.vy*ny;
+        if(vn<0){o.vx-=1.5*vn*nx;o.vy-=1.5*vn*ny}o.vx+=(Math.random()-.5)*24;p.flash=1}}
+    if(o.y>y0+WALLTOP-BR)for(const [a,c] of BOARDS[o.b].zones)for(const w of [a,c])if(Math.abs(o.x-w)<BR+1){o.x=o.x<w?w-BR-1:w+BR+1;o.vx*=-.4}
+    if(o.y>y0+FLOOR||o.age>12){o.done=1;land(o)}
+  }
+  balls=balls.filter(o=>!o.done);
+}
+function ballCol(o){return o.friend&&o.b===1?C.ref:o.b===0?C.ad:C[BOARDS[o.b-1].col]}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  BOARDS.forEach((B,b)=>{const y0=b*BH;
+    ctx.fillStyle=C.rail;ctx.fillRect(0,y0,W,22);
+    ctx.fillStyle=C[B.col];ctx.fillRect(0,y0,4,22);
+    ctx.fillStyle=C.fg;ctx.font='700 10px JetBrains Mono, monospace';ctx.textAlign='left';ctx.fillText(B.title,10,y0+15);
+    ctx.textAlign='right';ctx.fillStyle=C.muted;ctx.font='600 10px JetBrains Mono, monospace';ctx.fillText(`yours ${pct(out[b],into[b])} · bench ${B.bench*100}%`,W-8,y0+15);
+    ctx.globalAlpha=.35;ctx.fillStyle=C.fail;ctx.fillRect(0,y0+WALLTOP,W,FLOOR-WALLTOP);ctx.globalAlpha=1;
+    ctx.fillStyle=C.muted;ctx.font='600 9px JetBrains Mono, monospace';ctx.textAlign='center';
+    if(B.zones.length>1)ctx.fillText(B.fail,W/2,y0+FLOOR-8);else{ctx.fillText(B.fail,70,y0+FLOOR-8);ctx.fillText(B.fail,W-70,y0+FLOOR-8)}
+    for(const z of B.zones){const [a,c]=z;ctx.fillStyle='#ffffff';ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);
+      ctx.globalAlpha=.25+(z.flash||0)*.5;ctx.fillStyle=C[B.col];ctx.fillRect(a,y0+WALLTOP,c-a,FLOOR-WALLTOP);ctx.globalAlpha=1;z.flash=Math.max(0,(z.flash||0)-.05);
+      ctx.strokeStyle=C[B.col];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a,y0+WALLTOP-4);ctx.lineTo(a,y0+FLOOR);ctx.moveTo(c,y0+WALLTOP-4);ctx.lineTo(c,y0+FLOOR);ctx.stroke();ctx.lineWidth=1;
+      ctx.fillStyle=C[B.col];ctx.font='700 9px JetBrains Mono, monospace';
+      if(c-a>60)ctx.fillText(B.pass,(a+c)/2,y0+FLOOR-8);else ctx.fillText(B.pass+' ▼',(a+c)/2,y0+WALLTOP-7)}
+    if(b<NB-1){ctx.fillStyle=C.line;ctx.fillRect(0,y0+BH-4,W,4)}
+  });
+  for(const p of pegs){ctx.fillStyle=C.peg;ctx.beginPath();ctx.arc(p.x,p.y,PR+p.flash,0,7);ctx.fill();p.flash=Math.max(0,p.flash-.1)}
+  for(const o of balls){ctx.fillStyle=ballCol(o);ctx.beginPath();ctx.arc(o.x,o.y,BR,0,7);ctx.fill()}
+  for(const f of floats){ctx.globalAlpha=Math.max(0,f.life);ctx.fillStyle=f.c;ctx.textAlign='center';ctx.font='700 12px JetBrains Mono, monospace';ctx.fillText(f.t,f.x,f.y);f.y-=.4;f.life-=.014}
+  ctx.globalAlpha=1;floats=floats.filter(f=>f.life>0);
+}
+const rows=BOARDS.map((B,b)=>`<tr><td><i class="dot" style="background:var(--${B.col})"></i>${B.name}</td><td id="i${b}">0</td><td id="o${b}">0</td><td id="r${b}">–</td><td>${B.bench*100}%</td></tr>`).join('');
+$('tbody').innerHTML=rows;
+function hud(){
+  $('vCash').textContent=fmt(cash);$('vMrr').textContent=fmt(paying*PRICE);$('vPaying').textContent=paying;
+  for(const c of visibleCh()){if(c.open){const r=Math.max(1,Math.round(c.reach));$('cr-'+c.id).textContent=`${r} visitors per ad · ${fmt(c.cost/r)} each`;$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
+      $('ca-'+c.id).disabled=cash<c.cost;$('cc-'+c.id).disabled=cash<c.camp||c.reach>=c.base-.5}else $('cu-'+c.id).disabled=cash<c.unlock}
+  for(let b=0;b<NB;b++){$('i'+b).textContent=into[b].toLocaleString('en');$('o'+b).textContent=out[b];$('r'+b).textContent=pct(out[b],into[b])}
+  const mrr=paying*PRICE,mult=Math.max(2,Math.min(25,6+40*growth)),val=mrr*12*mult;peak=Math.max(peak,val);
+  $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);
+  $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
+  TRACKS.forEach(t=>{$('u-'+t.id).disabled=lvl[t.id]>=3||cash<COSTS[lvl[t.id]]});
+  $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
+  {const lp=loanPay(),net=paying*PRICE-teamCost()-lp;$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
+   $('t-csm-meta').textContent=`${csm} on the team · covering ${Math.min(paying,csm*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<CSM.salary;$('m-meta').textContent=`${mm} on the team · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<MM.salary;$('m-fire').disabled=mm===0;$('t-fire').disabled=csm===0;}
+  const won=out[4],cac=won?spend/won:0,ltv=PRICE/(paying&&csm?churn*(1-Math.min(paying,csm*CSM.covers)/paying*(1-CSM.mult)):churn);$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
+  const pb=cac/PRICE;$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
+  const r=ltv/cac;$('eRatio').textContent=won?r.toFixed(1)+' : 1':'–';$('eRatio').className=won&&r<3?'warn':'';
+}
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  while(queue.length&&queue[0]<=now){queue.shift();balls.push(enter(0))}
+  organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;balls.push(enter(0))}
+  {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=left>0;b.innerHTML=left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>';
+   $('seo-meta').textContent=seoLvl?`${Math.round(organicRate())} free visitors a month, arriving steadily.`:'A steady stream of free visitors from search, once you invest in content.';
+   const sb=$('seo-btn');if(seoLvl>=3){sb.innerHTML='Maxed';sb.disabled=true}else{sb.innerHTML=`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`;sb.disabled=cash<SEO[seoLvl][1]}}
+  for(let i=0;i<3;i++)physics(dt/3);
+  cash+=paying*PRICE/MONTH*dt;
+  {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
+  histT+=dt;if(histT>=1){histT-=1;mrrHist.push(paying*PRICE);if(mrrHist.length>31)mrrHist.shift();
+    growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
+  {const tc=teamCost()/MONTH*dt;if(cash>=tc)cash-=tc;else if(mm>0){cash=0;mm--;say('Payroll bounced, so you had to let a marketing manager go.')}else if(csm>0){cash=0;csm--;say('Payroll bounced, so you had to let a customer success manager go. Their customers lose the extra attention.')}}
+  for(const l of LOANS)if(l.bal>0){const r=l.apr/12;l.bal+=l.bal*r*dt/MONTH;const due=Math.min(l.bal,l.pay*dt/MONTH);
+    if(cash>=due){l.bal-=due;cash-=due;l.late=0}else{const paid=cash;cash=0;l.bal-=paid;l.bal+=(due-paid)*.25;
+      if(!l.late){l.late=1;say(`You missed a ${l.name.toLowerCase()} repayment. Late fees of 25% of each missed amount are added to what you owe until you can pay again.`)}}
+    if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
+  cash=Math.max(0,cash);
+  if(paying>0){const cov=Math.min(paying,csm*CSM.covers),pc=1-Math.pow(1-churn*CSM.mult,dt/MONTH),p=1-Math.pow(1-churn,dt/MONTH);let lost=0;for(let i=0;i<paying;i++)if(Math.random()<(i<cov?pc:p))lost++;
+    if(lost){paying-=lost;churned+=lost;floats.push({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:'#c2412f',life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
+  if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. <b>Reload the page</b> to try again.');
+  draw();hud();requestAnimationFrame(loop);
+}
+$('channels').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
+  if(b.dataset.ad)buyAd(b.dataset.ad);else if(b.dataset.camp)newCampaign(b.dataset.camp);else if(b.dataset.unlock)unlockCh(b.dataset.unlock);else if(b.dataset.post)post();else if(b.dataset.seo)buySeo()});
+renderCh();
+const COSTS=[2000,5000,12500],CENTERS=[[180],[91,269],[82,278],[180],[180]];
+const slots=(b,w)=>CENTERS[b].map(c=>[c-w/2,c+w/2]);
+const TRACKS=[
+  {id:'acq',board:0,label:'sign-up',unit:'of visitors',base:.05,tiers:[['Market research',.075,26],['Landing page rewrite',.088,30],['Positioning overhaul',.094,33]]},
+  {id:'act',board:1,label:'activation',unit:'of sign-ups',base:.36,tiers:[['Onboarding checklist',.455,94],['Guided setup',.503,103],['Aha-moment redesign',.526,108]]},
+  {id:'ret',board:2,label:'month-1 retention',unit:'of activated users',base:.47,tiers:[['Lifecycle emails',.525,92],['Habit-forming features',.553,96],['Core workflow polish',.566,98]]},
+  {id:'ref',board:3,label:'referral',unit:'of retained users',base:.10,tiers:[['Share button',.20,91],['Invite rewards',.25,106],['Built-in viral loop',.275,113]]},
+  {id:'rev',board:4,label:'paid conversion',unit:'of retained users',base:.30,tiers:[['Pricing page',.40,156],['Upgrade prompts',.45,172],['Sales assist',.475,180]]},
+  {id:'churn',board:4,label:'monthly paid churn',unit:'',base:.05,tiers:[['Cancellation save offers',.0325],['Annual plans',.024],['Health scoring',.019]]}
+];
+const lvl={};TRACKS.forEach(t=>lvl[t.id]=0);
+const p1=v=>{const x=v*100;return(Math.abs(x-Math.round(x))<.05?Math.round(x):x.toFixed(1))+'%'};
+function cur(t){return lvl[t.id]?t.tiers[lvl[t.id]-1][1]:t.base}
+function renderUpg(){
+  $('upglist').innerHTML=TRACKS.map(t=>{const L=lvl[t.id],max=L>=3,tier=t.tiers[Math.min(L,2)],col=t.id==='churn'?'warn':BOARDS[t.board].col;
+    return `<button class="upg${max?' done':''}" id="u-${t.id}" style="--c:var(--${col})"><b>${max?'Maxed':tier[0]}</b><span class="cost">${max?'—':fmt(COSTS[L])}</span><small>${t.id==='churn'?'Paid churn':BOARDS[t.board].name} · ${max?p1(cur(t))+' '+t.label:`${t.label} ${p1(cur(t))} → ${p1(tier[1])}`} · tier ${Math.min(L+1,3)}/3</small></button>`}).join('');
+}
+function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<COSTS[L])return;
+  cash-=COSTS[L];const [name,rate,w]=t.tiers[L];lvl[id]++;
+  if(id==='churn')churn=rate;else BOARDS[t.board].zones=slots(t.board,w);
+  say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(rate)}${t.unit?' '+t.unit:''}.`);renderUpg()}
+$('upglist').addEventListener('click',e=>{const b=e.target.closest('.upg');if(b&&!b.disabled)buyUpg(b.id.slice(2))});
+renderUpg();
+const CSM={salary:6000,covers:150,mult:.5};let csm=0,warnedNeg=0;
+const MM={salary:6000,visitors:400};let mm=0;const teamCost=()=>csm*CSM.salary+mm*MM.salary;
+$('team').innerHTML=`<div class="upg" style="--c:var(--rev);cursor:default"><b>Customer success manager</b><span class="cost">${fmt(CSM.salary)}/mo</span><small>Halves monthly churn for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
+  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-fire">Let go</button></span></div>
+<div class="upg" style="--c:var(--acq);cursor:default"><b>Marketing manager</b><span class="cost">${fmt(MM.salary)}/mo</span><small>Publishes content and runs social: +${MM.visitors} free visitors a month each, SEO traffic +50%, and organic posts reach twice as many people. <span id="m-meta"></span></small>
+  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`;
+$('m-hire').addEventListener('click',()=>{if(cash<MM.salary)return;mm++;say(mm===1?'Your first marketing manager starts Monday. Organic traffic should climb, but their salary only pays off if your funnel converts well.':`You now have ${mm} marketing managers.`)});
+$('m-fire').addEventListener('click',()=>{if(!mm)return;mm--;say('You let a marketing manager go. Organic traffic will fall back.')});
+$('t-hire').addEventListener('click',()=>{if(cash<CSM.salary)return;csm++;say(csm===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${csm} customer success managers.`)});
+$('t-fire').addEventListener('click',()=>{if(!csm)return;csm--;say('You let a customer success manager go. Their customers lose the extra attention.')});
+const MRR=()=>paying*PRICE,r500=v=>Math.floor(v/500)*500;
+const LOANS=[
+  {id:'card',name:'Business credit card',apr:.24,months:12,limit:()=>3000,ok:()=>true,why:''},
+  {id:'online',name:'Online lender',apr:.30,months:12,limit:()=>r500(MRR()*3),ok:()=>MRR()>=500,why:'Needs $500 MRR. Lends up to 3× MRR.'},
+  {id:'bank',name:'Bank term loan',apr:.10,months:24,limit:()=>Math.min(500000,r500(MRR()*6)),ok:()=>MRR()>=5000,why:'Needs $5,000 MRR. Lends up to 6× MRR.'}
+];
+LOANS.forEach(l=>{l.bal=0;l.pay=0});
+const pmt=(P,apr,n)=>{const r=apr/12;return P*r/(1-Math.pow(1+r,-n))};
+const loanPay=()=>LOANS.reduce((t,l)=>t+(l.bal>0?l.pay:0),0);
+$('loans').innerHTML=LOANS.map(l=>`<div class="upg" style="--c:var(--muted);cursor:default"><b>${l.name}</b><span class="cost" id="l-fig-${l.id}"></span><small><span>${Math.round(l.apr*100)}% APR · repaid monthly over ${l.months} months.</span> <span id="l-st-${l.id}"></span></small>
+  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="l-take-${l.id}">Borrow</button><button class="campbtn" id="l-off-${l.id}">Pay off</button></span></div>`).join('');
+function updLoans(){let debt=0;for(const l of LOANS){debt+=l.bal;const lim=l.limit();
+  if(l.bal>0){const left=Math.max(1,Math.ceil(Math.log(1/(1-l.bal*(l.apr/12)/l.pay))/Math.log(1+l.apr/12)||1));
+    $('l-fig-'+l.id).textContent=fmt(l.bal);$('l-st-'+l.id).textContent=`${l.late?'Behind on repayments, late fees adding up. ':''}Owe ${fmt(l.bal)}. ${fmt(l.pay)} a month, about ${left} months left.`;}
+  else if(l.ok()&&lim>0){$('l-fig-'+l.id).textContent=fmt(lim);$('l-st-'+l.id).textContent=`Borrow ${fmt(lim)}: ${fmt(pmt(lim,l.apr,l.months))} a month, ${fmt(pmt(lim,l.apr,l.months)*l.months-lim)} interest in total.`}
+  else{$('l-fig-'+l.id).textContent='—';$('l-st-'+l.id).textContent=l.why}
+  $('l-take-'+l.id).disabled=l.bal>0||!l.ok()||lim<=0;$('l-off-'+l.id).disabled=!(l.bal>0)||cash<l.bal}
+  $('cDebt').textContent=fmt(debt)}
+LOANS.forEach(l=>{
+  $('l-take-'+l.id).addEventListener('click',()=>{const lim=l.limit();if(l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)});
+  $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;cash-=l.bal;l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
+const wide=matchMedia('(min-width:860px)');
+function placeBuy(){const b=$('channels'),u=$('upgrades');if(wide.matches){if(b.parentNode!==$('boardcol'))$('boardcol').prepend(b);if(u.parentNode!==$('side'))$('side').prepend(u)}else{if(b.parentNode!==$('top'))$('top').append(b);if(u.parentNode!==$('boardcol'))$('boardcol').prepend(u)}}
+placeBuy();wide.addEventListener('change',placeBuy);
+resize();window.addEventListener('resize',resize);hud();requestAnimationFrame(loop);
+</script>
+
+</body></html>
