@@ -65,7 +65,7 @@ test('health counts cost to serve', () => {
   g('growth=0;subs={};paying=0;addSub(49,0,20);paying=20;cash=0');
   assert.equal(g('MRR()'),980);
   // net positive either way; push it so only margin tips the sign
-  g('Object.assign(ROLES[0],{n:0});mm=0;csm=0;LOANS.forEach(l=>l.bal=0)');
+  g('staff=[];LOANS.forEach(l=>l.bal=0)');
   const pos=g('health()');
   g('subs={};paying=0;addSub(49,0,1000);paying=1000;');
   // MRR 49000, margin 0.78: use a loan payment between MRR*0.78 and MRR

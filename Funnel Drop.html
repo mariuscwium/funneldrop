@@ -187,7 +187,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
     <span>LTV : CAC</span><span id="eRatio">–</span>
     <span>Free users (retained, not paying)</span><span id="eFree">0</span>
   </div>
-  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. Typical SaaS margins are near this, but the exact figure here is a game simplification, not a cited benchmark. Lifetime value and payback use gross margin. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events and how fast content goes stale. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Upgrades bring it to 4% at best. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. Typical SaaS margins are near this, but the exact figure here is a game simplification, not a cited benchmark. Lifetime value and payback use gross margin. <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data.</p>
   </div></div></div>
 </div>
 
@@ -232,7 +232,7 @@ let cash=1500,ads=0,spend=0,ledger=[],monthOut=0,monthRev=0,balls=[],floats=[],q
 const COST_TO_SERVE=.22;
 function spendCash(n){cash-=n;monthOut+=n}
 function margin3(){const l=ledger.slice(-3),rv=l.reduce((t,e)=>t+e.rev,0);return rv>0?(rv-l.reduce((t,e)=>t+e.out,0))/rv:null}
-const into=[0,0,0,0,0],out=[0,0,0,0,0];let eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
+const into=[0,0,0,0,0],out=[0,0,0,0,0];let staff=[],eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
 
 let textK=1;const mono=(w,s)=>`${w} ${s*textK}px JetBrains Mono, monospace`;
 // The board scales down to fit short screens, so canvas text grows to stay readable.
@@ -241,8 +241,8 @@ const SEO=[['Start a blog',2000,150],['SEO foundations',5000,300],['Content libr
 // Content goes stale but never to nothing: old articles keep a tenth of their traffic.
 const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
 const POST_CD=15000;
-function organicRate(){const base=seoLvl?SEO[seoLvl-1][2]*seoFresh:0;return base*(1+.5*(typeof mm==='number'?mm:0))+(typeof mm==='number'?mm:0)*400*skill('mm')}
-function post(){const now=performance.now();if(now<postReady)return;postReady=now+POST_CD;const m=1+(typeof mm==='number'?mm:0);
+function organicRate(){const base=seoLvl?SEO[seoLvl-1][2]*seoFresh:0,m=strength('mm');return base*(1+.5*m)+m*MM.visitors}
+function post(){const now=performance.now();if(now<postReady)return;postReady=now+POST_CD;const m=1+strength('mm');
   const viral=Math.random()<.04,n=Math.round((viral?80+Math.random()*70:3+Math.random()*7)*m);
   const t=now;for(let i=0;i<n;i++)queue.push({t:t+i*22});
   say(viral?`Your post took off: ${n} visitors are on their way.`:`Posted. ${n} people clicked through.`)}
@@ -358,12 +358,12 @@ function hud(){
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
   TRACKS.forEach(t=>{$('u-'+t.id).disabled=lvl[t.id]>=3||cash<COSTS[lvl[t.id]]});
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
-  $('h-team').hidden=![gate('csm',CSM.at,csm,'Customer success manager'),gate('mm',MM.at,mm,'Marketing manager'),...ROLES.map(r=>gate(r.id,r.at,r.n,r.name))].some(Boolean);
+  $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=MRR()*(1-COST_TO_SERVE)-teamCost()-lp;$('eServe').textContent=fmt(MRR()*COST_TO_SERVE);$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
-   $('t-csm-meta').textContent=`${csm} on the team · covering ${Math.min(paying,csm*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<pay('csm',CSM.salary);$('s-csm').textContent=fmt(pay('csm',CSM.salary))+'/mo';$('s-mm').textContent=fmt(pay('mm',MM.salary))+'/mo';$('m-meta').textContent=`${mm} on the team · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<pay('mm',MM.salary);$('m-fire').disabled=mm===0;$('t-fire').disabled=csm===0;
-   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${r.n} on the team · ${r.label} about ${p1(rateOf(TRACKS[r.board]))}`;$('s-'+r.id).textContent=fmt(pay(r.id,r.salary))+'/mo';$('r-hire-'+r.id).disabled=cash<pay(r.id,r.salary)||r.n>=ROLE_MAX;$('r-fire-'+r.id).disabled=!r.n}}
-  const won=out[4],cac=won?spend/won:0,ltv=price*(1-COST_TO_SERVE)/(paying&&csm?paidChurn()*(1-Math.min(paying,csm*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
+   $('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*CSM.covers)} of ${paying} paying customers`;$('t-hire').disabled=cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
+   for(const r of ROLES){$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(TRACKS[r.board]))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
+  const won=out[4],cac=won?spend/won:0,ltv=price*(1-COST_TO_SERVE)/(paying&&heads('csm')?paidChurn()*(1-Math.min(paying,heads('csm')*CSM.covers)/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
   const pb=cac/(price*(1-COST_TO_SERVE));$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
   const r=ltv/cac;$('eRatio').textContent=won?r.toFixed(1)+' : 1':'–';$('eRatio').className=won&&r<3?'warn':'';
 }
@@ -380,7 +380,7 @@ function loop(now){
   if($('ev').open){last=now;draw();requestAnimationFrame(loop);return}
   const dt=Math.min(.05,(now-last)/1000);last=now;
   while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
-  if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+mm),dt/MONTH));
+  if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+strength('mm')),dt/MONTH));
   organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;spawn(enter(0))}
   {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
    $('seo-meta').textContent=seoLvl?`${Math.round(organicRate())} free visitors a month, falling.`:'A stream of free visitors from search, for as long as you keep publishing.';
@@ -389,16 +389,16 @@ function loop(now){
   for(let i=0;i<3;i++)physics(dt/3);
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*COST_TO_SERVE*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR()});if(ledger.length>13)ledger.shift();monthRev=monthOut=0;recordHist();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
+  eventT+=dt;if(eventT>=MONTH){eventT-=MONTH;month++;ledger.push({rev:monthRev,out:monthOut,mrr:MRR()});if(ledger.length>13)ledger.shift();monthRev=monthOut=0;recordHist();refitRamping();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
-  {const tc=teamCost()/MONTH*dt,r=ROLES.find(x=>x.n);if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,r){r.n--;zone(r.board);applyPrice();say(`Payroll bounced, so you had to let ${aRole(r)} go.`)}else if(mm>0){mm--;say('Payroll bounced, so you had to let a marketing manager go.')}else if(csm>0){csm--;say('Payroll bounced, so you had to let a customer success manager go. Their customers lose the extra attention.')}}}
+  {const tc=teamCost()/MONTH*dt;if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,staff.length){const e=newest();fire(e.role);say(`Payroll bounced, so you had to let ${aRole({name:roleName(e.role)})} go.${e.role==='csm'?' Their customers lose the extra attention.':''}`)}}}
   for(const l of LOANS)if(l.bal>0){const r=l.apr/12;l.bal+=l.bal*r*dt/MONTH;const due=Math.min(l.bal,l.pay*dt/MONTH);
     if(cash>=due){l.bal-=due;spendCash(due);l.late=0}else{const paid=Math.max(0,cash);spendCash(paid);l.bal-=paid;l.bal+=(due-paid)*.25;
       if(!l.late){l.late=1;say(`You missed a ${l.name.toLowerCase()} repayment. Late fees of 25% of each missed amount are added to what you owe until you can pay again.`)}}
     if(l.bal<.5){l.bal=0;say(`${l.name} paid off.`)}}
   if(paying>0){const q=1-Math.pow(1-CUST_REFER,dt/MONTH),nr=binom(Math.min(paying,REFER_CAP),q);for(let i=0;i<nr;i++){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
-    let cov=Math.min(paying,csm*CSM.covers),lost=0;for(const k in subs){const [kp,kpl]=unkey(k),c=paidChurn(kp)*PLANS[kpl].stick,pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH),n0=subs[k],nc=Math.min(n0,cov);cov-=nc;const l=binom(nc,pc)+binom(n0-nc,p);lost+=l;if(n0-l)subs[k]=n0-l;else delete subs[k]}
+    let cov=Math.min(paying,heads('csm')*CSM.covers),lost=0;for(const k in subs){const [kp,kpl]=unkey(k),c=paidChurn(kp)*PLANS[kpl].stick,pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH),n0=subs[k],nc=Math.min(n0,cov);cov-=nc;const l=binom(nc,pc)+binom(n0-nc,p);lost+=l;if(n0-l)subs[k]=n0-l;else delete subs[k]}
     if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:C.warn,life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
   if(cash<CHANNELS[0].cost&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
@@ -430,7 +430,7 @@ function buyUpg(id){const t=TRACKS.find(x=>x.id===id),L=lvl[id];if(L>=3||cash<CO
   const d=Math.abs((isChurn?paidChurn():rateOf(t))-was)*100;celebrate(t.board,(isChurn?'−':'+')+d.toFixed(1)+' pts '+(isChurn?'churn':t.label),!isChurn);
   say(`<b>${name}</b> done. ${t.label[0].toUpperCase()+t.label.slice(1)} should now be about ${p1(id==='churn'?paidChurn():rateOf(t))}${t.unit?' '+t.unit:''}.`);renderUpg()}
 const BASEW=BOARDS.map(B=>B.zones[0][1]-B.zones[0][0]);
-const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*r.n*skill(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
+const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*strength(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
 // Landing rate is close to linear in slot width on every board, so team and price scale the tuned width.
 function zone(b){const t=TRACKS[b],B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(340,(lvl[t.id]?t.tiers[lvl[t.id]-1][2]:BASEW[b])*teamMult(b)*(b===4?priceConv():1)));
   if(gateReady&&from[0][1]-from[0][0]!==B.zones[0][1]-B.zones[0][0])B.anim={from,t0:performance.now()}}
@@ -447,10 +447,8 @@ function applyPrice(){const t=TRACKS[4];zone(4);
 $('price').addEventListener('input',e=>{price=+e.target.value;applyPrice()});
 $('upglist').addEventListener('click',e=>{const b=e.target.closest('.upg');if(b&&!b.disabled)buyUpg(b.id.slice(2))});
 renderUpg();
-const CSM={salary:6000,covers:150,mult:.75,at:5e5};let csm=0,warnedNeg=0;
-// Each role has one tenure, in years, so new hires join on that role's pay and skill. It resets when a review finds the role empty.
-const RAISE=1.05,SKILL=.03,tenure={csm:0,mm:0,pd:0,pe:0,cm:0,ae:0},pay=(id,base)=>base*RAISE**tenure[id],skill=id=>1+SKILL*tenure[id],csmMult=()=>1-(1-CSM.mult)*skill('csm');
-const MM={salary:6000,visitors:400,at:5e5};let mm=0;
+const CSM={salary:6000,covers:150,mult:.75,at:5e5};let warnedNeg=0;
+const MM={salary:6000,visitors:400,at:5e5};
 const ROLE_LIFT=.15,ROLE_MAX=3;
 const ROLES=[
   {id:'pd',name:'Product designer',board:1,salary:6000,at:75e4,label:'activation',blurb:'Smooths onboarding'},
@@ -458,27 +456,47 @@ const ROLES=[
   {id:'cm',name:'Community manager',board:3,salary:5000,at:75e4,label:'referral',blurb:'Gives users reasons to spread the word'},
   {id:'ae',name:'Account executive',board:4,salary:7000,at:1e6,label:'paid conversion',blurb:'Talks free users into paying'}
 ];
-ROLES.forEach(r=>r.n=0);
 const aRole=r=>(/^[aeiou]/i.test(r.name)?'an ':'a ')+r.name.toLowerCase();let nextCut=0;
-const teamCost=()=>csm*pay('csm',CSM.salary)+mm*pay('mm',MM.salary)+ROLES.reduce((t,r)=>t+r.n*pay(r.id,r.salary),0);
-const STAFF=()=>[{id:'csm',name:'customer success manager',n:csm,set:v=>csm=v},{id:'mm',name:'marketing manager',n:mm,set:v=>mm=v},...ROLES.map(r=>({id:r.id,name:r.name.toLowerCase(),n:r.n,set:v=>r.n=v}))];
-// Once a game year: raises and skill for everyone, then each person may be headhunted, likelier the longer the role's tenure.
-function annualReview(){if(!STAFF().some(s=>s.n)){for(const k in tenure)tenure[k]=0;return}
-  const before=teamCost(),gone=[];for(const s of STAFF()){if(!s.n){tenure[s.id]=0;continue}tenure[s.id]++;const leave=Math.min(.4,.05+.05*tenure[s.id]);let n=s.n;for(let i=0;i<s.n;i++)if(Math.random()<leave)n--;if(n<s.n)gone.push(`${s.n-n} ${s.name}${s.n-n>1?'s':''}`);s.set(n)}
-  BOARDS.forEach((_,b)=>zone(b));applyPrice();const raise=STAFF().reduce((t,s)=>t+s.n,0)?`Raises take payroll to ${fmt(teamCost())} a month, and your team is slightly more effective.`:'Payroll is now empty.';
-  showEv(gone.length?'bad':'good',`Year ${month/12} review`,gone.length?'Staff headhunted':'Team stayed',gone.length?`${raise} You lost ${gone.join(', ')} to other companies.`:raise)}
+// Staff are individuals in `staff`: {role, hired (game months), pay, skill}. A role's effect is the sum of skill × ramp, so 1 is one full new hire.
+// New hires start at a quarter of full effect and reach it over six game months. Both are game simplifications.
+const RAISE=1.05,SKILL=.03,RAMP_START=.25,RAMP_MONTHS=6;
+function gameMonths(){return month+eventT/MONTH}
+function ramp(e){return RAMP_START+(1-RAMP_START)*Math.min(1,Math.max(0,gameMonths()-e.hired)/RAMP_MONTHS)}
+function strength(role){let t=0;for(const e of staff)if(e.role===role)t+=e.skill*ramp(e);return t}
+function heads(role){let n=0;for(const e of staff)if(e.role===role)n++;return n}
+const rampingUp=role=>staff.filter(e=>e.role===role&&gameMonths()-e.hired<RAMP_MONTHS).length;
+const roleOf=id=>ROLES.find(r=>r.id===id),baseSalary=id=>id==='csm'?CSM.salary:id==='mm'?MM.salary:roleOf(id).salary;
+const roleName=id=>id==='csm'?'customer success manager':id==='mm'?'marketing manager':roleOf(id).name.toLowerCase();
+const teamLine=id=>{const n=heads(id);return n?`${n} on the team · ${rampingUp(id)} ramping up · ${strength(id).toFixed(1)}× a full hire`:'0 on the team'};
+const csmMult=()=>{const n=heads('csm');return n?1-(1-CSM.mult)*strength('csm')/n:1};
+const teamCost=()=>staff.reduce((t,e)=>t+e.pay,0);
+// Slot widths follow strength, so boards with staff still ramping are rebuilt once a game month (one month past the ramp catches the last step).
+function refit(role){const r=roleOf(role);if(r){zone(r.board);applyPrice()}}
+function refitRamping(){for(const r of ROLES)if(staff.some(e=>e.role===r.id&&gameMonths()-e.hired<RAMP_MONTHS+1))zone(r.board);applyPrice()}
+function hire(role){staff.push({role,hired:gameMonths(),pay:baseSalary(role),skill:1});refit(role)}
+const newest=role=>{let i=-1;staff.forEach((e,j)=>{if((!role||e.role===role)&&(i<0||e.hired>=staff[i].hired))i=j});return staff[i]};
+function fire(role){const e=newest(role);if(!e)return;staff.splice(staff.indexOf(e),1);refit(role)}
+// Once a game year, per person: everyone with a full year served gets a raise and a little skill, then each may be headhunted, likelier the longer they've stayed.
+function annualReview(){if(!staff.length)return;
+  const now=gameMonths(),gone={};let raised=0;
+  for(const e of [...staff]){const yrs=Math.floor((now-e.hired+1e-6)/12);if(yrs>=1){e.pay*=RAISE;e.skill+=SKILL;raised++}
+    if(Math.random()<Math.min(.4,.05+.05*yrs)){staff.splice(staff.indexOf(e),1);gone[e.role]=(gone[e.role]||0)+1}}
+  BOARDS.forEach((_,b)=>zone(b));applyPrice();
+  const lost=Object.entries(gone).map(([r,n])=>`${n} ${roleName(r)}${n>1?'s':''}`);
+  const raise=!staff.length?'Payroll is now empty.':raised?`Raises for everyone with a full year in take payroll to ${fmt(teamCost())} a month, and they're slightly more effective.`:`No one has been here a full year yet, so payroll stays at ${fmt(teamCost())} a month.`;
+  showEv(lost.length?'bad':'good',`Year ${month/12} review`,lost.length?'Staff headhunted':'Team stayed',lost.length?`${raise} You lost ${lost.join(', ')} to other companies, and their experience went with them.`:raise)}
 $('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:default"><b>Customer success manager</b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to ${CSM.covers} paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-fire">Let go</button></span></div>
-<div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager</b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: +${MM.visitors} free visitors a month each, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. <span id="m-meta"></span></small>
-  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
+<div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager</b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: +${MM.visitors} free visitors a month each once ramped up, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. <span id="m-meta"></span></small>
+  <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}</b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
-ROLES.forEach(r=>{const set=d=>{r.n+=d;zone(r.board);applyPrice()};
-  $('r-hire-'+r.id).addEventListener('click',()=>{if(cash<pay(r.id,r.salary)||r.n>=ROLE_MAX)return;set(1);say(`You hired ${aRole(r)}. ${r.label[0].toUpperCase()+r.label.slice(1)} should now be about ${p1(rateOf(TRACKS[r.board]))}.`)});
-  $('r-fire-'+r.id).addEventListener('click',()=>{if(!r.n)return;set(-1);say(`You let ${aRole(r)} go.`)})});
-$('m-hire').addEventListener('click',()=>{if(cash<pay('mm',MM.salary))return;mm++;say(mm===1?'Your first marketing manager starts Monday. Organic traffic should climb, but their salary only pays off if your funnel converts well.':`You now have ${mm} marketing managers.`)});
-$('m-fire').addEventListener('click',()=>{if(!mm)return;mm--;say('You let a marketing manager go. Organic traffic will fall back.')});
-$('t-hire').addEventListener('click',()=>{if(cash<pay('csm',CSM.salary))return;csm++;say(csm===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${csm} customer success managers.`)});
-$('t-fire').addEventListener('click',()=>{if(!csm)return;csm--;say('You let a customer success manager go. Their customers lose the extra attention.')});
+ROLES.forEach(r=>{
+  $('r-hire-'+r.id).addEventListener('click',()=>{if(cash<r.salary||heads(r.id)>=ROLE_MAX)return;hire(r.id);say(`You hired ${aRole(r)}. They start at a quarter of full effect and take about six months to ramp up. ${r.label[0].toUpperCase()+r.label.slice(1)} is now about ${p1(rateOf(TRACKS[r.board]))}.`)});
+  $('r-fire-'+r.id).addEventListener('click',()=>{if(!heads(r.id))return;fire(r.id);say(`You let your newest ${r.name.toLowerCase()} go.`)})});
+$('m-hire').addEventListener('click',()=>{if(cash<MM.salary)return;hire('mm');const n=heads('mm');say(n===1?'Your first marketing manager starts Monday. Organic traffic should climb as they ramp up, but their salary only pays off if your funnel converts well.':`You now have ${n} marketing managers.`)});
+$('m-fire').addEventListener('click',()=>{if(!heads('mm'))return;fire('mm');say('You let your newest marketing manager go. Organic traffic will fall back.')});
+$('t-hire').addEventListener('click',()=>{if(cash<CSM.salary)return;hire('csm');const n=heads('csm');say(n===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${n} customer success managers.`)});
+$('t-fire').addEventListener('click',()=>{if(!heads('csm'))return;fire('csm');say('You let your newest customer success manager go. Their customers lose the extra attention.')});
 const r500=v=>Math.floor(v/500)*500;
 const LOANS=[
   {id:'card',at:25e3,name:'Business credit card',apr:.24,months:12,limit:()=>3000,ok:()=>true,why:''},
@@ -536,14 +554,17 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Everything else is rebuilt from lvl in load().
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histStep,month,tenure,eventT,seoFresh,subs,custRefs,ledger,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,csm,mm,lvl,balls,roles:ROLES.map(r=>r.n),queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histStep,month,staff,eventT,seoFresh,subs,custRefs,ledger,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,lvl,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
+// Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
+function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;for(let i=0;i<(n||0);i++)out.push({role:id,hired:gameMonths()-12*y-RAMP_MONTHS,pay:baseSalary(id)*RAISE**y,skill:1+SKILL*y})};
+  add('csm',s.csm);add('mm',s.mm);(s.roles||[]).forEach((n,i)=>ROLES[i]&&add(ROLES[i].id,n));return out}
 function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
-  ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc,csm,mm}=s);
+  ({hist=[],histStep=1,month=0,eventT=0,seoFresh=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc}=s);
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
   into.splice(0,NB,...s.into);out.splice(0,NB,...s.out);mrrHist.push(...s.mrrHist);Object.assign(lvl,s.lvl);
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
-  Object.assign(tenure,s.tenure);(s.roles||[]).forEach((n,i)=>ROLES[i].n=n);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
+  staff=Array.isArray(s.staff)?s.staff:oldStaff(s);churn=cur(TRACKS[5]);BOARDS.forEach((_,b)=>zone(b));s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh();renderUpg()}
 function showMute(){$('mute').textContent=muted?'Unmute':'Mute';$('mute').setAttribute('aria-pressed',muted)}showMute();

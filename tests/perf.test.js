@@ -28,7 +28,7 @@ test('170k customers frame', () => {
 
 test('churn rate holds', () => {
   const {g,months}=load();
-  g('randomEvent=()=>{};churn=0.06;csm=0;subs={49:100000};paying=100000');
+  g('randomEvent=()=>{};churn=0.06;staff=[];subs={49:100000};paying=100000');
   months(1);
   const p=g('paying');
   assert.ok(Math.abs(p-94000)<=600,'paying '+p);
@@ -43,7 +43,7 @@ for(const [n,p,exp,tol] of [[1000,1.7e-5,0.017,.15],[500,1e-4,0.05,.10],[2000,1e
 
 test('small customer base churns at 6%/month', () => {
   const {g,months}=load();
-  g('randomEvent=()=>{};churn=0.06;csm=0;subs={49:500};paying=500');
+  g('randomEvent=()=>{};churn=0.06;staff=[];subs={49:500};paying=500');
   months(6);
   const p=g('paying');
   assert.ok(Math.abs(p-500*Math.pow(0.94,6))<=25,'paying '+p);
@@ -51,7 +51,7 @@ test('small customer base churns at 6%/month', () => {
 
 test('customer referral rate', () => {
   const {g,months}=load();
-  g('randomEvent=()=>{};churn=0;csm=0;subs={49:1000};paying=1000;var refCalls=0;{const o=refer;refer=function(...a){refCalls++;return o.apply(this,a)}}');
+  g('randomEvent=()=>{};churn=0;staff=[];subs={49:1000};paying=1000;var refCalls=0;{const o=refer;refer=function(...a){refCalls++;return o.apply(this,a)}}');
   months(3);
   const c=g('refCalls');
   assert.ok(Math.abs(c-30)<=15,'refer calls '+c);

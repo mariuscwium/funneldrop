@@ -49,7 +49,7 @@ test("price slider doesn't re-bill", () => {
 
 test('Pro churns less', () => {
   const {g,months}=load();
-  g('randomEvent=()=>{};churn=0.06;csm=0;subs={"49:1":100000};paying=100000');
+  g('randomEvent=()=>{};churn=0.06;staff=[];subs={"49:1":100000};paying=100000');
   months(1);
   const lost=100000-g('paying');
   assert.ok(Math.abs(lost-4200)<=400,'lost '+lost);
