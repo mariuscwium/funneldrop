@@ -363,6 +363,7 @@ let last=performance.now();
 const setBtn=(b,h)=>{if(b.innerHTML!==h)b.innerHTML=h};
 function binom(n,p){if(n<=0||p<=0)return 0;if(p>=1)return n;
   if(n<=50){let k=0;for(let i=0;i<n;i++)if(Math.random()<p)k++;return k}
+  const m=n*p;if(m<30){const L=Math.exp(-m);let k=0,q=Math.random();while(q>L){k++;q*=Math.random()}return Math.min(n,k)}
   let u=0,v=0;while(!u)u=Math.random();v=Math.random();
   const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
   return Math.max(0,Math.min(n,Math.round(n*p+Math.sqrt(n*p*(1-p))*z)))}
