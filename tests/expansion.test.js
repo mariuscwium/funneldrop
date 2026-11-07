@@ -23,7 +23,7 @@ test('about a twelfth checked', () => {
 
 test('checks run every month, not only at month 12', () => {
   const a=load();quiet(a.g);
-  a.g('peak=1e6;subs={"49:0":12000};paying=12000;cash=1e7;month=11;eventT=0');
+  a.g('peak=1e6;churn=0;subs={"49:0":12000};paying=12000;cash=1e7;month=11;eventT=0');
   a.months(1.1);
   assert.ok(a.g('into[5]')>=900);
 });
@@ -142,10 +142,16 @@ test('churn track still at TRACKS index 5', () => {
 
 test('upgrading ball turns exp colour', () => {
   const {g}=load();
-  g('C.exp="gold";C.rev="green";balls=[];var _o={b:5,x:180,y:5*BH+WALLTOP+4,vx:0,vy:0,age:0,sub:"49:0"};balls.push(_o)');
+  g('C.exp="gold";C.rev="green";subs={"49:0":1};paying=1;balls=[];var _o={b:5,x:180,y:5*BH+WALLTOP+4,vx:0,vy:0,age:0,sub:"49:0"};balls.push(_o)');
   assert.equal(g('ballCol(_o)'),'green');
   g('physics(0.001)');
   assert.equal(g('ballCol(_o)'),'gold');
+});
+
+test('ball from an emptied group never turns exp colour', () => {
+  const {g}=load();
+  g('subs={};paying=0;balls=[];var _o={b:5,x:180,y:5*BH+WALLTOP+4,vx:0,vy:0,age:0,sub:"49:0"};balls.push(_o);physics(0.001)');
+  assert.ok(!g('_o.up'));
 });
 
 test('exp level saves and loads', () => {

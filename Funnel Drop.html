@@ -319,7 +319,7 @@ function physics(dt){
     for(const p of pegs){if(p.b!==o.b)continue;const dx=o.x-p.x,dy=o.y-p.y,rr=BR+PR,d2=dx*dx+dy*dy;
       if(d2<rr*rr){const d=Math.sqrt(d2)||.01,nx=dx/d,ny=dy/d;o.x=p.x+nx*rr;o.y=p.y+ny*rr;const vn=o.vx*nx+o.vy*ny;
         if(vn<0){o.vx-=1.5*vn*nx;o.vy-=1.5*vn*ny}o.vx+=(Math.random()-.5)*24;p.flash=1}}
-    if(o.b===5&&!o.up&&o.y>y0+WALLTOP&&unkey(o.sub)[1]<2&&BOARDS[5].zones.some(([a,c])=>o.x>=a&&o.x<c))o.up=1;
+    if(o.b===5&&!o.up&&o.y>y0+WALLTOP&&subs[o.sub]>0&&unkey(o.sub)[1]<2&&BOARDS[5].zones.some(([a,c])=>o.x>=a&&o.x<c))o.up=1;
     if(o.y>y0+WALLTOP-BR)for(const zs of o.b===5?[BOARDS[5].zones,DOWN_ZONES]:[BOARDS[o.b].zones])for(const [a,c] of zs)for(const w of [a,c])if(Math.abs(o.x-w)<BR+1){o.x=o.x<w?w-BR-1:w+BR+1;o.vx*=-.4}
     if(o.y>y0+FLOOR||o.age>12){o.done=1;land(o)}
   }
