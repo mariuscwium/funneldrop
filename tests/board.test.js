@@ -81,3 +81,17 @@ test('filed company is never ousted', () => {
   const a=load({dialogs:true});quiet(a.g);a.g(fresh);a.g('ipoFiled=true;board.conf=0;board.ult=month');a.months(2);
   assert.equal(a.g('over'),null);
 });
+test('board confidence shows a bar, once, with reasons', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(fresh);a.g('peak=1e6;board.conf=35;board.last=1;board.why=[["Steady",1]]');a.frames(32);
+  const h=a.el('cBoard').innerHTML;
+  assert.match(h,/width:35%/);assert.match(h,/reach low/);assert.ok(!/\+1: Steady \+1/.test(h));assert.match(h,/Steady \+1/);
+});
+test('every board hit has its own fix', () => {
+  for(const l of ['Consent order','Audit failed','Audit','Took emergency funding','Investigation','Regulator fine','Class action','Data breach','Viral complaint','Nothing shipped','Shrinking','Runway','Can’t pay bills']){
+    const a=load();assert.notEqual(a.g(`boardFix(${JSON.stringify(l)})`),'steady the company',l);
+  }
+});
+test('an ultimatum of one month is singular', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(fresh);const e={};a.g('board.ult=month+1');
+  a.g('boardHud(globalThis.e={})');assert.match(a.g('e.innerHTML'),/Ultimatum: 1 month(?!s)/);
+});

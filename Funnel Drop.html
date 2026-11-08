@@ -52,6 +52,7 @@ h1 em{font-style:normal;color:var(--paid)}
 .chan .nm small{font:500 11px var(--mono);color:var(--muted);line-height:1.3}
 .reach{display:block;height:4px;background:var(--rail);border-radius:2px;overflow:hidden}
 .reach i{display:block;height:100%;width:100%;background:var(--ad)}
+.reach.low i{background:var(--warn)}
 .adbtn,.campbtn{border-radius:7px;padding:8px 10px;font:700 12px var(--display);letter-spacing:.03em;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
 .adbtn b,.campbtn b{font:600 12px var(--mono);text-transform:none}
 .adbtn{background:var(--ad);color:var(--on-ad);border:0;box-shadow:0 2px 0 var(--shadow)}
@@ -286,6 +287,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
     <span>Net revenue retention, 12 months</span><span id="cNrr">– / 109%</span>
     <span hidden>Falling behind competitors: churn</span><span id="cStale" hidden>–</span>
     <span>Debt outstanding</span><span id="cDebt">$0</span>
+    <span hidden>Can’t pay bills</span><span id="cInsol" hidden>–</span>
     <span hidden>Runway</span><span id="cRunway" hidden>–</span>
     <span hidden id="cCaseL">Investigation</span><span id="cCase" hidden>–</span>
     <span hidden>Board confidence</span><span id="cBoard" hidden>–</span>
@@ -548,7 +550,7 @@ function hud(){
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),gate('eng',ENG.at,heads('eng'),'Engineer'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.filter(l=>!l.hidden).map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
-  {const lp=loanPay(),net=netFlow(),rw=runway(),rc=rw==null?null:Math.max(0,rw);{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rc==null;if(rc!=null){e.textContent=`${rc<3?rc.toFixed(1):Math.round(rc)} months`;e.className=rc<6?'warn':''}}{const e=$('cCase'),l=$('cCaseL');l.hidden=e.hidden=!lawCase;if(lawCase){l.textContent=lawCase.axis?'Audit':'Investigation';const n=Math.max(0,lawCase.due-month);e.textContent=`ruling in ${n} month${n===1?'':'s'}`}}{const e=$('cBoard');e.previousElementSibling.hidden=e.hidden=!board;if(board)boardHud(e)}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
+  {const lp=loanPay(),net=netFlow(),rw=runway(),rc=rw==null?null:Math.max(0,rw);{const e=$('cInsol');e.previousElementSibling.hidden=e.hidden=insolvent<=0||!atRisk();if(insolvent>0){const n=Math.max(0,INSOLVENT_MONTHS-insolvent);e.textContent=`closes in ${n} month${n===1?'':'s'}`;e.className='warn'}}{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rc==null;if(rc!=null){e.textContent=`${rc<3?rc.toFixed(1):Math.round(rc)} months`;e.className=rc<6?'warn':''}}{const e=$('cCase'),l=$('cCaseL');l.hidden=e.hidden=!lawCase;if(lawCase){l.textContent=lawCase.axis?'Audit':'Investigation';const n=Math.max(0,lawCase.due-month);e.textContent=`ruling in ${n} month${n===1?'':'s'}`}}{const e=$('cBoard');e.previousElementSibling.hidden=e.hidden=!board;if(board)boardHud(e)}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
    showCount('csm');showCount('mm');showCount('eng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpIncome().toFixed(1)} roadmap points a month in total`;$('e-hire').disabled=!atRisk()||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=!atRisk()||cash<10*ENG.salary;{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=!atRisk()||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=!atRisk()||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
    {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=!atRisk()||!g||cash<g*CSM.salary;$('t-hire10').disabled=!atRisk()||cash<10*CSM.salary;$('m-hire10').disabled=!atRisk()||cash<10*MM.salary}
    for(const r of ROLES){showCount(r.id,ROLE_MAX);$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=!atRisk()||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
@@ -581,6 +583,7 @@ function loop(now){
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*cts()*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
   eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;alHist.push(companyAl().map(v=>Math.round(v*100)/100));ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();staleOn=atRisk()&&shippable();if(staleOn)stale++;rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(atRisk())rollRisk();if(atRisk()){if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}}
+  if(over){draw();hud();requestAnimationFrame(loop);return}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
   {const tc=teamCost()/MONTH*dt;if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,staff.length){const e=newest();fire(e.role);say(`Payroll bounced, so you had to let ${aRole({name:roleName(e.role)})} go.${e.role==='csm'?' Their customers lose the extra attention.':''}`)}}}
@@ -1076,6 +1079,7 @@ let mileMonth=[];
 const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;
 function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||!atRisk()||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());let pts=0;for(let i=msLvl;i<n;i++)pts+=RP_MILE[i]||0;rp+=pts;const hadBoard=!!board,k=n-msLvl;msLvl=n;const m=MILES[n-1],nx=MILES[n];let bd='';if(!board&&n>=2){board=freshBoard();bd=' Your investors now sit on a board, and it expects steady growth and a roadmap that ships.'}else if(hadBoard)for(let i=0;i<k;i++)boardHit('Milestone',10);
   showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}${pts?` Your team banks ${pts} roadmap points.`:''}${bd}`)}
+$('over').addEventListener('cancel',e=>e.preventDefault());
 for(const id of ['ev','sum','over','tree'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
 $('ev').addEventListener('close',()=>{if(evQueue.length&&atRisk())showEv(...evQueue.shift(),true)});
 // IPO readiness. Targets are game simplifications. Every criterion must hold at IPO.hold month rollovers in a row before filing.
@@ -1097,9 +1101,10 @@ function canPost(){return atRisk()}
 const softLocked=()=>!canPost()&&cash<adCost(CHANNELS[0])&&!balls.length&&!queue.length&&paying===0&&ads>0&&organicRate()===0;
 function rollRisk(){
   if(insolventNow()){insolvent++;
-    if(insolvent===1){const base='Your cash is below zero or a loan repayment is overdue. Let staff go, pay down a loan, raise your price or borrow. If this lasts '+INSOLVENT_MONTHS+' months, the company is finished.';
+    if(insolvent===1){const base=`Your cash is below zero or a loan repayment is overdue. Let staff go, cut costs, raise your price or borrow. If you still can’t pay your bills after ${INSOLVENT_MONTHS-1} more months, the company is finished.`;
       if(bridgeOffer()){const s=fmt(bridgeSize()),pre=bridgeKind()==='prepay';warn('runway','You can’t pay your bills',`${base} ${pre?'Some of your customers offered to prepay a year to keep you going.':`A lender will advance you ${s} at ${Math.round(BRIDGE_APR*100)}% APR.`} You can take this once. ${pre?`It is ${s}, repaid monthly over 12 months at no interest.`:'It is repaid monthly over 12 months.'}`,{label:'Take it',run:takeBridge})}
       else warn('runway','You can’t pay your bills',base)}
+    else if(insolvent===INSOLVENT_MONTHS-1)warn('runway','One month left','You still can’t pay your bills. If that’s still true after one more month, the company is finished.');
     else if(insolvent>=INSOLVENT_MONTHS)return endGame('runway',ENDINGS.runway,`You couldn’t pay your bills for ${INSOLVENT_MONTHS} months in a row, and the company closed.`)}
   else insolvent=0;
   if(softLocked()){softMonths++;
@@ -1108,7 +1113,7 @@ function rollRisk(){
   else softMonths=0
   // The board (from $1M peak). Confidence moves once a month; below BOARD_WARN it warns, below BOARD_ULT it sets a deadline to get back above BOARD_WARN.
   if(board){boardMonth();const b=board;
-    if(b.conf>=50)b.warned=false;
+    if(b.conf>=BOARD_REARM)b.warned=false;
     if(b.conf<BOARD_WARN&&!b.warned){b.warned=true;const bad=b.why.filter(r=>r[1]<0).sort((x,y)=>x[1]-y[1]).slice(0,2);
       warn('board','The board is concerned',`Board confidence is ${Math.round(b.conf)} out of 100.${bad.length?` ${bad.map(r=>`${r[0]} (${r[1]}): ${boardFix(r[0])}.`).join(' ')}`:''}${companyAl()[1]>=.3?' Your track record buys you some patience.':''} If it falls below ${BOARD_ULT}, the board will set a deadline.`)}
     if(b.conf<BOARD_ULT&&b.ult==null){const n=ultMonths();b.ult=month+n;
@@ -1130,20 +1135,22 @@ function ruleCase(){const c=lawCase,b0=caseBand(companyAl()[c.axis]),band=b0==='
   return t}
 // The board. conf runs 0-100. boardReasons() is what the state says now; pend holds one-off hits queued since the last rollover (scandals, emergency funding, milestones).
 const BOARD_START=70,BOARD_REST=60,BOARD_WARN=40,BOARD_ULT=20,ULT_MONTHS=6,ULT_LAWFUL=9,ULT_SHORT=4,ULT_REPEAT=24;
+// Monthly reasons: growth above BOARD_GROW a year, stale months capped at BOARD_STALE, runway under BOARD_RUNWAY months, drift BOARD_DRIFT toward BOARD_REST; confidence above BOARD_REARM re-arms the warning.
+const BOARD_GROW=.2,BOARD_STALE=3,BOARD_UP=2,BOARD_DOWN=-2,BOARD_RUNWAY=6,BOARD_RUNWAY_HIT=-2,BOARD_BROKE=-5,BOARD_SHIP=3,BOARD_DRIFT=1,BOARD_REARM=50;
 const freshBoard=()=>({conf:BOARD_START,last:0,why:[],pend:[],shipped:false,ult:null,lastUlt:null,warned:false});
 function boardHit(label,n){if(board)board.pend.push([label,n*(n<0&&companyAl()[1]<=-.3?1.5:1)])}
-function boardReasons(){const r=[],y=yoy(),up=y!=null?y>.2:growth*12>.2,down=y!=null?y<0:growth<0,rw=runway();
-  if(staleOn)r.push(['Nothing shipped',-Math.min(3,Math.max(0,stale-STALE_GRACE))]);
-  if(up)r.push(['Growing',2]);if(down)r.push(['Shrinking',-2]);
-  if(rw!=null&&rw<6)r.push(['Runway',-2]);if(insolventNow())r.push(['Can’t pay bills',-5]);
+function boardReasons(){const r=[],y=yoy(),up=y!=null?y>BOARD_GROW:growth*12>BOARD_GROW,down=y!=null?y<0:growth<0,rw=runway();
+  if(staleOn)r.push(['Nothing shipped',-Math.min(BOARD_STALE,Math.max(0,stale-STALE_GRACE))]);
+  if(up)r.push(['Growing',BOARD_UP]);if(down)r.push(['Shrinking',BOARD_DOWN]);
+  if(rw!=null&&rw<BOARD_RUNWAY)r.push(['Runway',BOARD_RUNWAY_HIT]);if(insolventNow())r.push(['Can’t pay bills',BOARD_BROKE]);
   return r.filter(x=>x[1]!==0)}
-function boardMonth(){const b=board;let why=[...boardReasons(),...b.pend,...(b.shipped?[['Shipped',3]]:[])];
-  if(!why.length&&b.conf!==BOARD_REST)why=[['Steady',b.conf<BOARD_REST?1:-1]];
+function boardMonth(){const b=board;let why=[...boardReasons(),...b.pend,...(b.shipped?[['Shipped',BOARD_SHIP]]:[])];
+  if(!why.length&&b.conf!==BOARD_REST)why=[['Steady',b.conf<BOARD_REST?BOARD_DRIFT:-BOARD_DRIFT]];
   b.last=why.reduce((a,r)=>a+r[1],0);b.conf=Math.max(0,Math.min(100,b.conf+b.last));b.why=why;b.pend=[];b.shipped=false}
 const ultMonths=()=>board&&board.lastUlt!=null&&month-board.lastUlt<ULT_REPEAT?ULT_SHORT:companyAl()[1]>=.3?ULT_LAWFUL:companyAl()[1]<=-.3?ULT_SHORT:ULT_MONTHS;
-const boardFix=l=>({'Nothing shipped':'ship something from the roadmap','Shrinking':'win back growth','Runway':'cut costs or raise cash','Can’t pay bills':'get cash above zero'})[l]||'steady the company';
-function boardHud(e){const b=board,c=Math.round(b.conf),d=Math.round(b.last),w=b.why.map(r=>`${r[0]} ${r[1]>0?'+':''}${Math.round(r[1])}`).join(', ');
-  e.className=b.conf<BOARD_WARN?'warn':'';e.textContent=`${c} / 100${d?` (${d>0?'+':''}${d}${w?': '+w:''})`:''}${b.ult!=null?` Ultimatum: ${Math.max(0,b.ult-month)} months`:''}`}
+const boardFix=l=>({'Nothing shipped':'ship something from the roadmap','Shrinking':'win back growth','Runway':'cut costs or raise cash','Can’t pay bills':'get cash above zero','Steady':'grow and ship something','Consent order':'fix the billing and cancellation practices the regulator named','Audit failed':'close the security gaps the audit found','Audit':'close the security gaps before the findings land','Took emergency funding':'repay it and get cash flow positive','Investigation':'fix the billing and cancellation practices under review','Regulator fine':'stop the practices that drew the fine','Class action':'fix what customers sued over','Data breach':'tighten security','Viral complaint':'fix what customers are complaining about'})[l]||'steady the company';
+function boardHud(e){const b=board,c=Math.round(b.conf),d=Math.round(b.last),w=b.why.map(r=>`${r[0]} ${r[1]>0?'+':''}${Math.round(r[1])}`).join(', '),u=Math.max(0,b.ult-month);
+  e.className=b.conf<BOARD_WARN?'warn':'';e.innerHTML=esc(`${c} / 100${d&&w?` (last month: ${w})`:''}${b.ult!=null?` Ultimatum: ${u} month${u===1?'':'s'}`:''}`)+`<i class="reach${b.conf<BOARD_WARN?' low':''}"><i style="width:${c}%"></i></i>`}
 // The lifeline: one bridge at the brink. A company with enough of what customers like gets prepayments at no interest, otherwise an expensive bridge.
 const BRIDGE_MONTHS=3,BRIDGE_MIN=5000,BRIDGE_APR=.45;let bridgeUsed=false;
 const bridgeOffer=()=>atRisk()&&!bridgeUsed&&insolvent>0;
@@ -1169,7 +1176,7 @@ $('ipo').innerHTML=[0,1,2,3].map(i=>`<span id="ipo-n${i}"><i class="tick" id="ip
 function ipoHud(){const vis=expOpen()||ipoFiled;$('h-ipo').hidden=$('ipo').hidden=!vis;if(!vis)return;
   ipoChecks().forEach((c,i)=>{$('ipo-n'+i).className=c.ok?'ok':'';$('ipo-t'+i).textContent=c.ok?'✓':'○';$('ipo-l'+i).textContent=c.name;$('ipo-v'+i).textContent=c.txt});
   $('ipo-hold').textContent=ipoFiled?'Filed. Buying is closed, but the boards keep running.':`Held for ${Math.min(ipoHold,IPO.hold)} of ${IPO.hold} months in a row. Growth compares ARR with 12 months ago. Rule of 40 adds it to profit margin over the last 3 months.`;
-  $('ipo-file').hidden=!(ipoHold>=IPO.hold&&!ipoFiled);$('ipo-sum').hidden=!ipoFiled}
+  $('ipo-file').hidden=!(ipoHold>=IPO.hold&&atRisk());$('ipo-sum').hidden=!ipoFiled}
 const plural=(n,w)=>`${n.toLocaleString('en')} ${w}${n===1?'':'s'}`,ym=m=>`${plural(Math.floor(m/12),'year')}, ${plural(Math.floor(m%12),'month')}`;
 const num=v=>v.toLocaleString('en');
 // The summary is a snapshot at filing, so it doesn't drift while the boards keep running. Rows are [heading] or [label, value].
@@ -1180,7 +1187,7 @@ function ipoSummary(label='At filing'){const won=out[4],r=rule40();return [[ipoF
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function openSum(){$('sum-stats').innerHTML=(ipoSnap||ipoSummary()).map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('sum').showModal()}
 function openOver(){$('over-title').textContent=ENDINGS[over.kind]||'Game over';$('over-story').innerHTML=over.story.map(w=>`<li>${esc(`Month ${w.month}: ${w.text}`)}</li>`).join('');$('over-stats').innerHTML=over.snap.map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('over').showModal()}
-function fileIPO(){if(ipoFiled||ipoHold<IPO.hold)return;ipoFiled=true;ipoSnap=ipoSummary();save();sfx('fanfare');say('<b class="good">You filed for an IPO.</b> Buying is closed. The boards keep running, and the summary is in IPO readiness.');openSum()}
+function fileIPO(){if(!atRisk()||ipoHold<IPO.hold)return;ipoFiled=true;ipoSnap=ipoSummary();save();sfx('fanfare');say('<b class="good">You filed for an IPO.</b> Buying is closed. The boards keep running, and the summary is in IPO readiness.');openSum()}
 $('ipo-file').addEventListener('click',fileIPO);$('ipo-sum').addEventListener('click',openSum);
 const wide=matchMedia('(min-width:860px)');
 function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matches){$('side').prepend(a);$('h-act').after(b);$('play').append(m)}else{$('top').append(b);$('boardcol').prepend(a);$('top').after(m)}}
@@ -1188,7 +1195,7 @@ placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
 function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,lawCase,lawStrikes,evSeen,board,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
-  channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late,apr,name})=>({bal,pay,late,apr,name}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
+  channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({id,bal,pay,late,apr,name})=>id==='bridge'?{bal,pay,late,apr,name}:{bal,pay,late})}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
 function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;for(let i=0;i<(n||0);i++)out.push({role:id,hired:gameMonths()-12*y-RAMP_MONTHS,pay:baseSalary(id)*RAISE**y,skill:1+SKILL*y})};

@@ -169,3 +169,37 @@ test('the bridge covers the overdraft plus burn', () => {
   assert.ok(s>=2e4+a.g('BRIDGE_MONTHS')*Math.max(0,-n)-1,String(s));assert.equal(s%500,0);
   a.g('cash=-100');assert.equal(a.g('bridgeSize()'),a.g('r500(BRIDGE_MIN*Math.pow(mkt(),AD_PRICE_P))'));
 });
+test('a lost game cannot file for the IPO, and the ending cannot be dismissed', () => {
+  const a=load({dialogs:true});quiet(a.g);
+  a.g("peak=EXP_AT;ipoHold=IPO.hold;endGame('runway','x','y')");a.g('ipoHud()');
+  assert.equal(a.el('ipo-file').hidden,true);
+  a.g('fileIPO()');assert.equal(a.g('ipoFiled'),false);
+  let prevented=false;a.el('over').on.cancel({preventDefault(){prevented=true}});assert.equal(prevented,true);
+});
+test('the insolvency countdown shows in the Company panel', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(broke);a.g('cash=-100');
+  a.frames(32);assert.equal(a.el('cInsol').hidden,true);
+  a.months(1.05);if(a.el('ev').open)a.el('ev').close();a.frames(32);
+  assert.equal(a.el('cInsol').hidden,false);assert.equal(a.el('cInsol').className,'warn');
+  assert.equal(a.el('cInsol').textContent,`closes in ${a.g('INSOLVENT_MONTHS-1')} months`);
+  a.g('insolvent=INSOLVENT_MONTHS-1');a.frames(32);assert.equal(a.el('cInsol').textContent,'closes in 1 month');
+});
+test('a second warning comes a month before the insolvency ending', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(broke);
+  a.g('insolvent=INSOLVENT_MONTHS-2');a.months(1.05);
+  assert.equal(a.g('insolvent'),a.g('INSOLVENT_MONTHS-1'));
+  assert.match(a.el('ev-text').textContent,/one more month/i);
+  a.el('ev').close();a.months(1.05);
+  assert.equal(a.g('over.kind'),'runway');assert.ok(a.g("over.story.filter(w=>w.cause==='runway').length")>=2);
+});
+test('the first insolvency warning counts the remaining months and offers no loan pay-down', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(broke);a.months(1.05);
+  const t=a.el('ev-text').textContent;
+  assert.ok(t.includes(`${a.g('INSOLVENT_MONTHS-1')} more months`));assert.ok(!/pay down/i.test(t));
+});
+test('an ending on a rollover leaves the rest of the frame alone', () => {
+  const a=load({dialogs:true});quiet(a.g);
+  a.g("hire('csm');hire('csm');hire('csm');cash=1e4;nextCut=1e12;globalThis.s0=null;rollRisk=()=>endGame('runway','x','y');{const e=endGame;endGame=(...x)=>{e(...x);cash=0;nextCut=0;globalThis.s0=[cash,staff.length]}}");
+  a.months(1.05);
+  assert.equal(a.g('over.kind'),'runway');assert.deepEqual(a.g('[cash,staff.length]'),a.g('s0'));
+});
