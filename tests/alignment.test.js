@@ -68,3 +68,31 @@ test('no alignment words in names, descriptions, event text or markup', () => {
   const html=fs.readFileSync(path.join(__dirname,'..','Funnel Drop.html'),'utf8').replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g,'').replace('Lenny calls good for SMB','Lenny calls healthy for SMB');
   assert.ok(!WORDS.test(html),html.match(WORDS)?.[0]);
 });
+
+test('no alignment words in warnings, endings, rulings or the end screen', () => {
+  const a=load({dialogs:true});
+  a.g('randomEvent=()=>{};annualReview=()=>{};expCheck=()=>{}');
+  a.g("__t=[];{const w=warn,e=endGame,s=showEv;warn=(c,t,x,act)=>{__t.push(t,x,act&&act.label);w(c,t,x,act)};endGame=(k,t,x)=>{__t.push(t,x);e(k,t,x)};showEv=(k,kind,n,t,act,again)=>{__t.push(n,t);s(k,kind,n,t,act,again)}}");
+  const clear=()=>{a.g('over=null;ipoFiled=false;warnLog=[];evQueue.length=0;if($("ev").open)$("ev").close();if($("over").open)$("over").close()');};
+  // insolvency, with both bridge offers, and the end
+  for(const al of [[0,0],[.5,0]]){setAl(a,al);a.g('subs={"49:0":10};paying=10;out[4]=10;cash=-1e6;insolvent=0;bridgeUsed=false');
+    for(let i=0;i<3;i++){a.g('rollRisk()');clear()}}
+  clear();
+  // soft-lock
+  a.g('cash=0;ads=3;paying=0;subs={};balls.length=0;queue.length=0;seoLvl=0;softMonths=0;insolvent=0');
+  a.g('rollRisk()');clear();a.g('rollRisk()');
+  assert.equal(a.g('over.kind'),'runway');
+  for(const s of [a.el('over-title').textContent,a.el('over-story').innerHTML,a.el('over-stats').innerHTML,a.el('over').textContent])assert.ok(s&&!WORDS.test(s),s);
+  clear();
+  // board warning and ultimatum, in each stance
+  for(const al of [[0,0],[0,.5],[0,-.5]]){setAl(a,al);a.g('peak=2e6;board=freshBoard();board.conf=19;warnLog=[]');a.g('boardMonth=()=>{}');a.g('rollRisk()');clear();a.g('board.ult=month;rollRisk()');clear()}
+  // case rulings in every band and axis
+  for(const axis of [0,1])for(const x of [-.2,-.5,-.9]){setAl(a,axis?[0,x]:[x,0]);a.g(`subs={"49:2":100,"49:0":100};paying=200;out[4]=200;lawCase={axis:${axis},due:0}`);a.g('ruleCase()');clear()}
+  // the case events
+  a.g("evSeen={'Regulator fine':1,'Data breach':1}");
+  for(const [al,n] of [[[-.9,0],'Investigation opened'],[[0,-.9],'Security audit ordered']]){setAl(a,al);a.g(`lawCase=null;pickEvent=()=>EVENTS.find(e=>e.name==='${n}');randomEvent=${'()=>{const e=pickEvent(),t=e.run();warn("shut",e.name,t)}'};randomEvent()`);clear()}
+  const texts=a.g('__t').filter(Boolean);
+  assert.ok(texts.length>25,String(texts.length));
+  for(const s of texts)assert.ok(!WORDS.test(s),s);
+  for(const s of a.g('Object.values(ENDINGS)'))assert.ok(!WORDS.test(s),s);
+});
