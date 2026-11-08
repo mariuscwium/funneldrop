@@ -15,6 +15,7 @@ test('the team screen pauses the game but keeps the numbers live', () => {
   assert.equal(a.el('team-n').textContent,'1 person');
   assert.equal(a.el('tm-n').textContent,'1');
   assert.equal(a.el('tm-cash').textContent,a.el('vCash').textContent);
+  assert.equal(a.el('tm-mrr').textContent,a.el('vMrr').textContent);
   a.el('teamd').close();a.months(1);
   assert.ok(a.g('month+eventT')>m);
 });
