@@ -74,6 +74,21 @@ h1 em{font-style:normal;color:var(--paid)}
 #over-title{color:var(--warn)}
 #over-story{margin:10px 0;padding-left:20px;font-size:13px}
 #over-reveal:empty{display:none}
+.reveal:empty{display:none}
+.reveal{margin:4px 0 14px}
+.reveal h3{margin:8px 0 4px;font:12px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.reveal p{margin:0 0 8px;font-size:13px}
+.reveal p b{color:var(--fg)}
+.reveal svg{display:block;width:min(240px,100%);margin:0 auto;overflow:visible}
+.reveal svg line{stroke:var(--line);stroke-width:1}
+.reveal svg text{font:8px var(--mono);fill:var(--muted)}
+.reveal polyline{fill:none;stroke:var(--act);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.reveal .yr{fill:var(--act)}
+.reveal .rv-start{fill:var(--panel);stroke:var(--muted)}
+.reveal .rv-now{fill:var(--paid)}
+.reveal svg .rv-now-t{fill:var(--fg)}
+.reveal h4{margin:10px 0 2px;font:11px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.reveal ul{margin:0;padding-left:18px;font-size:13px}
 #ev p{font-size:14px;line-height:1.45;margin:8px 0 14px}
 #ev .buy{width:100%;justify-content:center}
 #ev-act{margin-bottom:8px}#ev-act[hidden]{display:none}
@@ -252,8 +267,8 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 </style>
 
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><button class="buy" id="ev-act" type="button" hidden></button><form method="dialog"><button class="buy">Continue</button></form></dialog>
-<dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
-<dialog id="over" aria-labelledby="over-title"><small>Game over</small><b id="over-title"></b><ol id="over-story"></ol><dl id="over-stats"></dl><div id="over-reveal"></div><div class="sumbtns"><button class="campbtn" id="over-new">New game</button></div></dialog>
+<dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><div id="sum-reveal" class="reveal"></div><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
+<dialog id="over" aria-labelledby="over-title"><small>Game over</small><b id="over-title"></b><ol id="over-story"></ol><div id="over-reveal" class="reveal"></div><dl id="over-stats"></dl><div class="sumbtns"><button class="campbtn" id="over-new">New game</button></div></dialog>
 <dialog id="tree" aria-labelledby="tree-title"><div class="tr-top"><b id="tree-title">Roadmap</b><div class="tr-stats"><div class="stat" id="tr-pts-s"><span>Points</span><b><span id="tr-pts">2 / 4</span> <small id="tr-inc">+0.5 a month</small></b></div><div class="stat"><span>Cash</span><b id="tr-cash">$1,500</b></div></div><button class="campbtn" id="tr-respec">Respec</button><form method="dialog"><button class="buy" id="tr-close">Close</button></form></div>
 <div class="tr-main"><div class="tr-canvas"><svg id="tr-svg" tabindex="-1" role="group" aria-label="Roadmap: product work linked outward from the founding idea. Drag to move, scroll or pinch to zoom."><defs><pattern id="tr-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8"/></pattern></defs><g id="tr-view"><g id="tr-bg"></g><g id="tr-edges"></g><g id="tr-nodes"></g><g id="tr-fx"></g></g></svg><div class="tr-zoom"><button class="campbtn" id="tr-zin" aria-label="Zoom in">+</button><button class="campbtn" id="tr-zout" aria-label="Zoom out">&minus;</button><button class="campbtn" id="tr-fit" aria-label="Fit to view">Fit</button></div></div><aside class="tr-detail empty" id="tr-detail" aria-live="polite"></aside></div></dialog>
 <div class="wrap">
@@ -1185,8 +1200,35 @@ function ipoSummary(label='At filing'){const won=out[4],r=rule40();return [[ipoF
   ['Lifetime'],['Visitors',num(into[0])],['Sign-ups',num(into[1])],['Customers won',num(won)],['Customers churned',num(churned)],['Total ad spend',fmt(spend)],['Cost per paying customer',won?fmt(spend/won):'–'],
   ['Milestones reached after'],...MILES.map((m,i)=>[`${m[1]} · ${m[2]}`,mileMonth[i]==null?'–':ym(mileMonth[i])])]}
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function openSum(){$('sum-stats').innerHTML=(ipoSnap||ipoSummary()).map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('sum').showModal()}
-function openOver(){$('over-title').textContent=ENDINGS[over.kind]||'Game over';$('over-story').innerHTML=over.story.map(w=>`<li>${esc(`Month ${w.month}: ${w.text}`)}</li>`).join('');$('over-stats').innerHTML=over.snap.map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('over').showModal()}
+function openSum(){$('sum-reveal').innerHTML=revealHtml();$('sum-stats').innerHTML=(ipoSnap||ipoSummary()).map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('sum').showModal()}
+function openOver(){$('over-reveal').innerHTML=revealHtml();$('over-title').textContent=ENDINGS[over.kind]||'Game over';$('over-story').innerHTML=over.story.map(w=>`<li>${esc(`Month ${w.month}: ${w.text}`)}</li>`).join('');$('over-stats').innerHTML=over.snap.map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('over').showModal()}
+// The reveal on both end screens: where the company's hidden exposure (companyAl, alHist) went, in plain business words.
+// Users (al[0]) is the vertical axis, process (al[1]) the horizontal one. Bands use the same .15 as the exposure-gated events.
+const REVEAL_BAND=.15,REVEAL_R=85,REVEAL_ARCH=[
+  ['The trusted name','Customers trusted you, and the paperwork was always in order.'],
+  ['The friendly one','You looked after your users and ran things sensibly enough.'],
+  ['The scrappy favourite','Users loved you, though you shipped fast and fixed things later.'],
+  ['The steady operator','Fair to users, and careful in how you ran things.'],
+  ['Middle of the road','You never leaned far either way.'],
+  ['The hustler','Fair enough to users, but speed beat process every time.'],
+  ['The cold machine','Everything was by the book, and the book worked against your users.'],
+  ['The squeezer','Growth came out of your users’ pockets.'],
+  ['The wrecking ball','You squeezed users and cut every corner to move faster.']];
+const band=v=>v>=REVEAL_BAND?0:v<=-REVEAL_BAND?2:1;
+function revealArch(u,p){const [name,line]=REVEAL_ARCH[band(u)*3+[0,1,2][band(p)]];return {name,line}}
+// Up to 3 owned items, ranked by how far they moved the company on either axis (times how often owned).
+function revealMoments(){const out=[];for(const id in owned){const n=NODE_IX[id];if(!n||id==='start'||!n.al)continue;const [u,p]=n.al,w=(Math.abs(u)+Math.abs(p))*owned[id];if(w>0)out.push({name:n.name,w,how:[u>0?'kinder to users':u<0?'harder on users':'',p>0?'more careful':p<0?'faster and looser':''].filter(Boolean).join(', ')})}
+  return out.sort((a,b)=>b.w-a.w).slice(0,3)}
+// Exposure-weighted events the company actually met, most often first (ties in EVENTS order).
+const revealLed=()=>EVENTS.filter(e=>e.al&&evSeen[e.name]>0).map(e=>[e.name,evSeen[e.name]]).sort((a,b)=>b[1]-a[1]);
+function revealHtml(){const h=alHist.length?alHist:[companyAl()],xy=([u,p])=>[100+p*REVEAL_R,100-u*REVEAL_R].map(v=>+v.toFixed(1)),pts=[[100,100],...h.map(xy)],[nx,ny]=pts.at(-1),[u,p]=h.at(-1),a=revealArch(u,p),m=revealMoments(),led=revealLed();
+  const yrs=h.map((v,i)=>(i+1)%12===0&&i<h.length-1?`<circle class="yr" cx="${xy(v)[0]}" cy="${xy(v)[1]}" r="1.8"/>`:'').join('');
+  return `<h3>What kind of company you built</h3><p><b>${esc(a.name)}.</b> ${esc(a.line)}</p>`+
+    `<svg viewBox="0 0 200 200" role="img" aria-label="The path your company took, month by month"><line x1="100" y1="12" x2="100" y2="188"/><line x1="12" y1="100" x2="188" y2="100"/>`+
+    `<text x="100" y="8" text-anchor="middle">Puts users first</text><text x="100" y="198" text-anchor="middle">Squeezes users</text><text x="2" y="96">Moves fast</text><text x="198" y="96" text-anchor="end">By the book</text>`+
+    `<polyline points="${pts.map(q=>q.join(',')).join(' ')}"/>${yrs}<circle class="rv-start" cx="100" cy="100" r="2.5"/><circle class="rv-now" cx="${nx}" cy="${ny}" r="4"/><text class="rv-now-t" x="${nx+6}" y="${ny+2.5}">Now</text></svg>`+
+    (m.length?`<h4>Choices that shaped it</h4><ul>${m.map(x=>`<li>${esc(x.name)}: ${esc(x.how)}</li>`).join('')}</ul>`:'')+
+    (led.length?`<h4>What it led to</h4><ul>${led.map(([n,c])=>`<li>${esc(n)}${c>1?` ×${c}`:''}</li>`).join('')}</ul>`:'')}
 function fileIPO(){if(!atRisk()||ipoHold<IPO.hold)return;ipoFiled=true;ipoSnap=ipoSummary();save();sfx('fanfare');say('<b class="good">You filed for an IPO.</b> Buying is closed. The boards keep running, and the summary is in IPO readiness.');openSum()}
 $('ipo-file').addEventListener('click',fileIPO);$('ipo-sum').addEventListener('click',openSum);
 const wide=matchMedia('(min-width:860px)');
