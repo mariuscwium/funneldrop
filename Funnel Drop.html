@@ -207,7 +207,7 @@ html:has(#tree[open]){overflow:hidden}
 .tr-cnt{fill:var(--fg);font:700 9px var(--mono);text-anchor:middle;dominant-baseline:central}
 .tr-node.own .tr-cnt{fill:var(--panel)}
 .tr-lbl{fill:var(--fg);font-size:calc(11px / var(--k,1));font-weight:500;paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round;opacity:0;transition:opacity .2s}
-#tr-svg.lbl .tr-lbl,.tr-node.sel .tr-lbl,.tr-node:focus-visible .tr-lbl{opacity:1}
+.tr-node.lbl .tr-lbl,.tr-node.sel .tr-lbl,.tr-node:focus-visible .tr-lbl{opacity:1}
 .tr-node.unreachable .tr-lbl,.tr-node.locked .tr-lbl{fill:var(--muted)}
 .tr-node.pop .tr-pop{animation:trpop .55s ease-out}
 @keyframes trpop{0%{transform:scale(1)}35%{transform:scale(1.55)}100%{transform:scale(1)}}
@@ -301,7 +301,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
     <span>LTV : CAC</span><span id="eRatio">–</span>
     <span>Free users (retained, not paying)</span><span id="eFree">0</span>
   </div>
-  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. Upgrade widths are interpolated from smaller test runs, and rates drift by a few points once several boards are upgraded. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, marketing managers’ diminishing returns, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events, how fast content goes stale and how much search traffic swings from month to month (up to 40% either way). Above a $100k valuation, ads and campaigns cost more and reach more as the company grows, with price rising faster, so each visitor costs more at scale. How fast is a game simplification. Random events that lean on how the company is run (fines, lawsuits, breaches, complaints, large deals, praise, a security review) are game simplifications: their sizes and odds are invented. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Roadmap items bring it lower. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. That is close to the 77% median subscription margin in KeyBanc’s 2022 private SaaS survey (<a href="https://www.kellblog.com/key-takeaways-from-the-2022-keybanc-saas-metrics-survey/" target="_blank" rel="noopener">Kellblog summary</a>). The 22% itself is a game simplification. Lifetime value and payback use gross margin. <b>Net revenue retention</b> is a chained monthly approximation: each month, (starting MRR + upgrades − downgrades − churned MRR) ÷ starting MRR, multiplied over the last 12 months. New customers’ churn is mostly left out. Median net dollar retention was 109% in the same KeyBanc survey, and Clouded Judgement’s cloud software comps showed a median net retention of 112% in January 2024 (<a href="https://cloudedjudgement.substack.com/p/clouded-judgement-11924-the-bar-for" target="_blank" rel="noopener">source</a>). <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data. <b>Expansion</b>: from $1M valuation, each paying customer is checked about once a year and can move up or down one plan (Base, Pro, Enterprise). How often, the 12% upgrade and 4% downgrade rates, and the plan prices are game simplifications, not measured data. <b>IPO readiness</b>: ARR of $100M, net revenue retention of 110%, a Rule of 40 score of 40 (year-on-year ARR growth % plus profit margin %, a rule of thumb from <a href="https://feld.com/archives/2015/02/rule-40-healthy-saas-company/" target="_blank" rel="noopener">Brad Feld</a>) and 30% year-on-year growth, all held for 3 months in a row. In the late 2010s, “IPO scale” was commonly put at $100M ARR growing 30% a year; the bar is higher now (<a href="https://www.scalevp.com/blog/the-path-from-zero-to-ipo-revisiting-the-mendoza-line-in-2024" target="_blank" rel="noopener">Scale Venture Partners</a>). The 110% retention target and the 3-month hold are game simplifications, and none of these are listing requirements. Profit margin is revenue minus all spending, over revenue, for the last 3 months.</p>
+  <p class="src"><b>Valuation</b> is ARR × a revenue multiple: 6× at flat growth (a typical private SaaS level, simplified), plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×. Growth is measured over the last 3 months (30 seconds). Users keep their horizontal position as they fall from one board to the next, so slot positions interact. Base slot widths are tuned by chained simulation (10,000 users per board) so landing rates match benchmarks, except Acquisition. The wider slots that roadmap work buys follow landing-rate curves from smaller test runs, each board’s rate stops where those runs stop, and rates drift by a few points once several boards are widened. <b>Acquisition 5%</b>: freemium sign-up without a credit card runs about 2–10% of visitors (<a href="https://www.poweredbysearch.com/learn/b2b-saas-funnel-conversion-benchmarks/" target="_blank" rel="noopener">Powered by Search</a>). The game starts nearer 7%, inside that range. <b>Activation 36%</b>: average across 500+ products in Lenny’s survey (<a href="https://www.artisangrowthstrategies.com/blog/saas-activation-rate-benchmarks-2026" target="_blank" rel="noopener">summary</a>). <b>Retention 47%</b>: average month-1 retention across 83 B2B SaaS companies (<a href="https://userpilot.com/blog/?p=197803" target="_blank" rel="noopener">Userpilot 2024</a>). <b>Referral 10%</b>: typical for early-stage SaaS; mature companies reach 25–30% (<a href="https://www.alexanderjarvis.com/what-is-customer-referral-rate-in-saas/" target="_blank" rel="noopener">Alexander Jarvis</a>). Each referral brings 1 to 25 friends, usually around 8, who arrive already signed up. Paying customers can also refer: 1% a month each, counting up to 1,000 customers. Referred friends don’t refer again. Both are game simplifications, not measured data, as are team effects, marketing managers’ diminishing returns, new hires’ six-month ramp-up, yearly raises and departures, channel differences, random events, how fast content goes stale and how much search traffic swings from month to month (up to 40% either way). Above a $100k valuation, ads and campaigns cost more and reach more as the company grows, with price rising faster, so each visitor costs more at scale. How fast is a game simplification. Some random events (fines, lawsuits, breaches, complaints, large deals, praise, a security review) have invented sizes and odds. <b>Roadmap</b>: roadmap points, what engineers and product staff add to them, falling behind when nothing ships, and every roadmap item’s effect are game simplifications. The items are real product practices, but their sizes are invented to show the tradeoffs, not measured. <b>Revenue 30%</b>: derived so that about 5% of all sign-ups end up paying, matching freemium’s 3–7% (<a href="https://www.singlegrain.com/?p=49336" target="_blank" rel="noopener">Single Grain</a>). <b>Paid churn 6% a month</b>: a tough start for a low-priced product, above the 2.5–5% range Lenny calls good for SMB and mid-market B2B (<a href="https://www.lennysnewsletter.com/p/monthly-churn-benchmarks" target="_blank" rel="noopener">Lenny’s Newsletter</a>). Roadmap items bring it lower. Published SMB figures vary widely by source. Order follows Dave McClure’s original 2007 AARRR talk, with Referral before Revenue: every retained user can refer, and then some of them pay. Many later infographics swap the last two. <b>Cost to serve 22%</b>: hosting and support, so gross margin is 78%. That is close to the 77% median subscription margin in KeyBanc’s 2022 private SaaS survey (<a href="https://www.kellblog.com/key-takeaways-from-the-2022-keybanc-saas-metrics-survey/" target="_blank" rel="noopener">Kellblog summary</a>). The 22% itself is a game simplification. Lifetime value and payback use gross margin. <b>Net revenue retention</b> is a chained monthly approximation: each month, (starting MRR + upgrades − downgrades − churned MRR) ÷ starting MRR, multiplied over the last 12 months. New customers’ churn is mostly left out. Median net dollar retention was 109% in the same KeyBanc survey, and Clouded Judgement’s cloud software comps showed a median net retention of 112% in January 2024 (<a href="https://cloudedjudgement.substack.com/p/clouded-judgement-11924-the-bar-for" target="_blank" rel="noopener">source</a>). <b>Price</b>: benchmarks apply at $49. The effect of other prices on conversion and churn is a game simplification, not measured data. <b>Expansion</b>: from $1M valuation, each paying customer is checked about once a year and can move up or down one plan (Base, Pro, Enterprise). How often, the 12% upgrade and 4% downgrade rates, and the plan prices are game simplifications, not measured data. <b>IPO readiness</b>: ARR of $100M, net revenue retention of 110%, a Rule of 40 score of 40 (year-on-year ARR growth % plus profit margin %, a rule of thumb from <a href="https://feld.com/archives/2015/02/rule-40-healthy-saas-company/" target="_blank" rel="noopener">Brad Feld</a>) and 30% year-on-year growth, all held for 3 months in a row. In the late 2010s, “IPO scale” was commonly put at $100M ARR growing 30% a year; the bar is higher now (<a href="https://www.scalevp.com/blog/the-path-from-zero-to-ipo-revisiting-the-mendoza-line-in-2024" target="_blank" rel="noopener">Scale Venture Partners</a>). The 110% retention target and the 3-month hold are game simplifications, and none of these are listing requirements. Profit margin is revenue minus all spending, over revenue, for the last 3 months.</p>
   </div></div></div>
 </div>
 
@@ -631,9 +631,12 @@ function setPrice(v){if(!ipoFiled){price=v;applyPrice()}$('price').value=price}
 $('price').addEventListener('input',e=>setPrice(+e.target.value));
 // Roadmap (tech tree). Nodes cost roadmap points and cash. You can take a node linked to one you own; nodes sharing a fork id exclude each other.
 // area 0-5 is a funnel wedge, [a,b] a keystone between two; ring is the distance out, slot the angle inside the wedge (-1..1). al is hidden ([g,l], each -1..1).
-// fx holds the node's effects (see FX_KEYS); a repeatable (rep) can be bought again for a point more each time. Content beyond the ring 1 seeds is Task 7's.
+// fx holds the node's effects (see FX_KEYS); a repeatable (rep) can be bought again for a point more each time.
 const RP_START=2;
 const mkNode=(id,name,desc,area,ring,slot,links,pts,cash,al,fx,fork=null,rep=false)=>({id,name,desc,area,ring,slot,links,fork,pts,cash,al,fx,rep});
+// Costs from the ring: points equal the ring (keystones 6, repeatables from 4), cash by ring, 25× in the Expansion wedge. The seeds keep their own.
+const NODE_CASH=[0,2e3,5e3,12.5e3,3e4,7.5e4,1.8e5];
+const nd=(id,name,desc,area,ring,slot,links,al,fx,fork=null,rep=false)=>mkNode(id,name,desc,area,ring,slot,links,Array.isArray(area)?6:rep?4:ring,NODE_CASH[ring]*(area===5?25:1),al,fx,fork,rep);
 const NODES=[
   mkNode('start','Founding idea','Where the product starts.',null,0,0,[],0,0,[0,0],{}),
   // Ring 1 seeds: the old tier 1 upgrades, fork-free so old saves map onto them.
@@ -643,7 +646,99 @@ const NODES=[
   mkNode('churn1','Cancellation save offers','Offer a discount or a pause before someone cancels. Paid churn 21.7% lower.',2,1,.5,['start'],1,2000,[-.3,0],{churn:-.2167}),
   mkNode('ref1','Share button','One click to send the product to a colleague. Referral +10 points.',3,1,0,['start'],1,2000,[0,-.2],{r3:.10}),
   mkNode('rev1','Pricing page','A clear page with plans and prices. Paid conversion +10 points.',4,1,0,['start'],1,2000,[.3,.2],{r4:.10}),
-  mkNode('exp1','Usage-based pricing','Customers who use more move up a plan. Upgrade rate +4 points.',5,1,0,['start'],1,5e4,[0,0],{r5:.04})
+  mkNode('exp1','Usage-based pricing','Customers who use more move up a plan. Upgrade rate +4 points.',5,1,0,['start'],1,5e4,[0,0],{r5:.04}),
+  // Acquisition. Forks: which channel to bet on, how to win search, and how to track visitors.
+  nd('acq_lp','Landing page tests','A/B test headlines, screenshots and the sign-up form. Sign-up rate +2 points.',0,2,0,['acq1'],[0,.4],{r0:.02}),
+  nd('acq_blog','Content marketing','Publish guides that answer what your buyers search for. Search traffic +25%.',0,2,-.6,['acq1'],[.4,.4],{seo:.25},'acq_ch'),
+  nd('acq_paid','Performance agency','An agency retunes bids and creatives every week. Ad prices −10%.',0,2,.6,['acq1'],[-.1,-.2],{adCost:-.1},'acq_ch'),
+  nd('acq_pseo','Programmatic SEO','Generate a page from a template for every search term in your niche. Search traffic +35%.',0,3,-.75,['acq_blog','acq_lp'],[-.3,-.5],{seo:.35},'acq_seo'),
+  nd('acq_free','Free tools','A calculator anyone can use without an account, linked from search. Sign-up rate +2 points, search traffic +10%.',0,3,-.25,['acq_lp'],[.5,-.4],{r0:.02,seo:.1},'acq_seo'),
+  nd('acq_reviews','Paid reviews','Pay for five-star reviews on software comparison sites. Sign-up rate +3.5 points.',0,3,.25,['acq_lp'],[-.9,-.6],{r0:.035},'acq_seo'),
+  nd('acq_ads2','Creative library','A bank of tested ads, rotated before they tire. Visitors per ad +12%.',0,3,.75,['acq_paid','acq_lp'],[0,.4],{adReach:.12}),
+  nd('acq_brand','Brand campaign','Sponsor the podcasts and conferences your buyers follow. Ad prices −12%.',0,4,-.6,['acq_pseo','acq_free','acq_reviews'],[.1,.5],{adCost:-.12}),
+  nd('acq_priv','Privacy-first analytics','Drop third-party trackers and say so next to the sign-up form. Sign-up rate +3 points, chance of a lucky break +2 points.',0,4,0,['acq_ads2','acq_free'],[.7,.3],{r0:.03,evGood:.02},'acq_track'),
+  nd('acq_pixel','Retargeting pixels','Follow visitors around the web with ads after they leave. Visitors per ad +18%.',0,4,.6,['acq_ads2'],[-.6,-.1],{adReach:.18},'acq_track'),
+  nd('acq_cat','Category report','Name the problem you solve and publish a yearly report on it. Search traffic +20%, sign-up rate +2 points.',0,5,-.5,['acq_brand'],[.2,.6],{seo:.2,r0:.02}),
+  nd('acq_growth','Growth team','A small team that ships a funnel experiment every week. Sign-up rate +3 points, roadmap points +5%.',0,5,.5,['acq_priv','acq_pixel'],[-.1,-.5],{r0:.03,rp:.05}),
+  nd('acq_rep','Sign-up experiments','Another round of tests on the sign-up flow. Sign-up rate +1 point each time.',0,6,0,['acq_cat','acq_growth'],[0,.1],{r0:.01},null,true),
+  // Activation. Forks: how to show the product, who sets accounts up, and what to steer new users toward.
+  nd('act_tpl','Templates gallery','Start from a ready-made project instead of a blank page. Activation +4 points.',1,2,0,['act1'],[.3,.1],{r1:.04}),
+  nd('act_tour','Product tour','A guided walkthrough of the main screens on first login. Activation +4.5 points.',1,2,-.6,['act1'],[0,.4],{r1:.045},'act_show'),
+  nd('act_nag','Setup reminders','Email and push reminders every day until setup is finished. Activation +5 points, month-1 retention +1.5 points.',1,2,.6,['act1'],[-.5,-.3],{r1:.05,r2:.015},'act_show'),
+  nd('act_call','Onboarding calls','A 30-minute setup call for every new account. Activation +6 points, paid churn −3%, cost to serve +3%.',1,3,-.75,['act_tpl','act_tour'],[.5,.5],{r1:.06,churn:-.03,cts:.03},'act_touch'),
+  nd('act_self','Setup wizard','Three questions build the workspace, so support sees fewer setup tickets. Activation +5 points, cost to serve −2%.',1,3,-.25,['act_tpl'],[.1,-.2],{r1:.05,cts:-.02},'act_touch'),
+  nd('act_skip','Skip email confirmation','Let people in before they confirm their address. Activation +7 points.',1,3,.25,['act_tpl','act_nag'],[-.3,-.8],{r1:.07},'act_touch'),
+  nd('act_data','Sample data','New workspaces open with example data to explore. Activation +3 points.',1,3,.75,['act_nag','act_tpl'],[.2,0],{r1:.03}),
+  nd('act_aha','Activation metric','Find the first action that predicts who stays, and steer everyone to it. Activation +5 points, month-1 retention +2 points.',1,4,-.6,['act_call','act_self'],[.2,.6],{r1:.05,r2:.02},'act_aim'),
+  nd('act_fake','Head-start progress bar','Show setup as 80% done on day one so people push to finish. Activation +7 points.',1,4,0,['act_self','act_skip'],[-.6,-.1],{r1:.07},'act_aim'),
+  nd('act_team','Invite during setup','Ask new users to add their team before the first project. Activation +3 points, friends per referral +15%.',1,4,.6,['act_data','act_skip'],[0,-.2],{r1:.03,refSize:.15}),
+  nd('act_pers','Role-based onboarding','Different first steps for each role picked at sign-up. Activation +5 points.',1,5,-.5,['act_aha','act_fake'],[.4,.3],{r1:.05}),
+  nd('act_ai','AI setup assistant','Describe what you need and the assistant builds the first project. Activation +6 points, cost to serve +4%.',1,5,.5,['act_team','act_fake'],[0,-.4],{r1:.06,cts:.04}),
+  nd('act_rep','Onboarding experiments','Test another change to the first session. Activation +2 points each time.',1,6,0,['act_pers','act_ai'],[0,.1],{r1:.02},null,true),
+  // Retention. Forks: what happens at cancellation, how hard leaving is, and how to keep people engaged.
+  nd('ret_digest','Weekly digest','A Monday email summing up what changed in each workspace. Month-1 retention +5 points.',2,2,-.8,['ret1'],[0,.2],{r2:.05}),
+  nd('ret_dunning','Failed payment recovery','Retry declined cards and email before the account lapses. Paid churn −8%.',2,2,-.3,['ret1','churn1'],[.2,.5],{churn:-.08}),
+  nd('ret_pause','Pause instead of cancel','Customers can freeze their plan for up to 3 months. Paid churn −6%, customer referrals +10%.',2,2,.2,['churn1'],[.6,.2],{churn:-.06,custRef:.1},'ret_cancel'),
+  nd('ret_phone','Cancel by phone only','Cancellation requires a phone call during office hours. Paid churn −12%, cost to serve +2%.',2,2,.7,['churn1'],[-.8,.4],{churn:-.12,cts:.02},'ret_cancel'),
+  nd('ret_release','Release notes in the app','Show what shipped since the last visit. Month-1 retention +4 points.',2,3,-.75,['ret_digest'],[.3,.4],{r2:.04}),
+  nd('ret_lockin','Proprietary file format','Projects save in a format only your app can open. Paid churn −10%.',2,3,-.25,['ret_digest','ret_dunning'],[-.6,.4],{churn:-.1},'ret_lock'),
+  nd('ret_integ','Integrations','Connect to the 50 tools customers already use. Month-1 retention +6 points, paid churn −4%.',2,3,.25,['ret_dunning','ret_pause','ret_phone'],[.4,.3],{r2:.06,churn:-.04},'ret_lock'),
+  nd('ret_health','Health scores','Score accounts by usage and flag the ones going quiet. Customers per CSM +15%, paid churn −5%.',2,3,.75,['ret_pause','ret_phone'],[.1,.6],{csm:.15,churn:-.05}),
+  nd('ret_streak','Streaks and badges','Reward daily use with a streak that resets when you miss a day. Month-1 retention +7 points.',2,4,-.6,['ret_release','ret_lockin','ret_integ'],[-.3,-.4],{r2:.07},'ret_engage'),
+  nd('ret_success','Success playbooks','Scripted check-ins at day 7, 30 and 90 for every paying account. Paid churn −8%, customers per CSM +10%.',2,4,0,['ret_lockin','ret_integ','ret_health'],[.5,.6],{churn:-.08,csm:.1},'ret_engage'),
+  nd('ret_forum','Community forum','A place where customers answer each other’s questions. Cost to serve −4%, customer referrals +15%.',2,4,.6,['ret_health'],[.5,-.4],{cts:-.04,custRef:.15}),
+  nd('ret_report','Manager usage reports','Email each team’s manager a weekly list of who used the product. Month-1 retention +6 points.',2,5,-.5,['ret_streak','ret_success'],[-.5,.5],{r2:.06}),
+  nd('ret_board','Customer advisory board','Twelve customers review the roadmap every quarter. Paid churn −6%, roadmap points +5%.',2,5,.5,['ret_success','ret_forum'],[.3,.6],{churn:-.06,rp:.05}),
+  nd('ret_rep','Churn interviews','Call customers who left and fix what they name. Paid churn −3% each time.',2,6,0,['ret_report','ret_board'],[.2,.2],{churn:-.03},null,true),
+  // Referral. Forks: who gets invited, what spreads the product, and when to ask.
+  nd('ref_reward','Two-sided rewards','The referrer and the friend each get a free month. Referral +5 points.',3,2,0,['ref1'],[.2,.3],{r3:.05}),
+  nd('ref_seats','Team invites','Invite named colleagues into a shared workspace. Referral +4 points, month-1 retention +1 point.',3,2,-.6,['ref1'],[.4,.2],{r3:.04,r2:.01},'ref_invite'),
+  nd('ref_contacts','Contact import','Ask for address book access and invite everyone in it. Friends per referral +40%.',3,2,.6,['ref1'],[-.8,-.4],{refSize:.4},'ref_invite'),
+  nd('ref_tpl','Public templates','Customers publish their templates for anyone to copy. Referral +6 points.',3,3,-.75,['ref_reward','ref_seats'],[.5,-.4],{r3:.06},'ref_spread'),
+  nd('ref_badge','Made-with badge','A “Made with” link on everything customers publish, removable on paid plans. Referral +3 points, search traffic +15%.',3,3,-.25,['ref_reward','ref_contacts'],[-.2,-.3],{r3:.03,seo:.15},'ref_spread'),
+  nd('ref_aff','Affiliate programme','Pay bloggers 30% of the first year for every customer they send. Customer referrals +25%.',3,3,.25,['ref_reward'],[-.1,.5],{custRef:.25},'ref_spread'),
+  nd('ref_g2','Review site profiles','Ask happy customers to review you on software comparison sites. Referral +3 points, sign-up rate +1.5 points.',3,3,.75,['ref_reward','ref_contacts'],[.3,.5],{r3:.03,r0:.015}),
+  nd('ref_spam','Invite on their behalf','Send invites from the customer’s account to everyone they’ve emailed. Referral +8 points, friends per referral +20%.',3,4,-.6,['ref_tpl','ref_badge','ref_aff'],[-.9,-.6],{r3:.08,refSize:.2},'ref_ask'),
+  nd('ref_nps','NPS follow-ups','Ask for a referral right after someone scores you 9 or 10. Referral +6 points, customer referrals +15%.',3,4,0,['ref_badge','ref_aff','ref_g2'],[.4,.5],{r3:.06,custRef:.15},'ref_ask'),
+  nd('ref_amb','Ambassadors','Early access and swag for your most active users. Customer referrals +20%.',3,4,.6,['ref_g2'],[.4,-.5],{custRef:.2}),
+  nd('ref_conf','User conference','A yearly event customers bring colleagues to. Referral +5 points, friends per referral +15%.',3,5,-.5,['ref_spam','ref_nps'],[.2,.6],{r3:.05,refSize:.15}),
+  nd('ref_viral','Share challenge','Prizes for the customers whose posts get shared most. Referral +6 points.',3,5,.5,['ref_nps','ref_amb'],[-.2,-.7],{r3:.06}),
+  nd('ref_rep','Referral experiments','Test another invite message or reward. Referral +2 points each time.',3,6,0,['ref_conf','ref_viral'],[0,0],{r3:.02},null,true),
+  // Revenue. Forks: how billing renews, how plans are packaged, and how free users are pushed to pay.
+  nd('rev_trial','Trial of paid features','14 days of the top plan, then back to free. Paid conversion +4 points.',4,2,0,['rev1'],[.1,.2],{r4:.04}),
+  nd('rev_annual','Annual plans','Pay yearly, two months free. Paid churn −15%.',4,2,-.6,['rev1'],[.2,.5],{churn:-.15},'rev_bill'),
+  nd('rev_renew','Intro price auto-renew','A cheap first year that renews at full price, as stated in the terms. Paid conversion +5 points.',4,2,.6,['rev1'],[-.6,.4],{r4:.05},'rev_bill'),
+  nd('rev_tiers','Three-tier pricing','Three plans, with the middle one marked most popular. Paid conversion +5 points.',4,3,-.75,['rev_annual','rev_trial'],[.1,.4],{r4:.05},'rev_pack'),
+  nd('rev_value','Value metric pricing','Charge for what customers get out of it, such as projects or contacts. Price sensitivity −20%.',4,3,-.25,['rev_trial'],[.7,0],{priceTol:.2},'rev_pack'),
+  nd('rev_decoy','Decoy plan','A poor-value plan that makes the next one up look cheap. Paid conversion +6 points, price sensitivity −5%.',4,3,.25,['rev_trial','rev_renew'],[-.5,-.2],{r4:.06,priceTol:.05},'rev_pack'),
+  nd('rev_checkout','One-page checkout','Card, wallet and invoice payment on one short page. Paid conversion +3 points.',4,3,.75,['rev_renew','rev_trial'],[.2,0],{r4:.03}),
+  nd('rev_sales','Sales assist','Account executives for any account over 20 seats. Paid conversion +6 points, cost to serve +3%.',4,4,-.6,['rev_tiers','rev_value','rev_decoy'],[0,.6],{r4:.06,cts:.03},'rev_push'),
+  nd('rev_wall','Mid-task usage limits','Free accounts hit a limit mid-task and must pay to save their work. Paid conversion +8 points.',4,4,0,['rev_decoy','rev_checkout'],[-.8,-.4],{r4:.08},'rev_push'),
+  nd('rev_tax','Tax and invoicing','Sales tax, VAT and invoices handled for every country. Cost to serve −5%.',4,4,.6,['rev_checkout'],[.1,.8],{cts:-.05}),
+  nd('rev_local','Local pricing','Prices in local currency, adjusted for purchasing power. Price sensitivity −15%, paid conversion +2 points.',4,5,-.5,['rev_sales','rev_wall'],[.6,.3],{priceTol:.15,r4:.02}),
+  nd('rev_fees','Checkout fees','A setup fee and a support fee appear on the last step of checkout. Cost to serve −8%, paid conversion +2 points.',4,5,.5,['rev_wall','rev_tax'],[-.7,-.3],{cts:-.08,r4:.02}),
+  nd('rev_rep','Pricing experiments','Test a new price point on a slice of visitors. Paid conversion +2 points each time.',4,6,0,['rev_local','rev_fees'],[0,0],{r4:.02},null,true),
+  // Expansion (closed until $1M). Forks: how accounts move up, what enterprise features cost, and how contracts work.
+  nd('exp_seats','Per-seat pricing','Each new teammate adds a seat to the bill. Upgrade rate +3 points.',5,2,0,['exp1'],[0,.3],{r5:.03}),
+  nd('exp_prompt','In-app upgrade prompts','Show the next plan’s features where they would help. Upgrade rate +4 points.',5,2,-.6,['exp1'],[.2,.2],{r5:.04},'exp_move'),
+  nd('exp_auto','Automatic plan upgrades','Move accounts up a plan when they pass a usage limit, and email afterwards. Upgrade rate +6 points, paid churn +5%.',5,2,.6,['exp1'],[-.7,-.4],{r5:.06,churn:.05},'exp_move'),
+  nd('exp_admin','Admin controls','Roles, audit logs and permissions on every plan. Upgrade rate +3 points, chance of a lucky break +3 points.',5,3,-.75,['exp_prompt','exp_seats'],[.5,.6],{r5:.03,evGood:.03},'exp_ent'),
+  nd('exp_sso','Single sign-on upsell','Single sign-on only on the Enterprise plan. Upgrade rate +6 points.',5,3,-.25,['exp_seats','exp_prompt','exp_auto'],[-.4,.4],{r5:.06},'exp_ent'),
+  nd('exp_addons','Paid add-ons','Sell extra storage, AI credits and priority support separately. Upgrade rate +4 points.',5,3,.25,['exp_seats','exp_auto'],[-.1,-.2],{r5:.04}),
+  nd('exp_qbr','Business reviews','Each quarter, walk big customers through the value they got. Paid churn −4%, upgrade rate +2 points.',5,3,.75,['exp_addons','exp_auto'],[.3,.6],{churn:-.04,r5:.02}),
+  nd('exp_multi','Multi-year contracts','Three-year terms with the price locked. Paid churn −10%, price sensitivity −10%.',5,4,-.6,['exp_admin','exp_sso'],[.1,.7],{churn:-.1,priceTol:.1},'exp_deal'),
+  nd('exp_overage','Overage billing','Usage past the plan limit is billed at three times the rate. Upgrade rate +5 points, cost to serve −4%.',5,4,0,['exp_sso','exp_addons'],[-.6,-.2],{r5:.05,cts:-.04},'exp_deal'),
+  nd('exp_land','Land and expand','Start with one team, then sell to the departments around it. Upgrade rate +4 points, friends per referral +10%.',5,4,.6,['exp_qbr','exp_addons'],[.1,.1],{r5:.04,refSize:.1}),
+  nd('exp_trust','Trust centre','Publish your security documents, uptime and subprocessors. Chance of a lucky break +4 points, upgrade rate +2 points.',5,5,-.5,['exp_multi','exp_overage'],[.5,.8],{evGood:.04,r5:.02}),
+  nd('exp_bundle','Product bundles','Launch a second product and sell it with the first at a discount. Upgrade rate +5 points.',5,5,.5,['exp_overage','exp_land'],[0,-.5],{r5:.05}),
+  nd('exp_rep','Expansion plays','Run another campaign aimed at existing accounts. Upgrade rate +2 points each time.',5,6,0,['exp_trust','exp_bundle'],[.1,.3],{r5:.02},null,true),
+  // Keystones, between neighbouring wedges: each lifts both boards, so they pay off most when both sides are built.
+  nd('k_plg','Product-led growth','Sign-up, setup and the first project all happen without talking to anyone. Sign-up rate +2 points, activation +4 points.',[0,1],5,0,['acq_growth','act_pers'],[.2,-.2],{r0:.02,r1:.04}),
+  nd('k_habit','Habit loop','A trigger, an action and a reward built into the core workflow. Activation +3 points, month-1 retention +4 points.',[1,2],5,0,['act_ai','ret_report'],[-.2,.1],{r1:.03,r2:.04}),
+  nd('k_comm','Customer community','Meetups, a forum and a champions programme run as one. Month-1 retention +3 points, referral +3 points, customer referrals +10%.',[2,3],5,0,['ret_board','ref_conf'],[.5,.3],{r2:.03,r3:.03,custRef:.1}),
+  nd('k_partner','Partner programme','Agencies and consultants resell and set up the product. Referral +4 points, paid conversion +4 points.',[3,4],5,0,['ref_viral','rev_local'],[0,.5],{r3:.04,r4:.04}),
+  nd('k_ent','Enterprise sales team','Procurement, security questionnaires and custom contracts. Paid conversion +4 points, upgrade rate +4 points, customers per CSM +10%.',[4,5],5,0,['rev_fees','exp_trust'],[0,.8],{r4:.04,r5:.04,csm:.1}),
+  nd('k_abm','Account-based marketing','Ads and outreach aimed at a list of named target companies. Sign-up rate +2 points, upgrade rate +3 points, ad prices −10%.',[5,0],5,0,['exp_bundle','acq_cat'],[-.3,-.3],{r0:.02,r5:.03,adCost:-.1})
 ];
 let NODE_IX={};
 // Two-way adjacency from each node's links, and the id index. Rerun after changing NODES.
@@ -653,8 +748,11 @@ linkNodes();
 const nodeOf=id=>NODE_IX[id];
 let owned={start:1},rp=RP_START,paid={},respecUsed=false,alHist=[]; // paid: points spent per node id, so a respec can refund them
 // Rebuild FX from owned, then everything derived from it. On buy, respec and load. Hot paths read FX, never owned.
+// Relative effects stack by adding, so each multiplier (1+FX.k) is floored at FX_FLOOR, and price sensitivity can only fall, by at most 80%.
+const FX_MULT=['churn','cts','csm','adCost','adReach','refSize','custRef','seo','rp'],FX_FLOOR=.1;
 function refx(){for(const k of FX_KEYS)FX[k]=0;
   for(const id in owned){const n=NODE_IX[id];if(!n)continue;for(const k in n.fx)FX[k]+=n.fx[k]*owned[id]}
+  for(const k of FX_MULT)FX[k]=Math.max(FX_FLOOR-1,FX[k]);FX.priceTol=Math.max(0,Math.min(.8,FX.priceTol));
   for(let b=0;b<NB;b++)bonus[b]=FX['r'+b];churn=CHURN0*(1+FX.churn);for(let b=0;b<NB;b++)zone(b)}
 const inArea=(n,a)=>Array.isArray(n.area)?n.area.includes(a):n.area===a;
 // A repeatable you own stays available. Expansion is closed until the board opens; the losing side of a fork is locked.
@@ -675,7 +773,8 @@ function buyNode(id){const n=NODE_IX[id];if(!n||ipoFiled||nodeState(id)!=='avail
   // With the roadmap open, the boards celebrate when it closes instead (its close handler compares against TREE.was).
   if(!TREE.was){for(let b=0;b<NB;b++){const d=rateOf(RATES[b])-was[b];if(Math.abs(d)>1e-9)celebrate(b,signed(d*100,' pts ')+RATES[b].label,true)}
     if(Math.abs(paidChurn()-pc)>1e-9)celebrate(4,signed((paidChurn()-pc)*100,' pts churn'),false)}
-  say(`<b>${n.name}</b> ${n.rep&&owned[id]>1?`shipped again (${plural(owned[id],'time')})`:'shipped'}: ${fxText(n.fx)}.`);return true}
+  say(`<b>${n.name}</b> shipped${n.rep&&owned[id]>1?` for the ${ord(owned[id])} time`:''}: ${fxText(n.fx)}.`);return true}
+const ord=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
 // One respec a run: refunds every point paid (may top the cap), clears the tree back to the start node and so frees fork locks.
 const respecCost=()=>Math.max(5000,3*MRR());
 function respec(){if(respecUsed||ipoFiled||cash<respecCost())return false;
@@ -705,8 +804,8 @@ const areaName=n=>n.area==null?'Start':Array.isArray(n.area)?n.area.map(a=>BOARD
 const andList=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a.at(-1);
 const forkMates=n=>n.fork?NODES.filter(m=>m.fork===n.fork&&m.id!==n.id):[];
 const canBuy=n=>!ipoFiled&&nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=nodeCash(n);
-// was: rates when the roadmap opened, so closing it can celebrate every board that changed. sel: the selected node id. confirm: the respec confirm step is showing.
-const TREE={x:0,y:0,k:1,sel:null,was:null,confirm:false};
+// was: rates when the roadmap opened, so closing it can celebrate every board that changed. sel: the selected node id. confirm: the respec confirm step is showing. lk: the zoom the labels were placed for.
+const TREE={x:0,y:0,k:1,sel:null,was:null,confirm:false,lk:null};
 function nodeLabel(n,s){const c=owned[n.id]||0;return `${n.name}, ${n.ring===0?'start':c&&n.rep?`shipped ${plural(c,'time')}`:c?'shipped':s==='available'?(canBuy(n)?'ready to buy':'available, not affordable yet'):s==='locked'?'ruled out':'not reachable yet'}`}
 function treeHead(){const cap=Math.floor(rpCap()+1e-9);$('tr-pts').textContent=`${Math.floor(rp+1e-9)} / ${cap}`;$('tr-inc').textContent=`+${rpIncome().toFixed(1)} a month`;$('tr-cash').textContent=fmt(cash);$('tr-cash').className=cash<0?'warn':'';
   const b=$('tr-respec'),k=respecCost();setBtn(b,respecUsed?'Respec used':`Respec <b>${fmt(k)}</b>`);b.disabled=respecUsed||ipoFiled||cash<k||!NODES.some(n=>n.ring&&owned[n.id])}
@@ -723,12 +822,27 @@ function renderTree(){const st={};for(const n of NODES)st[n.id]=nodeState(n.id);
   $('tr-edges').innerHTML=ed;
   let nd='';for(const n of [...vis].sort((a,b)=>a.ring-b.ring||((wedgeAng(a)+(a.slot||0)*WEDGE_SPREAD+450)%360)-((wedgeAng(b)+(b.slot||0)*WEDGE_SPREAD+450)%360))){
     const p=nodePos(n),s=st[n.id],c=owned[n.id]||0,r=nodeR(n),key=Array.isArray(n.area),shape=key?`<path class="tr-shape" d="M0 ${-r}L${r} 0L0 ${r}L${-r} 0Z"/><path class="tr-in" d="M0 -5L5 0L0 5L-5 0Z"/>`:`<circle class="tr-shape" r="${r}"/>`;
-    const L=Math.hypot(p.x,p.y)||1,dx=n.ring?p.x/L:0,dy=n.ring?p.y/L:1,anc=dx>.35?'start':dx<-.35?'end':'middle',base=dy>.35?'hanging':dy<-.35?'auto':'central';
+    const {x:lx,y:ly,anc,base}=lblAt(n);
     nd+=`<g class="tr-node ${has(n)?'own':s}${canBuy(n)?' can':''}${TREE.sel===n.id?' sel':''}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(nodeLabel(n,s))}" transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})" style="--c:${colOf(n)};--c2:${colOf(n,1)}">`+
       (canBuy(n)?(key?`<path class="tr-pulse" d="M0 ${-r}L${r} 0L0 ${r}L${-r} 0Z"/>`:`<circle class="tr-pulse" r="${r}"/>`):'')+`<g class="tr-pop">${shape}`+
       (s==='locked'?`<line class="tr-strike" x1="${-r-3}" y1="${r+3}" x2="${r+3}" y2="${-r-3}"/>`:'')+(n.rep?`<text class="tr-cnt">${c}</text>`:'')+
-      `</g><text class="tr-lbl" x="${(dx*(r+5)).toFixed(1)}" y="${(dy*(r+5)).toFixed(1)}" text-anchor="${anc}" dominant-baseline="${base}">${esc(n.name)}</text></g>`}
-  $('tr-nodes').innerHTML=nd;treeHead();renderDetail()}
+      `</g><text class="tr-lbl" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anc}" dominant-baseline="${base}">${esc(n.name)}</text></g>`}
+  $('tr-nodes').innerHTML=nd;TREE.lk=null;showLabels();treeHead();renderDetail()}
+// A label sits just outside its node, pointing away from the centre: offset in tree units, plus SVG anchor and baseline.
+function lblAt(n){const p=nodePos(n),r=nodeR(n),L=Math.hypot(p.x,p.y)||1,dx=n.ring?p.x/L:0,dy=n.ring?p.y/L:1;
+  return {x:dx*(r+5),y:dy*(r+5),anc:dx>.35?'start':dx<-.35?'end':'middle',base:dy>.35?'hanging':dy<-.35?'auto':'central'}}
+// Which labels to show at zoom k, so none overlap each other or another node: the selected node first, then shipped nodes, then ones you can take,
+// then the rest, inner rings first. Boxes are estimated in screen pixels (labels stay 11px on screen, about LBL_CH wide per character), so this needs no layout.
+const LBL_K=.5,LBL_CH=5.6,LBL_H=14;
+function labelsAt(k){const st={};for(const n of NODES)st[n.id]=nodeState(n.id);if(k<LBL_K)return new Set();
+  const vis=NODES.filter(n=>st[n.id]!=='closed'),rank=n=>n.id===TREE.sel?0:n.ring===0||owned[n.id]?1:st[n.id]==='available'?2:3,disc=[],on=new Set(),put=[];
+  for(const n of vis){const p=nodePos(n),r=nodeR(n)*k+2;disc.push([n.id,p.x*k-r,p.y*k-r,p.x*k+r,p.y*k+r])}
+  const hit=(b,c)=>b[0]<c[3]&&c[1]<b[2]&&b[1]<c[4]&&c[2]<b[3];
+  for(const n of [...vis].sort((a,b)=>rank(a)-rank(b)||a.ring-b.ring)){const p=nodePos(n),l=lblAt(n),w=n.name.length*LBL_CH+4,ax=(p.x+l.x)*k,ay=(p.y+l.y)*k;
+    const x0=l.anc==='start'?ax:l.anc==='end'?ax-w:ax-w/2,y0=l.base==='hanging'?ay:l.base==='auto'?ay-LBL_H:ay-LBL_H/2,b=[x0,y0,x0+w,y0+LBL_H];
+    if(put.some(c=>hit(b,[0,...c]))||disc.some(c=>c[0]!==n.id&&hit(b,c)))continue;put.push(b);on.add(n.id)}
+  return on}
+function showLabels(){if(TREE.lk===TREE.k)return;TREE.lk=TREE.k;const on=labelsAt(TREE.k);$('tr-nodes').querySelectorAll('.tr-node').forEach(g=>g.classList.toggle('lbl',on.has(g.dataset.id)))}
 function renderDetail(){const d=$('tr-detail'),n=TREE.sel&&NODE_IX[TREE.sel],x='<button class="campbtn tr-dx" id="tr-dx" aria-label="Close details">&times;</button>';d.style.removeProperty('--c');
   if(TREE.confirm){let back=0;for(const id in paid)back+=paid[id];const k=respecCost();d.className='tr-detail';
     d.innerHTML=`${x}<small>Respec · once a game</small><h3>Start the roadmap over</h3><p>Every node you've shipped is removed and its roadmap points come back (${plural(back,'point')}, which can go over the usual limit). Forks you closed open again. You can only do this once.</p><dl class="tr-cost"><dt>Cash</dt><dd class="${cash<k?'warn':''}">${fmt(k)}</dd></dl><div class="tr-btns"><button class="campbtn" id="tr-rs-no">Cancel</button><button class="buy" id="tr-rs-yes"${respecUsed||ipoFiled||cash<k?' disabled':''}>Respec <b>${fmt(k)}</b></button></div>`;return}
@@ -745,7 +859,7 @@ function renderDetail(){const d=$('tr-detail'),n=TREE.sel&&NODE_IX[TREE.sel],x='
   d.innerHTML=`${x}<small>${esc(areaName(n))}${n.rep?' · repeatable':''}</small><h3>${esc(n.name)}</h3><p>${esc(n.desc)}</p>`+
     (s==='available'||s==='unreachable'||s==='locked'?`<dl class="tr-cost"><dt>Roadmap points</dt><dd class="${rp<pts?'warn':''}">${pts}</dd><dt>Cash</dt><dd class="${cash<k?'warn':''}">${fmt(k)}</dd></dl>`:'')+
     `<p class="tr-state${mates.length&&s==='available'?' fork':''}">${esc(state)}</p>${buy}`}
-function treeView(){$('tr-view').setAttribute('transform',`translate(${TREE.x.toFixed(1)} ${TREE.y.toFixed(1)}) scale(${TREE.k.toFixed(4)})`);const v=$('tr-svg');v.style.setProperty('--k',TREE.k);v.classList.toggle('lbl',TREE.k>=1.15)}
+function treeView(){$('tr-view').setAttribute('transform',`translate(${TREE.x.toFixed(1)} ${TREE.y.toFixed(1)}) scale(${TREE.k.toFixed(4)})`);const v=$('tr-svg');v.style.setProperty('--k',TREE.k);showLabels()}
 const sheetH=()=>wide.matches?0:$('tr-detail').offsetHeight||0;
 // Fit every node you own or can take, leaving room for the bottom sheet on phones.
 function fitTree(){const r=$('tr-svg').getBoundingClientRect(),H=Math.max(80,r.height-sheetH()),ps=NODES.filter(n=>{const s=nodeState(n.id);return s!=='unreachable'&&s!=='closed'}).map(nodePos),pad=RING_R*.75;
@@ -755,7 +869,7 @@ function zoomAt(px,py,f){const k=Math.max(TREE_K[0],Math.min(TREE_K[1],TREE.k*f)
 // Pan a node into view if it sits off screen or under the bottom sheet.
 function showNode(n){const r=$('tr-svg').getBoundingClientRect(),p=nodePos(n),sx=p.x*TREE.k+TREE.x,sy=p.y*TREE.k+TREE.y,m=40,H=r.height-sheetH();
   if(sx<m||sx>r.width-m)TREE.x+=r.width/2-sx;if(sy<m||sy>H-m)TREE.y+=Math.max(m,H/2)-sy;treeView()}
-function selectNode(id){TREE.sel=id;TREE.confirm=false;for(const g of $('tr-nodes').querySelectorAll('.tr-node'))g.classList.toggle('sel',g.dataset.id===id);renderDetail();const n=id&&NODE_IX[id];if(n)showNode(n)}
+function selectNode(id){TREE.sel=id;TREE.confirm=false;for(const g of $('tr-nodes').querySelectorAll('.tr-node'))g.classList.toggle('sel',g.dataset.id===id);TREE.lk=null;showLabels();renderDetail();const n=id&&NODE_IX[id];if(n)showNode(n)}
 function hitNode(px,py){const tx=(px-TREE.x)/TREE.k,ty=(py-TREE.y)/TREE.k;let best=null,bd=Infinity;
   for(const n of NODES){if(nodeState(n.id)==='closed')continue;const p=nodePos(n),d=Math.hypot(p.x-tx,p.y-ty);if(d<bd){bd=d;best=n}}
   return best&&bd*TREE.k<=Math.max(22,nodeR(best)*TREE.k+6)?best:null}
@@ -951,7 +1065,7 @@ function ipoSummary(){const won=out[4],r=rule40();return [['Time to IPO'],['Game
   ['At filing'],['ARR',fmt(MRR()*12)],['Valuation',fmt(MRR()*12*revMult())],['Net revenue retention',pc0(NRR12())],['Rule of 40',r==null?'–':String(Math.round(r))],['Paying customers',num(paying)],['Team size',num(staff.length)],
   ['Lifetime'],['Visitors',num(into[0])],['Sign-ups',num(into[1])],['Customers won',num(won)],['Customers churned',num(churned)],['Total ad spend',fmt(spend)],['Cost per paying customer',won?fmt(spend/won):'–'],
   ['Milestones reached after'],...MILES.map((m,i)=>[`${m[1]} · ${m[2]}`,mileMonth[i]==null?'–':ym(mileMonth[i])])]}
-const esc=t=>String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function openSum(){$('sum-stats').innerHTML=(ipoSnap||ipoSummary()).map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('sum').showModal()}
 function fileIPO(){if(ipoFiled||ipoHold<IPO.hold)return;ipoFiled=true;ipoSnap=ipoSummary();save();sfx('fanfare');say('<b class="good">You filed for an IPO.</b> Buying is closed. The boards keep running, and the summary is in IPO readiness.');openSum()}
 $('ipo-file').addEventListener('click',fileIPO);$('ipo-sum').addEventListener('click',openSum);

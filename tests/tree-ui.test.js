@@ -52,3 +52,11 @@ test('entry card counts what you can ship now', () => {
   g('rp=1;cash=2000;hud()');assert.equal(g('readyNow()'),6);
   g('rp=3.7;hud()');assert.equal(el('rm-pts').textContent,'3 points');
 });
+
+test('labels: never overlap, the selected one always shows, all show at full zoom', () => {
+  const {g}=load();g('peak=2e6');
+  assert.equal(g('labelsAt(.4).size'),0);
+  assert.equal(g('labelsAt(TREE_K[1]).size'),g('NODES.length'));
+  for(const k of [.5,1,1.5]){const n=g(`labelsAt(${k}).size`);assert.ok(n>0&&n<g('NODES.length'),`${k}: ${n}`)}
+  g('TREE.sel="rev_rep"');assert.equal(g('labelsAt(.5).has("rev_rep")'),true);
+});

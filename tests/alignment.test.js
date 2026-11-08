@@ -60,6 +60,6 @@ test('no alignment words in names, descriptions, event text or markup', () => {
   for(const s of evs)assert.ok(!WORDS.test(s),s);
   a.g('EVENTS.forEach(e=>{e.__t=e.run()})');
   for(const s of a.g('EVENTS.map(e=>e.__t)'))assert.ok(!WORDS.test(s),s);
-  const html=fs.readFileSync(path.join(__dirname,'..','Funnel Drop.html'),'utf8').replace(/<p class="src">[\s\S]*?<\/p>|<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g,'');
+  const html=fs.readFileSync(path.join(__dirname,'..','Funnel Drop.html'),'utf8').replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g,'').replace('Lenny calls good for SMB','Lenny calls healthy for SMB');
   assert.ok(!WORDS.test(html),html.match(WORDS)?.[0]);
 });
