@@ -85,3 +85,11 @@ test('the penalty is off after filing', () => {
   g('ipoFiled=true');assert.equal(g('staleMult()'),1);
   const s=g('stale');g('rp=100;cash=1e12');months(1);assert.equal(g('stale'),s);assert.equal(g('staleMult()'),1);
 });
+
+test('the roadmap card shows a badge while something is affordable', () => {
+  const {g,frames,el}=fresh();
+  g('rp=9;cash=1e6');frames(300);
+  assert.equal(el('rm-badge').hidden,false);assert.match(el('rm-badge').textContent,/^\d+ ready$/);
+  g('rp=0;cash=0');frames(300);
+  assert.equal(el('rm-badge').hidden,true);
+});
