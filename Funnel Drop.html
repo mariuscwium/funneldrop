@@ -64,19 +64,22 @@ h1 em{font-style:normal;color:var(--paid)}
 .msg b{color:var(--fg)}
 .msg b.good,#ev.good #ev-title{color:var(--paid)}
 .msg b.bad,#ev.bad #ev-title{color:var(--warn)}
-#ev,#sum{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
-#sum{width:min(420px,calc(100vw - 32px))}
-#ev::backdrop,#sum::backdrop{background:var(--scrim)}
-#ev small,#sum>small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-#ev b,#sum-title{display:block;font-size:20px;margin-top:2px}
+#ev,#sum,#over{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
+#sum,#over{width:min(420px,calc(100vw - 32px))}
+#ev::backdrop,#sum::backdrop,#over::backdrop{background:var(--scrim)}
+#ev small,#sum>small,#over>small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+#ev b,#sum-title,#over-title{display:block;font-size:20px;margin-top:2px}
 #sum-title{color:var(--paid)}
+#over-title{color:var(--warn)}
+#over-story{margin:10px 0;padding-left:20px;font-size:13px}
+#over-reveal:empty{display:none}
 #ev p{font-size:14px;line-height:1.45;margin:8px 0 14px}
 #ev .buy{width:100%;justify-content:center}
-#sum-stats{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;margin:12px 0 14px;font:13px var(--mono);font-variant-numeric:tabular-nums}
-#sum-stats dt{color:var(--muted)}
-#sum-stats dd{margin:0;text-align:right}
-#sum-stats h3{grid-column:1/3;margin:8px 0 2px;font:12px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-#sum-stats h3:first-child{margin-top:0}
+#sum-stats,#over-stats{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;margin:12px 0 14px;font:13px var(--mono);font-variant-numeric:tabular-nums}
+#sum-stats dt,#over-stats dt{color:var(--muted)}
+#sum-stats dd,#over-stats dd{margin:0;text-align:right}
+#sum-stats h3,#over-stats h3{grid-column:1/3;margin:8px 0 2px;font:12px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+#sum-stats h3:first-child,#over-stats h3:first-child{margin-top:0}
 .sumbtns{display:flex;gap:8px}
 .sumbtns form{flex:1;display:flex}
 .sumbtns .buy{flex:1;justify-content:center}
@@ -248,6 +251,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><form method="dialog"><button class="buy">Continue</button></form></dialog>
 <dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
+<dialog id="over" aria-labelledby="over-title"><small>Game over</small><b id="over-title"></b><ol id="over-story"></ol><dl id="over-stats"></dl><div id="over-reveal"></div><div class="sumbtns"><button class="campbtn" id="over-new">New game</button></div></dialog>
 <dialog id="tree" aria-labelledby="tree-title"><div class="tr-top"><b id="tree-title">Roadmap</b><div class="tr-stats"><div class="stat" id="tr-pts-s"><span>Points</span><b><span id="tr-pts">2 / 4</span> <small id="tr-inc">+0.5 a month</small></b></div><div class="stat"><span>Cash</span><b id="tr-cash">$1,500</b></div></div><button class="campbtn" id="tr-respec">Respec</button><form method="dialog"><button class="buy" id="tr-close">Close</button></form></div>
 <div class="tr-main"><div class="tr-canvas"><svg id="tr-svg" tabindex="-1" role="group" aria-label="Roadmap: product work linked outward from the founding idea. Drag to move, scroll or pinch to zoom."><defs><pattern id="tr-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8"/></pattern></defs><g id="tr-view"><g id="tr-bg"></g><g id="tr-edges"></g><g id="tr-nodes"></g><g id="tr-fx"></g></g></svg><div class="tr-zoom"><button class="campbtn" id="tr-zin" aria-label="Zoom in">+</button><button class="campbtn" id="tr-zout" aria-label="Zoom out">&minus;</button><button class="campbtn" id="tr-fit" aria-label="Fit to view">Fit</button></div></div><aside class="tr-detail empty" id="tr-detail" aria-live="polite"></aside></div></dialog>
 <div class="wrap">
@@ -384,12 +388,12 @@ const MM_K=5,MM_P=.35,mmEff=()=>dimEff(MM_K,MM_P,strength('mm'));
 function seoBase(l=seoLvl,f=seoFresh){return l?SEO[l-1][2]*f*(1+.5*mmEff())*(1+FX.seo):0}
 function seoRange(l,f){const b=seoBase(l,f);return [Math.round(b*(1-SEO_VAR)),Math.round(b*(1+SEO_VAR))]}
 function organicRate(){return seoBase()*seoRoll+mmEff()*MM.visitors}
-function post(){const now=performance.now();if(ipoFiled||now<postReady)return;postReady=now+POST_CD;const m=1+mmEff();
+function post(){const now=performance.now();if(!atRisk()||now<postReady)return;postReady=now+POST_CD;const m=1+mmEff();
   const viral=Math.random()<.04,n=Math.round((viral?80+Math.random()*70:3+Math.random()*7)*m);
   const t=now;for(let i=0;i<n;i++)queue.push({t:t+i*22});
   say(viral?`Your post took off: ${n} visitors are on their way.`:`Posted. ${n} people clicked through.`)}
-function buySeo(){if(ipoFiled||seoLvl>=3||cash<SEO[seoLvl][1])return;spendCash(SEO[seoLvl][1]);const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;const [lo,hi]=seoRange();say(`${name} done. ${lo} to ${hi} free visitors a month will now arrive from search, varying month to month, until the content goes stale.`)}
-function publish(){if(ipoFiled||!seoLvl||cash<seoCost()||seoFresh>=.99)return;spendCash(seoCost());spend+=seoCost();seoFresh=1;const [lo,hi]=seoRange();say(`Fresh content is live. Search traffic is back to ${lo} to ${hi} free visitors a month.`)}
+function buySeo(){if(!atRisk()||seoLvl>=3||cash<SEO[seoLvl][1])return;spendCash(SEO[seoLvl][1]);const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;const [lo,hi]=seoRange();say(`${name} done. ${lo} to ${hi} free visitors a month will now arrive from search, varying month to month, until the content goes stale.`)}
+function publish(){if(!atRisk()||!seoLvl||cash<seoCost()||seoFresh>=.99)return;spendCash(seoCost());spend+=seoCost();seoFresh=1;const [lo,hi]=seoRange();say(`Fresh content is live. Search traffic is back to ${lo} to ${hi} free visitors a month.`)}
 const CHANNELS=[
   {id:'social',name:'Social ads',cost:100,base:100,camp:500,unlock:0},
   // aim/pull/lift: these visitors enter board aim pulled toward its slot, measured with chained drops to land about lift times as often.
@@ -405,12 +409,12 @@ const adCost=c=>r10(c.cost*mkt()**AD_PRICE_P*(1+FX.adCost)),campCost=c=>r10(c.ca
 const RECOVER=.10;
 function runAd(c,t=performance.now()){const v=perAd(c);c.reach*=DECAY;for(let i=0;i<v;i++)queue.push({t:t+i*22,src:c.id});return v}
 function buyAd(id){const c=CHANNELS.find(x=>x.id===id);
-  const k=adCost(c);if(ipoFiled||!c.open||cash<k)return;spendCash(k);spend+=k;ads++;c.ads++;runAd(c);
+  const k=adCost(c);if(!atRisk()||!c.open||cash<k)return;spendCash(k);spend+=k;ads++;c.ads++;runAd(c);
   if(ads===1)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
   if(c.ads===12)say(`Each ${c.name.toLowerCase()} ad reaches 8% fewer people than the last. Give the channel time to recover, or pay for a new campaign.`);
 }
-function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);const k=campCost(c);if(ipoFiled||!c.open||cash<k||c.reach>=c.base-.5)return;spendCash(k);spend+=k;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to ${perAd(c)} visitors per ad.`)}
-function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(ipoFiled||c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience of ${perAd(c)} visitors per ad, at ${fmt(adCost(c))} an ad.`);renderCh()}
+function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);const k=campCost(c);if(!atRisk()||!c.open||cash<k||c.reach>=c.base-.5)return;spendCash(k);spend+=k;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to ${perAd(c)} visitors per ad.`)}
+function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience of ${perAd(c)} visitors per ad, at ${fmt(adCost(c))} an ad.`);renderCh()}
 function visibleCh(){const out=[];for(const c of CHANNELS){out.push(c);if(!c.open)break}return out}
 function renderCh(){
   $('channels').innerHTML=`<div class="chan organic"><div class="nm"><b>Organic social post</b><small id="op-meta">Free. Usually a handful of visitors; now and then a post takes off.</small></div><button class="adbtn" data-post="1" id="op-btn">Post <b>Free</b></button></div>
@@ -530,20 +534,20 @@ function gate(id,at,held,name){const el=$('c-'+id),vis=peak>=at||held>0;if(el.hi
 function hud(){
   $('vCash').textContent=fmt(cash);$('vCash').className=cash<0?'warn':'';$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;$('vDays').textContent=Math.floor((month+eventT/MONTH)*30).toLocaleString('en');
   for(const c of visibleCh()){const ac=adCost(c),r=perAd(c);if(c.open){const cc=campCost(c);$('cr-'+c.id).textContent=`${r} visitors per ad · ${fmt(ac/r)} each${c.note?' · '+c.note:''}`;$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
-      setBtn($('ca-'+c.id),`Buy ad <b>${fmt(ac)}</b>`);setBtn($('cc-'+c.id),`New campaign <b>${fmt(cc)}</b>`);$('ca-'+c.id).disabled=ipoFiled||cash<ac;$('cc-'+c.id).disabled=ipoFiled||cash<cc||c.reach>=c.base-.5}
-    else{$('cl-'+c.id).textContent=`${c.pitch}: ${r} visitors per ad, at ${fmt(ac)} an ad.`;$('cu-'+c.id).disabled=ipoFiled||cash<c.unlock}}
+      setBtn($('ca-'+c.id),`Buy ad <b>${fmt(ac)}</b>`);setBtn($('cc-'+c.id),`New campaign <b>${fmt(cc)}</b>`);$('ca-'+c.id).disabled=!atRisk()||cash<ac;$('cc-'+c.id).disabled=!atRisk()||cash<cc||c.reach>=c.base-.5}
+    else{$('cl-'+c.id).textContent=`${c.pitch}: ${r} visitors per ad, at ${fmt(ac)} an ad.`;$('cu-'+c.id).disabled=!atRisk()||cash<c.unlock}}
   {const top=Math.max(1,...STAGES.map(s=>s[2]()));STAGES.forEach(([,,v,b],i)=>{const n=v();$('fb'+i).style.width=n?Math.max(2,Math.sqrt(n/top)*100)+'%':'0';$('fv'+i).textContent=n.toLocaleString('en');if(b==='nrr'){const r=NRR12();$('fy'+i).textContent=r==null?'–':Math.round(r*100)+'%'}else if(b!==undefined)$('fy'+i).textContent=pct(out[b],into[b])})}
   const mrr=MRR(),mult=revMult(),val=mrr*12*mult;peak=Math.max(peak,val);
   $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);{const r=NRR12();$('cNrr').textContent=(r==null?'–':Math.round(r*100)+'%')+' / 109%'}checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
-  $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;{const t=performance.now();if(t-rmT>250||t<rmT){rmT=t;rmN=ipoFiled?0:readyNow()}}{const sc=Math.round((staleMult()-1)*100);$('rm-meta').textContent=`${rmN?`${rmN} ready to buy now. `:''}+${rpIncome().toFixed(1)} points a month, up to ${Math.floor(rpCap()+1e-9)} stored. ${sc?'Ship something to stop falling behind.':rmN?'':'Each item costs roadmap points and cash.'}`;$('cStale').textContent=sc?`+${sc}%`:'–';$('cStale').className=sc?'warn':'';$('cStale').previousElementSibling.hidden=$('cStale').hidden=!sc}$('csm-cov').textContent=csmCovers();
+  $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;{const t=performance.now();if(t-rmT>250||t<rmT){rmT=t;rmN=!atRisk()?0:readyNow()}}{const sc=Math.round((staleMult()-1)*100);$('rm-meta').textContent=`${rmN?`${rmN} ready to buy now. `:''}+${rpIncome().toFixed(1)} points a month, up to ${Math.floor(rpCap()+1e-9)} stored. ${sc?'Ship something to stop falling behind.':rmN?'':'Each item costs roadmap points and cash.'}`;$('cStale').textContent=sc?`+${sc}%`:'–';$('cStale').className=sc?'warn':'';$('cStale').previousElementSibling.hidden=$('cStale').hidden=!sc}$('csm-cov').textContent=csmCovers();
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),gate('eng',ENG.at,heads('eng'),'Engineer'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=MRR()*(1-cts())-teamCost()-lp;$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
-   showCount('csm');showCount('mm');showCount('eng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpIncome().toFixed(1)} roadmap points a month in total`;$('e-hire').disabled=ipoFiled||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=ipoFiled||cash<10*ENG.salary;{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=ipoFiled||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=ipoFiled||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
-   {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=ipoFiled||!g||cash<g*CSM.salary;$('t-hire10').disabled=ipoFiled||cash<10*CSM.salary;$('m-hire10').disabled=ipoFiled||cash<10*MM.salary}
-   for(const r of ROLES){showCount(r.id,ROLE_MAX);$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=ipoFiled||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
+   showCount('csm');showCount('mm');showCount('eng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpIncome().toFixed(1)} roadmap points a month in total`;$('e-hire').disabled=!atRisk()||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=!atRisk()||cash<10*ENG.salary;{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=!atRisk()||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=!atRisk()||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
+   {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=!atRisk()||!g||cash<g*CSM.salary;$('t-hire10').disabled=!atRisk()||cash<10*CSM.salary;$('m-hire10').disabled=!atRisk()||cash<10*MM.salary}
+   for(const r of ROLES){showCount(r.id,ROLE_MAX);$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=!atRisk()||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
   ipoHud();$('price').disabled=ipoFiled;
   const won=out[4],cac=won?spend/won:0,ltv=price*(1-cts())/(paying&&heads('csm')?paidChurn()*(1-Math.min(paying,heads('csm')*csmCovers())/paying*(1-csmMult())):paidChurn());$('eCac').textContent=won?fmt(cac):'–';$('eLtv').textContent=fmt(ltv);
   const pb=cac/(price*(1-cts()));$('ePay').textContent=won?pb.toFixed(1):'–';$('ePay').className=pb>12?'warn':'';
@@ -559,20 +563,20 @@ function binom(n,p){if(n<=0||p<=0)return 0;if(p>=1)return n;
   const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
   return Math.max(0,Math.min(n,Math.round(n*p+Math.sqrt(n*p*(1-p))*z)))}
 function loop(now){
-  if($('ev').open||$('sum').open||$('tree').open){last=now;draw();requestAnimationFrame(loop);return}
+  if($('ev').open||$('sum').open||$('over').open||over||$('tree').open){last=now;draw();requestAnimationFrame(loop);return}
   const dt=Math.min(.05,(now-last)/1000);adaptCap(now-last);last=now;if(!ipoFiled)playMs+=dt*1000;
   while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
   if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+mmEff()),dt/MONTH));
   organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;spawn(enter(0))}
-  {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=ipoFiled||left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
+  {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=!atRisk()||left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
    $('seo-meta').textContent=seoLvl?(([lo,hi])=>`${lo}–${hi} free visitors a month, falling. This month: ${Math.round(seoBase()*seoRoll)}.`)(seoRange()):(([lo,hi])=>`Start a blog for ${lo}–${hi} free visitors a month from search, for as long as you keep publishing.`)(seoRange(1,1));
-   $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=ipoFiled||cash<seoCost()||seoFresh>=.99}
-   const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=ipoFiled||cash<SEO[seoLvl][1]}}
+   $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=!atRisk()||cash<seoCost()||seoFresh>=.99}
+   const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=!atRisk()||cash<SEO[seoLvl][1]}}
   for(let i=0;i<3;i++)physics(dt/3);
   rp=Math.max(rp,Math.min(rpCap(),rp+rpIncome()*dt/MONTH));
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*cts()*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;alHist.push(companyAl().map(v=>Math.round(v*100)/100));ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();staleOn=!ipoFiled&&shippable();if(staleOn)stale++;rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}
+  eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;alHist.push(companyAl().map(v=>Math.round(v*100)/100));ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();staleOn=!ipoFiled&&shippable();if(staleOn)stale++;rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(atRisk())rollRisk();if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
   {const tc=teamCost()/MONTH*dt;if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,staff.length){const e=newest();fire(e.role);say(`Payroll bounced, so you had to let ${aRole({name:roleName(e.role)})} go.${e.role==='csm'?' Their customers lose the extra attention.':''}`)}}}
@@ -639,7 +643,7 @@ function celebrate(b,text,slot,quiet){const B=BOARDS[b],y0=b*BH;if(!quiet)sfx('u
   for(const [a,c] of B.zones)for(const [x,dir] of [[a,-1],[c,1]])for(let i=0;i<9;i++)sparks.push({x,y:y0+WALLTOP+Math.random()*(FLOOR-WALLTOP),vx:dir*(40+Math.random()*120),vy:-(40+Math.random()*130),life:1,c:C[B.col]})}
 function applyPrice(){const t=trackOf(4);zone(4);
   $('p-val').textContent=fmt(price);$('p-meta').textContent=`At ${fmt(price)}: ${p1(rateOf(t))} paid conversion, ${p1(paidChurn())} monthly churn.`}
-function setPrice(v){if(!ipoFiled){price=v;applyPrice()}$('price').value=price}
+function setPrice(v){if(atRisk()){price=v;applyPrice()}$('price').value=price}
 $('price').addEventListener('input',e=>setPrice(+e.target.value));
 // Roadmap (tech tree). Nodes cost roadmap points and cash. You can take a node linked to one you own; nodes sharing a fork id exclude each other.
 // area 0-5 is a funnel wedge, [a,b] a keystone between two; ring is the distance out, slot the angle inside the wedge (-1..1). al is hidden ([g,l], each -1..1).
@@ -780,7 +784,7 @@ const FX_WORDS={churn:'paid churn',priceTol:'price sensitivity',adCost:'ad price
   cts:'cost to serve',csm:'customers per CSM',seo:'search traffic',rp:'roadmap points',evGood:'chance of a lucky break'};
 const signed=(x,u)=>{const r=Math.round(x*10)/10;return(r<0?'−':'+')+Math.abs(r)+u};
 function fxText(fx){return Object.entries(fx).map(([k,v])=>/^r\d$/.test(k)?`${RATES[+k[1]].label} ${signed(v*100,' points')}`:k==='evGood'?`${FX_WORDS[k]} ${signed(v*100,' points')}`:k==='priceTol'?`${FX_WORDS[k]} ${signed(-v*100,'%')}`:`${FX_WORDS[k]} ${signed(v*100,'%')}`).join(', ')}
-function buyNode(id){const n=NODE_IX[id];if(!n||ipoFiled||nodeState(id)!=='available')return false;
+function buyNode(id){const n=NODE_IX[id];if(!n||!atRisk()||nodeState(id)!=='available')return false;
   const k=nodeCash(n),pts=nodePts(n);if(rp<pts||cash<k)return false;
   const was=RATES.map(rateOf),pc=paidChurn();
   spendCash(k);rp-=pts;paid[id]=(paid[id]||0)+pts;owned[id]=(owned[id]||0)+1;refx();applyPrice();markShipped();
@@ -791,7 +795,7 @@ function buyNode(id){const n=NODE_IX[id];if(!n||ipoFiled||nodeState(id)!=='avail
 const ord=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
 // One respec a run: refunds every point paid (may top the cap), clears the tree back to the start node and so frees fork locks.
 const respecCost=()=>Math.max(5000,3*MRR());
-function respec(){if(respecUsed||ipoFiled||cash<respecCost()||Object.keys(owned).every(k=>k==='start'))return false;
+function respec(){if(respecUsed||!atRisk()||cash<respecCost()||Object.keys(owned).every(k=>k==='start'))return false;
   let back=0;for(const id in paid)back+=paid[id];
   spendCash(respecCost());rp+=back;owned={start:1};paid={};respecUsed=true;stale=0;refx();applyPrice();return true}
 const OLD_SEEDS={acq:'acq1',act:'act1',ret:'ret1',ref:'ref1',rev:'rev1',churn:'churn1',exp:'exp1'};
@@ -818,12 +822,12 @@ const colOf=(n,i=0)=>n.area==null?'var(--fg)':`var(--${BOARDS[Array.isArray(n.ar
 const areaName=n=>n.area==null?'Start':Array.isArray(n.area)?n.area.map(a=>BOARDS[a].name).join(' + ')+' keystone':BOARDS[n.area].name;
 const andList=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a.at(-1);
 const forkMates=n=>n.fork?NODES.filter(m=>m.fork===n.fork&&m.id!==n.id):[];
-const canBuy=n=>!ipoFiled&&nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=nodeCash(n);
+const canBuy=n=>atRisk()&&nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=nodeCash(n);
 // was: rates when the roadmap opened, so closing it can celebrate every board that changed. sel: the selected node id. confirm: the respec confirm step is showing. lk: the zoom the labels were placed for.
 const TREE={x:0,y:0,k:1,sel:null,was:null,confirm:false,lk:null};
 function nodeLabel(n,s){const c=owned[n.id]||0;return `${n.name}, ${n.ring===0?'start':c&&n.rep?`shipped ${plural(c,'time')}`:c?'shipped':s==='available'?(canBuy(n)?'ready to buy':'available, not affordable yet'):s==='locked'?'ruled out':'not reachable yet'}`}
 function treeHead(){const cap=Math.floor(rpCap()+1e-9);$('tr-pts').textContent=`${Math.floor(rp+1e-9)} / ${cap}`;$('tr-inc').textContent=`+${rpIncome().toFixed(1)} a month`;$('tr-cash').textContent=fmt(cash);$('tr-cash').className=cash<0?'warn':'';
-  const b=$('tr-respec'),k=respecCost();setBtn(b,respecUsed?'Respec used':`Respec <b>${fmt(k)}</b>`);b.disabled=respecUsed||ipoFiled||cash<k||!NODES.some(n=>n.ring&&owned[n.id])}
+  const b=$('tr-respec'),k=respecCost();setBtn(b,respecUsed?'Respec used':`Respec <b>${fmt(k)}</b>`);b.disabled=respecUsed||!atRisk()||cash<k||!NODES.some(n=>n.ring&&owned[n.id])}
 function renderTree(){const st={};for(const n of NODES)st[n.id]=nodeState(n.id);const vis=NODES.filter(n=>st[n.id]!=='closed'),has=n=>n.ring===0||owned[n.id]>0;
   const rings=Math.max(1,...NODES.map(n=>n.ring)),R=(rings+.7)*RING_R,h=Math.PI/6,pt=(r,t)=>`${(r*Math.cos(t)).toFixed(1)} ${(r*Math.sin(t)).toFixed(1)}`;let bg='';
   for(let a=0;a<NB;a++){const c=(-90+a*60)*Math.PI/180,shut=a===5&&!expOpen();
@@ -860,17 +864,17 @@ function labelsAt(k){const st={};for(const n of NODES)st[n.id]=nodeState(n.id);i
 function showLabels(){if(TREE.lk===TREE.k)return;TREE.lk=TREE.k;const on=labelsAt(TREE.k);$('tr-nodes').querySelectorAll('.tr-node').forEach(g=>g.classList.toggle('lbl',on.has(g.dataset.id)))}
 function renderDetail(){const d=$('tr-detail'),n=TREE.sel&&NODE_IX[TREE.sel],x='<button class="campbtn tr-dx" id="tr-dx" aria-label="Close details">&times;</button>';d.style.removeProperty('--c');
   if(TREE.confirm){let back=0;for(const id in paid)back+=paid[id];const k=respecCost();d.className='tr-detail';
-    d.innerHTML=`${x}<small>Respec · once a game</small><h3>Start the roadmap over</h3><p>Every node you've shipped is removed and its roadmap points come back (${plural(back,'point')}, which can go over the usual limit). Forks you closed open again. You can only do this once.</p><dl class="tr-cost"><dt>Cash</dt><dd class="${cash<k?'warn':''}">${fmt(k)}</dd></dl><div class="tr-btns"><button class="campbtn" id="tr-rs-no">Cancel</button><button class="buy" id="tr-rs-yes"${respecUsed||ipoFiled||cash<k?' disabled':''}>Respec <b>${fmt(k)}</b></button></div>`;return}
+    d.innerHTML=`${x}<small>Respec · once a game</small><h3>Start the roadmap over</h3><p>Every node you've shipped is removed and its roadmap points come back (${plural(back,'point')}, which can go over the usual limit). Forks you closed open again. You can only do this once.</p><dl class="tr-cost"><dt>Cash</dt><dd class="${cash<k?'warn':''}">${fmt(k)}</dd></dl><div class="tr-btns"><button class="campbtn" id="tr-rs-no">Cancel</button><button class="buy" id="tr-rs-yes"${respecUsed||!atRisk()||cash<k?' disabled':''}>Respec <b>${fmt(k)}</b></button></div>`;return}
   if(!n||nodeState(n.id)==='closed'){d.className='tr-detail empty';d.innerHTML=`<p class="tr-hint">${wide.matches?'Click a node to see what it does. Drag to move, scroll to zoom.':'Tap a node to see what it does. Drag to move, pinch to zoom.'} You can ship a node linked to one you own.</p>`;return}
   const s=nodeState(n.id),c=owned[n.id]||0,pts=nodePts(n),k=nodeCash(n),mates=forkMates(n);d.className='tr-detail';d.style.setProperty('--c',colOf(n));
   let state;if(n.ring===0)state='Where every roadmap starts. Ship the nodes linked to it first.';
   else if(s==='locked')state=`Ruled out by ${andList(mates.filter(m=>owned[m.id]).map(m=>m.name))}.${respecUsed?'':' A respec frees it.'}`;
   else if(s==='unreachable')state='Ship a linked node first.';
   else if(s==='owned')state='Shipped.';
-  else if(ipoFiled)state='Buying closed when you filed for an IPO.';
+  else if(!atRisk())state=ipoFiled?'Buying closed when you filed for an IPO.':'Buying is closed.';
   else if(mates.length)state=`Taking this rules out ${andList(mates.map(m=>m.name))}.`;
   else state=n.rep?(c?`Shipped ${plural(c,'time')}. Each one costs a point more.`:'Repeatable: each one costs a point more.'):canBuy(n)?'Ready to ship.':'Ready to ship once you can afford it.';
-  const buy=s==='available'?`<button class="buy" id="tr-buy"${canBuy(n)?'':' disabled'}>${ipoFiled?'Buying is closed':`Buy <b>${plural(pts,'point')} · ${fmt(k)}</b>`}</button>`:'';
+  const buy=s==='available'?`<button class="buy" id="tr-buy"${canBuy(n)?'':' disabled'}>${!atRisk()?'Buying is closed':`Buy <b>${plural(pts,'point')} · ${fmt(k)}</b>`}</button>`:'';
   d.innerHTML=`${x}<small>${esc(areaName(n))}${n.rep?' · repeatable':''}</small><h3>${esc(n.name)}</h3><p>${esc(n.desc)}</p>`+
     (s==='available'||s==='unreachable'||s==='locked'?`<dl class="tr-cost"><dt>Roadmap points</dt><dd class="${rp<pts?'warn':''}">${pts}</dd><dt>Cash</dt><dd class="${cash<k?'warn':''}">${fmt(k)}</dd></dl>`:'')+
     `<p class="tr-state${mates.length&&s==='available'?' fork':''}">${esc(state)}</p>${buy}`}
@@ -950,7 +954,7 @@ const teamCost=()=>payroll;
 // Slot widths follow strength, so boards with staff still ramping are rebuilt once a game month (one month past the ramp catches the last step).
 function refit(role){const r=roleOf(role);if(r){zone(r.board);applyPrice()}}
 function refitRamping(){restaff();for(const r of ROLES)if(staff.some(e=>e.role===r.id&&gameMonths()-e.hired<RAMP_MONTHS+1))zone(r.board);applyPrice()}
-function hire(role){if(ipoFiled)return;const e={role,hired:gameMonths(),pay:baseSalary(role),skill:1},t=team[role]??={n:0,s:0,r:0};staff.push(e);t.n++;t.s+=e.skill*ramp(e);t.r++;payroll+=e.pay;refit(role)}
+function hire(role){if(!atRisk())return;const e={role,hired:gameMonths(),pay:baseSalary(role),skill:1},t=team[role]??={n:0,s:0,r:0};staff.push(e);t.n++;t.s+=e.skill*ramp(e);t.r++;payroll+=e.pay;refit(role)}
 const newest=role=>{let i=-1;staff.forEach((e,j)=>{if((!role||e.role===role)&&(i<0||e.hired>=staff[i].hired))i=j});return staff[i]};
 function fire(role){const e=newest(role);if(!e)return;staff.splice(staff.indexOf(e),1);restaff();refit(role)}
 // Once a game year, per person: everyone with a full year served gets a raise and a little skill, then each may be headhunted, likelier the longer they've stayed.
@@ -970,17 +974,17 @@ $('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:de
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="e-hire">Hire</button><button class="campbtn" id="e-hire10">+10</button><button class="campbtn" id="e-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}<span class="hc" id="hc-${r.id}"></span></b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
 ROLES.forEach(r=>{
-  $('r-hire-'+r.id).addEventListener('click',()=>{if(ipoFiled||cash<r.salary||heads(r.id)>=ROLE_MAX)return;hire(r.id);say(`You hired ${aRole(r)}. They start at a quarter of full effect and take about six months to ramp up. ${r.label[0].toUpperCase()+r.label.slice(1)} is now about ${p1(rateOf(trackOf(r.board)))}.`)});
+  $('r-hire-'+r.id).addEventListener('click',()=>{if(!atRisk()||cash<r.salary||heads(r.id)>=ROLE_MAX)return;hire(r.id);say(`You hired ${aRole(r)}. They start at a quarter of full effect and take about six months to ramp up. ${r.label[0].toUpperCase()+r.label.slice(1)} is now about ${p1(rateOf(trackOf(r.board)))}.`)});
   $('r-fire-'+r.id).addEventListener('click',()=>{if(!heads(r.id))return;fire(r.id);say(`You let your newest ${r.name.toLowerCase()} go.`)})});
-$('m-hire').addEventListener('click',()=>{if(ipoFiled||cash<MM.salary)return;hire('mm');const n=heads('mm');say(n===1?'Your first marketing manager starts Monday. Organic traffic should climb as they ramp up, but their salary only pays off if your funnel converts well.':`You now have ${n} marketing managers.`)});
+$('m-hire').addEventListener('click',()=>{if(!atRisk()||cash<MM.salary)return;hire('mm');const n=heads('mm');say(n===1?'Your first marketing manager starts Monday. Organic traffic should climb as they ramp up, but their salary only pays off if your funnel converts well.':`You now have ${n} marketing managers.`)});
 $('m-fire').addEventListener('click',()=>{if(!heads('mm'))return;fire('mm');say('You let your newest marketing manager go. Organic traffic will fall back.')});
-$('t-hire').addEventListener('click',()=>{if(ipoFiled||cash<CSM.salary)return;hire('csm');const n=heads('csm');say(n===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${n} customer success managers.`)});
+$('t-hire').addEventListener('click',()=>{if(!atRisk()||cash<CSM.salary)return;hire('csm');const n=heads('csm');say(n===1?'Your first customer success manager starts Monday. Their salary comes out of cash every month, whether or not you have enough customers to keep them busy.':`You now have ${n} customer success managers.`)});
 $('t-fire').addEventListener('click',()=>{if(!heads('csm'))return;fire('csm');say('You let your newest customer success manager go. Their customers lose the extra attention.')});
 // Bulk hiring: needs a month's salary in cash for every new hire, and hires them one at a time.
 const csmGap=()=>Math.max(0,Math.ceil(paying/csmCovers())-heads('csm'));
-function hireN(role,n){if(ipoFiled||n<1||cash<n*baseSalary(role))return 0;for(let i=0;i<n;i++)hire(role);return n}
+function hireN(role,n){if(!atRisk()||n<1||cash<n*baseSalary(role))return 0;for(let i=0;i<n;i++)hire(role);return n}
 const hired=(role,n)=>{if(n)say(`You hired ${n} ${roleName(role)}s. They start at a quarter of full effect and ramp up over six months. You now have ${heads(role)}.`)};
-$('e-hire').addEventListener('click',()=>{if(ipoFiled||cash<ENG.salary)return;hire('eng');const n=heads('eng');say(n===1?'Your first engineer starts Monday. Roadmap points should come faster as they ramp up.':`You now have ${n} engineers.`)});
+$('e-hire').addEventListener('click',()=>{if(!atRisk()||cash<ENG.salary)return;hire('eng');const n=heads('eng');say(n===1?'Your first engineer starts Monday. Roadmap points should come faster as they ramp up.':`You now have ${n} engineers.`)});
 $('e-fire').addEventListener('click',()=>{if(!heads('eng'))return;fire('eng');say('You let your newest engineer go. Roadmap points will slow.')});
 $('e-hire10').addEventListener('click',()=>hired('eng',hireN('eng',10)));
 $('m-hire10').addEventListener('click',()=>hired('mm',hireN('mm',10)));
@@ -1002,9 +1006,9 @@ function updLoans(){let debt=0;for(const l of LOANS){debt+=l.bal;const lim=l.lim
     $('l-fig-'+l.id).textContent=fmt(l.bal);$('l-st-'+l.id).textContent=`${l.late?'Behind on repayments, late fees adding up. ':''}Owe ${fmt(l.bal)}. ${fmt(l.pay)} a month, about ${left} months left.`;}
   else if(l.ok()&&lim>0){$('l-fig-'+l.id).textContent=fmt(lim);$('l-st-'+l.id).textContent=`Borrow ${fmt(lim)}: ${fmt(pmt(lim,l.apr,l.months))} a month, ${fmt(pmt(lim,l.apr,l.months)*l.months-lim)} interest in total.`}
   else{$('l-fig-'+l.id).textContent='—';$('l-st-'+l.id).textContent=l.why}
-  $('l-take-'+l.id).disabled=ipoFiled||l.bal>0||!l.ok()||lim<=0;$('l-off-'+l.id).disabled=!(l.bal>0)||cash<l.bal}
+  $('l-take-'+l.id).disabled=!atRisk()||l.bal>0||!l.ok()||lim<=0;$('l-off-'+l.id).disabled=!(l.bal>0)||cash<l.bal}
   $('cDebt').textContent=fmt(debt)}
-function borrow(id){const l=LOANS.find(x=>x.id===id),lim=l.limit();if(ipoFiled||l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)}
+function borrow(id){const l=LOANS.find(x=>x.id===id),lim=l.limit();if(!atRisk()||l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)}
 LOANS.forEach(l=>{
   $('l-take-'+l.id).addEventListener('click',()=>borrow(l.id));
   $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;spendCash(l.bal);l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
@@ -1036,7 +1040,8 @@ const EVENTS=[
 ];
 // Saved as soon as it fires, so reloading can't dodge a bad one. Timers shift on resume so bursts and cooldowns don't run out during the pause.
 let pausedAt=0;
-function showEv(k,kind,name,t){sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
+const evQueue=[];
+function showEv(k,kind,name,t,act){if($('ev').open){evQueue.push([k,kind,name,t,act]);return}sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
 function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()*(1-cts())-teamCost()-loanPay()>0?.5:-.5)))}
 // Alignment exposure: each axis sums al × count over owned nodes (not the start), over ALIGN_SCALE, clamped to -1..1. Hidden from the player.
@@ -1057,9 +1062,16 @@ let mileMonth=[];
 const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;
 function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||ipoFiled||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());let pts=0;for(let i=msLvl;i<n;i++)pts+=RP_MILE[i]||0;rp+=pts;msLvl=n;const m=MILES[n-1],nx=MILES[n];
   showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}${pts?` Your team banks ${pts} roadmap points.`:''}`)}
-for(const id of ['ev','sum','tree'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
+for(const id of ['ev','sum','over','tree'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
+$('ev').addEventListener('close',()=>{if(evQueue.length&&atRisk())showEv(...evQueue.shift())});
 // IPO readiness. Targets are game simplifications. Every criterion must hold at IPO.hold month rollovers in a row before filing.
 const IPO={arr:1e8,nrr:1.10,r40:40,growth:.30,hold:3};let ipoHold=0,ipoFiled=false,ipoSnap=null,playMs=0;
+// The ending. over is {kind,month,story,snap} once the game is lost. warnLog keeps the last 20 warnings; an ending needs one for its cause.
+let over=null,warnLog=[];const ENDINGS={runway:'Ran out of runway',board:'Ousted by the board',shut:'Shut down'};
+const atRisk=()=>!ipoFiled&&!over;
+function warn(cause,title,text,act){warnLog.push({cause,month,text});if(warnLog.length>20)warnLog.shift();showEv('bad','Warning',title,text,act)}
+function rollRisk(){}
+function endGame(kind,title,text){if(!atRisk())return;evQueue.length=0;const story=warnLog.filter(w=>w.cause===kind).slice(-3);warnLog.push({cause:kind,month,text});story.push({cause:kind,month,text});over={kind,month,story,snap:ipoSummary('At the end')};save();sfx('bad');say(`<b class="bad">${esc(title)}.</b> ${esc(text)}`);openOver()}
 // Year-on-year MRR growth against the oldest ledger entry (13 months back at most). Null until there is one with MRR.
 function yoy(){const e=ledger.at(-13);return e&&e.mrr>0?MRR()/e.mrr-1:null}
 const rule40=()=>{const y=yoy(),m=margin3();return y==null||m==null?null:y*100+m*100};
@@ -1078,12 +1090,13 @@ function ipoHud(){const vis=expOpen()||ipoFiled;$('h-ipo').hidden=$('ipo').hidde
 const plural=(n,w)=>`${n.toLocaleString('en')} ${w}${n===1?'':'s'}`,ym=m=>`${plural(Math.floor(m/12),'year')}, ${plural(Math.floor(m%12),'month')}`;
 const num=v=>v.toLocaleString('en');
 // The summary is a snapshot at filing, so it doesn't drift while the boards keep running. Rows are [heading] or [label, value].
-function ipoSummary(){const won=out[4],r=rule40();return [['Time to IPO'],['Game time',ym(gameMonths())],['Real time played',plural(Math.round(playMs/60000),'minute')],
-  ['At filing'],['ARR',fmt(MRR()*12)],['Valuation',fmt(MRR()*12*revMult())],['Net revenue retention',pc0(NRR12())],['Rule of 40',r==null?'–':String(Math.round(r))],['Paying customers',num(paying)],['Team size',num(staff.length)],
+function ipoSummary(label='At filing'){const won=out[4],r=rule40();return [[ipoFiled?'Time to IPO':'Time played'],['Game time',ym(gameMonths())],['Real time played',plural(Math.round(playMs/60000),'minute')],
+  [label],['ARR',fmt(MRR()*12)],['Valuation',fmt(MRR()*12*revMult())],['Net revenue retention',pc0(NRR12())],['Rule of 40',r==null?'–':String(Math.round(r))],['Paying customers',num(paying)],['Team size',num(staff.length)],
   ['Lifetime'],['Visitors',num(into[0])],['Sign-ups',num(into[1])],['Customers won',num(won)],['Customers churned',num(churned)],['Total ad spend',fmt(spend)],['Cost per paying customer',won?fmt(spend/won):'–'],
   ['Milestones reached after'],...MILES.map((m,i)=>[`${m[1]} · ${m[2]}`,mileMonth[i]==null?'–':ym(mileMonth[i])])]}
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function openSum(){$('sum-stats').innerHTML=(ipoSnap||ipoSummary()).map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('sum').showModal()}
+function openOver(){$('over-title').textContent=ENDINGS[over.kind]||'Game over';$('over-story').innerHTML=over.story.map(w=>`<li>${esc(`Month ${w.month}: ${w.text}`)}</li>`).join('');$('over-stats').innerHTML=over.snap.map(([a,b])=>b==null?`<h3>${esc(a)}</h3>`:`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('');pausedAt=performance.now();$('over').showModal()}
 function fileIPO(){if(ipoFiled||ipoHold<IPO.hold)return;ipoFiled=true;ipoSnap=ipoSummary();save();sfx('fanfare');say('<b class="good">You filed for an IPO.</b> Buying is closed. The boards keep running, and the summary is in IPO readiness.');openSum()}
 $('ipo-file').addEventListener('click',fileIPO);$('ipo-sum').addEventListener('click',openSum);
 const wide=matchMedia('(min-width:860px)');
@@ -1091,7 +1104,7 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
@@ -1107,7 +1120,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
   if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}for(let i=0;i<milesHit();i++)rp+=RP_MILE[i]||0}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
-  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
+  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();staleOn=!ipoFiled&&shippable();s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh()}
@@ -1117,9 +1130,9 @@ function showTheme(){setTheme();readColors();const dark=document.documentElement
 $('theme').addEventListener('click',()=>{theme=document.documentElement.dataset.theme==='dark'?'light':'dark';showTheme();try{localStorage.setItem('funnel-drop-theme',theme)}catch{}});
 darkOS.addEventListener('change',showTheme);
 function newGame(){if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()}
-$('reset').addEventListener('click',newGame);$('sum-new').addEventListener('click',newGame);
+$('reset').addEventListener('click',newGame);$('sum-new').addEventListener('click',newGame);$('over-new').addEventListener('click',newGame);
 load();histTick=histNow();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
-resize();window.addEventListener('resize',resize);hud();gateReady=true;if(ipoFiled)openSum();requestAnimationFrame(loop);
+resize();window.addEventListener('resize',resize);hud();gateReady=true;if(ipoFiled)openSum();if(over)openOver();requestAnimationFrame(loop);
 </script>
 
 </body></html>
