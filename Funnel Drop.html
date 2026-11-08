@@ -445,40 +445,48 @@ function post(){const now=performance.now();if(!atRisk()||now<postReady)return;p
 function buySeo(){if(!atRisk()||seoLvl>=3||cash<SEO[seoLvl][1])return;spendCash(SEO[seoLvl][1]);const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;const [lo,hi]=seoRange();say(`${name} done. ${lo} to ${hi} free visitors a month will now arrive from search, varying month to month, until the content goes stale.`)}
 function publish(){if(!atRisk()||!seoLvl||cash<seoCost()||seoFresh>=.99)return;spendCash(seoCost());spend+=seoCost();seoFresh=1;const [lo,hi]=seoRange();say(`Fresh content is live. Search traffic is back to ${lo} to ${hi} free visitors a month.`)}
 const CHANNELS=[
-  {id:'social',name:'Social ads',cost:100,base:100,camp:500,unlock:0},
+  {id:'social',name:'Social ads',cost:100,base:100,camp:500,unlock:0,aud:5},
   // aim/pull/lift: these visitors enter board aim pulled toward its slot, measured with chained drops to land about lift times as often.
-  {id:'search',name:'Search ads',cost:200,base:100,camp:1000,unlock:3000,aim:0,pull:.35,lift:2,note:'About 2× the sign-ups',pitch:'People already looking for a product like yours sign up about twice as often'},
-  {id:'linkedin',name:'LinkedIn ads',cost:300,base:100,camp:1500,unlock:8000,aim:4,pull:.5,lift:1.6,note:'About 60% more pay',pitch:'Professionals with a budget are about 60% likelier to pay'},
-  {id:'podcast',name:'Podcast sponsorships',cost:1500,base:500,camp:5000,unlock:20000,note:'Biggest audience',pitch:'Reaches far more people at once than any ad'}
+  {id:'search',name:'Search ads',cost:200,base:100,camp:1000,unlock:3000,aud:3,aim:0,pull:.35,lift:2,note:'About 2× the sign-ups',pitch:'People already looking for a product like yours sign up about twice as often'},
+  {id:'linkedin',name:'LinkedIn ads',cost:300,base:100,camp:1500,unlock:8000,aud:3,aim:4,pull:.5,lift:1.6,note:'About 60% more pay',pitch:'Professionals with a budget are about 60% likelier to pay'},
+  {id:'podcast',name:'Podcast sponsorships',cost:1500,base:500,camp:5000,unlock:20000,aud:1,note:'Biggest audience',pitch:'Reaches far more people at once than any ad'}
 ];
 CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0;c.budget=0;c.vacc=0});
 // Acquisition gets dearer at scale, as CAC does. Above $100k peak valuation, ad and campaign prices grow faster than reach, so each visitor costs more. Game simplification.
 // c.reach stays in base units (the reach bar); visitors per ad are c.reach × reachK().
 const MKT0=1e5,AD_PRICE_P=.6,AD_REACH_P=.1,mkt=()=>Math.max(1,peak/MKT0),r10=v=>Math.round(v/10)*10;
 const adCost=c=>r10(c.cost*mkt()**AD_PRICE_P*(1+FX.adCost)),campCost=c=>r10(c.camp*mkt()**AD_PRICE_P*(1+FX.adCost)),reachK=()=>mkt()**AD_REACH_P*(1+FX.adReach),perAd=c=>Math.max(1,Math.round(c.reach*reachK()));
-const RECOVER=.10;
+const RECOVER=.20;
 function runAd(c,t=performance.now()){const v=perAd(c);c.reach*=DECAY;for(let i=0;i<v;i++)queue.push({t:t+i*22,src:c.id});return v}
-// Daily ad budgets, as ad platforms run. Spending one ad's price (adCost) brings perAd visitors and multiplies reach by DECAY, exactly as one
-// bought ad did, but continuously: u ads' worth brings c.reach·reachK·(1−DECAY^u)/(1−DECAY), which adds up exactly however it is split.
-// Visitors spawn straight away (like organic traffic), not through queue, so they don't wait behind bursts.
-const DAY=MONTH/30,BUDGET_MIN=.01,BUDGET_TOP=1e4,BUDGET_STEPS=1000;let adsBroke=false;
+// Daily ad budgets, as ad platforms run. Two effects, both per channel:
+// - Saturation: each channel reaches an audience of c.aud ads' worth a day. A budget of u ads' worth a day (u = budget/adCost) buys
+//   aud·(1−e^(−u/aud)) ads' worth of visitors a day, each worth c.reach·reachK() visitors (perAd at full reach): about one ad per ad's worth
+//   while u is small, levelling off at aud a day however much you spend.
+// - Fatigue: reach (the bar) falls by FATIGUE·(u/aud) a month, so a saturating budget halves it over about two months; it recovers
+//   RECOVER of the gap a month, and a new campaign resets it.
+// Visitors spawn straight away (like organic traffic), not through queue, so they don't wait behind bursts. Invented numbers.
+const DAY=MONTH/30,BUDGET_MIN=.01,BUDGET_TOP=1e4,BUDGET_STEPS=1000,FATIGUE=.35;let adsBroke=false;
 // The slider: position 0 is off, 1..BUDGET_STEPS run exponentially from BUDGET_MIN to BUDGET_TOP times the channel's base ad price (c.cost) a day
 // ($1 to $1M for social), so small budgets get fine control. The scale is fixed dollars: if it followed adCost, which rises with the company,
 // a steady budget's handle would creep left.
 const budgetAt=(c,p)=>p<=0?0:c.cost*BUDGET_MIN*(BUDGET_TOP/BUDGET_MIN)**((p-1)/(BUDGET_STEPS-1));
 const budgetPos=(c,b)=>b<=0?0:Math.max(1,Math.min(BUDGET_STEPS,1+Math.round(Math.log(b/(c.cost*BUDGET_MIN))/Math.log(BUDGET_TOP/BUDGET_MIN)*(BUDGET_STEPS-1))));
 function setBudget(id,b){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||!c||!c.open)return;c.budget=Math.max(0,+b||0)}
-function adSpend(c,d){const u=d/adCost(c),was=ads;spendCash(d);spend+=d;ads+=u;c.ads+=u;c.vacc+=c.reach*reachK()*(1-DECAY**u)/(1-DECAY);c.reach*=DECAY**u;
+// Ads' worth of visitors a day for a budget of u ads' worth a day.
+const adReachDay=(c,u)=>c.aud*(1-Math.exp(-u/c.aud));
+// Spends d dollars over days game days.
+function adSpend(c,d,days){const k=adCost(c),u=d/k/days,was=ads,au=d/k;spendCash(d);spend+=d;ads+=au;c.ads+=au;
+  c.vacc+=c.reach*reachK()*adReachDay(c,u)*days;c.reach*=Math.exp(-FATIGUE*(u/c.aud)*days/30);
   let n=0;while(c.vacc>=1-1e-9){c.vacc--;n++;spawn(enter(0,0,undefined,c.id))}
   if(was<=0&&ads>0)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
-  if(c.ads>=12&&c.ads-u<12)say(`Each extra dollar on ${c.name.toLowerCase()} reaches fewer new people. Lower the budget and let reach recover, or pay for a new campaign.`);
+  if(u>1.5*c.aud&&!c.satSaid){c.satSaid=1;say(`You’re near the limit of the ${c.name.toLowerCase()} audience: more budget buys few extra visitors. Spread spend across channels.`)}
   return n}
 // Out of cash pauses every channel, as an ad account stops when the card fails. Ads restart only once cash covers a whole day of the total
 // budget, so income trickling in doesn't keep a trickle of ads running.
 function runBudgets(dt){if(!atRisk())return;const live=CHANNELS.filter(c=>c.open&&c.budget>0),day=live.reduce((t,c)=>t+c.budget,0);if(!day)return;
   if(adsBroke){if(cash<day)return;adsBroke=false;say('Ads are running again.')}
   if(cash<day*dt/DAY){adsBroke=true;say(`<b class="bad">Ads paused.</b> You’re out of cash. They restart when you have ${fmt(day)} for a day of ads.`);return}
-  for(const c of live)adSpend(c,c.budget*dt/DAY)}
+  for(const c of live)adSpend(c,c.budget*dt/DAY,dt/DAY)}
 const per100=c=>Math.round(perAd(c)*100/adCost(c));
 function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);const k=campCost(c);if(!atRisk()||!c.open||cash<k||c.reach>=c.base-.5)return;spendCash(k);spend+=k;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to full.`)}
 function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience, about ${per100(c)} visitors per $100. Set a daily budget to start.`);renderCh()}
@@ -607,7 +615,7 @@ let gateReady=false;
 function gate(id,at,held,name){const el=$('c-'+id),vis=peak>=at||held>0;if(el.hidden===vis){el.hidden=!vis;if(vis&&gateReady)say(`<b>${name}</b> is now available.`)}return vis}
 function hud(){
   $('vCash').textContent=fmt(cash);$('vCash').className=cash<0?'warn':'';$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;$('vDays').textContent=Math.floor((month+eventT/MONTH)*30).toLocaleString('en');
-  for(const c of visibleCh()){const ac=adCost(c),r=perAd(c);if(c.open){const cc=campCost(c);$('cr-'+c.id).textContent=`${fmt(ac/r)} a visitor now${c.note?' · '+c.note:''}`;{const sl=$('cs-'+c.id),b=c.budget;if(document.activeElement!==sl)sl.value=budgetPos(c,b);sl.disabled=!atRisk();$('cv-'+c.id).textContent=b>0?(adsBroke?`${fmt(b)}/day · paused, no cash`:`${fmt(b)}/day · ~${Math.round(b/ac*c.reach*reachK())} visitors a day`):'Off'}$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
+  for(const c of visibleCh()){const ac=adCost(c),r=perAd(c);if(c.open){const cc=campCost(c);$('cr-'+c.id).textContent=`${fmt(ac/r)} a visitor now${c.note?' · '+c.note:''}`;{const sl=$('cs-'+c.id),b=c.budget;if(document.activeElement!==sl)sl.value=budgetPos(c,b);sl.disabled=!atRisk();$('cv-'+c.id).textContent=b>0?(adsBroke?`${fmt(b)}/day · paused, no cash`:`${fmt(b)}/day · ~${Math.round(c.reach*reachK()*adReachDay(c,b/ac))} visitors a day${b/ac>1.5*c.aud?' · near the audience limit':''}`):'Off'}$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
       setBtn($('cc-'+c.id),`New campaign <b>${fmt(cc)}</b>`);$('cc-'+c.id).disabled=!atRisk()||cash<cc||c.reach>=c.base-.5}
     else{$('cl-'+c.id).textContent=`${c.pitch}: about ${per100(c)} visitors per $100.`;$('cu-'+c.id).disabled=!atRisk()||cash<c.unlock}}
   {const top=Math.max(1,...STAGES.map(s=>s[2]()));STAGES.forEach(([,,v,b],i)=>{const n=v();$('fb'+i).style.width=n?Math.max(2,Math.sqrt(n/top)*100)+'%':'0';$('fv'+i).textContent=n.toLocaleString('en');if(b==='nrr'){const r=NRR12();$('fy'+i).textContent=r==null?'–':Math.round(r*100)+'%'}else if(b!==undefined)$('fy'+i).textContent=pct(out[b],into[b])})}

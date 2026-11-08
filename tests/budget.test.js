@@ -6,24 +6,37 @@ const quiet=g=>g('randomEvent=()=>{};annualReview=()=>{};expCheck=()=>{}');
 // Count visitors that ad spend sends in, instead of simulating them.
 const counted=a=>{a.g('__n=0;spawn=o=>{__n++}');return a};
 
-test('one ad’s worth of budget matches one bought ad', () => {
+// Visitors a day for a budget of u ads' worth a day: perAd·aud·(1−e^(−u/aud)).
+const daily=(a,u)=>a.g(`CHANNELS[0].reach*reachK()*CHANNELS[0].aud*(1-Math.exp(-${u}/CHANNELS[0].aud))`);
+
+test('small budgets buy about one ad of visitors per ad’s worth; big ones level off', () => {
   const a=counted(load());
-  a.g('peak=0;cash=1e6;CHANNELS[0].reach=CHANNELS[0].base');
-  const k=a.g('adCost(CHANNELS[0])'),v=a.g('perAd(CHANNELS[0])'),r=a.g('CHANNELS[0].reach');
-  a.g(`adSpend(CHANNELS[0],${k})`);
-  assert.equal(a.g('__n'),v);
-  near(a.g('CHANNELS[0].reach'),r*a.g('DECAY'));
-  assert.equal(a.g('cash'),1e6-k);assert.equal(a.g('spend'),k);near(a.g('ads'),1);near(a.g('CHANNELS[0].ads'),1);
+  a.g('peak=0;cash=1e9;CHANNELS[0].reach=CHANNELS[0].base');
+  const k=a.g('adCost(CHANNELS[0])'),v=a.g('perAd(CHANNELS[0])'),A=a.g('CHANNELS[0].aud');
+  // A tenth of an ad a day for 10 days: one ad's worth, nearly linear.
+  a.g(`adSpend(CHANNELS[0],${k},10)`);
+  assert.ok(a.g('__n')>=.97*v-1&&a.g('__n')<=v,String(a.g('__n')));
+  assert.equal(a.g('cash'),1e9-k);assert.equal(a.g('spend'),k);near(a.g('ads'),1);
+  // Per day, visitors never pass aud ads' worth, however big the budget.
+  assert.ok(daily(a,50*A)<=A*v+1e-9&&daily(a,50*A)>.99*A*v);
+  assert.ok(daily(a,2*A)/daily(a,A)<1.4,'doubling a saturated budget adds well under double');
 });
 
-test('fractions add up: two half ads send one ad of visitors', () => {
-  const a=counted(load());
-  a.g('peak=0;cash=1e6;CHANNELS[0].reach=CHANNELS[0].base');
-  const k=a.g('adCost(CHANNELS[0])'),r=a.g('CHANNELS[0].reach');
-  a.g(`adSpend(CHANNELS[0],${k/2});adSpend(CHANNELS[0],${k/2})`);
-  // Reach falls a little during the first half, so the second half brings slightly fewer: 96 to 100.
-  assert.ok(a.g('__n')>=96&&a.g('__n')<=100,String(a.g('__n')));
-  near(a.g('CHANNELS[0].reach'),r*a.g('DECAY'));
+test('fatigue is gradual: a full budget halves reach over months, not seconds', () => {
+  const a=counted(load());quiet(a.g);
+  a.g('cash=1e9;CHANNELS[0].reach=CHANNELS[0].base;setBudget("social",adCost(CHANNELS[0])*CHANNELS[0].aud)');
+  a.months(1);
+  const r1=a.g('CHANNELS[0].reach/CHANNELS[0].base');assert.ok(r1>.65&&r1<.95,String(r1));
+  a.g('CHANNELS[0].reach=CHANNELS[0].base;setBudget("social",adCost(CHANNELS[0])*CHANNELS[0].aud*4)');
+  a.months(1);
+  assert.ok(a.g('CHANNELS[0].reach/CHANNELS[0].base')<r1,'more spend tires the audience faster');
+});
+
+test('a steady moderate budget settles well above zero', () => {
+  const a=counted(load());quiet(a.g);
+  a.g('cash=1e9;setBudget("social",adCost(CHANNELS[0])*CHANNELS[0].aud/2)');
+  a.months(12);
+  assert.ok(a.g('CHANNELS[0].reach/CHANNELS[0].base')>.4,String(a.g('CHANNELS[0].reach/CHANNELS[0].base')));
 });
 
 test('a daily budget spends per game day', () => {
