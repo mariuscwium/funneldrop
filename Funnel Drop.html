@@ -35,6 +35,12 @@ h1 em{font-style:normal;color:var(--paid)}
 @media (max-width:420px){.hud .stat{padding:5px 6px}.hud .stat span{font-size:9px;letter-spacing:0}.hud .stat b{font-size:13px}}
 .stat.val b{color:var(--rev)}
 .stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-width:0}
+.cue{position:relative;animation:cue 1.8s ease-out}
+.cue-good{--cue:var(--paid)}.cue-bad{--cue:var(--warn)}
+@keyframes cue{0%,35%{box-shadow:0 0 0 2px var(--cue),0 0 18px var(--cue)}100%{box-shadow:0 0 0 0 transparent}}
+.cue-d{position:absolute;right:8px;top:4px;font:600 12px var(--mono);color:var(--cue);pointer-events:none;animation:cue-d 1.8s ease-out forwards}
+@keyframes cue-d{0%{opacity:0;transform:translateY(4px)}15%,70%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.cue-d{animation:none}}
 .stat span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .stat b{display:block;font-family:var(--mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .buy{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--ad);color:var(--on-ad);border:0;border-radius:10px;padding:12px 16px;font:700 16px var(--display);letter-spacing:.05em;text-transform:uppercase;cursor:pointer;box-shadow:0 2px 0 var(--shadow)}
@@ -1125,15 +1131,29 @@ const evQueue=[];
 // A dialog's effects wait until it closes, so the player sees the stat change. While withFx collects (evLater), later(f) holds f, and showEv takes
 // what has been collected for its dialog; outside withFx, later runs f at once. Headless, where no dialog opens, effects run straight away.
 // flushEv runs every pending effect (pagehide), so reloading can't dodge one.
-let evLater=null,evFx=null;
+let evLater=null,evFx=null,evKind='good';
 const later=f=>{if(evLater)evLater.push(f);else f()};
 function withFx(fn){const was=evLater;evLater=[];try{return fn()}finally{const left=evLater;evLater=was;for(const f of left)later(f)}}
-function runFx(){const f=evFx;evFx=null;if(f)for(const g of f)g()}
+function runFx(){const f=evFx;evFx=null;if(!f||!f.length)return;const was=cueSnap();for(const g of f)g();const now=cueSnap();
+  const keys=Object.keys(now).filter(k=>now[k]!==was[k]);if(keys.length)cue(keys,evKind,was,now)}
+// The cue: when a dialog's effects land, every watched stat that changed glows in the event's colour, and numbers float their change.
+// CUES maps a key to [value now, element to light up, delta text]; open channels add 'reach:<id>'.
+const sgn=(v,f)=>(v>0?'+':v<0?'−':'')+f(Math.abs(v));
+const CUES={cash:[()=>Math.round(cash),()=>$('vCash').parentElement,d=>sgn(d,fmt)],mrr:[()=>Math.round(MRR()),()=>$('vMrr').parentElement,d=>sgn(d,fmt)],
+  paying:[()=>paying,()=>$('vPaying').parentElement,d=>sgn(d,v=>v.toLocaleString('en'))],points:[()=>Math.floor(rp+1e-9),()=>$('rm-open'),d=>sgn(d,v=>v+' pts')],
+  seo:[()=>seoFresh,()=>$('seo-reach').closest('.chan')],team:[()=>staff.length+':'+Math.round(teamCost()),()=>$('h-team')],
+  case:[()=>!!lawCase,()=>$('cCase')],board:[()=>!!board,()=>$('cBoard')]};
+function cueSnap(){const o={};for(const k in CUES)o[k]=CUES[k][0]();for(const c of CHANNELS)if(c.open)o['reach:'+c.id]=Math.round(c.reach*1e3);return o}
+function cue(keys,kind,was,now){const tone=kind==='bad'?'cue-bad':'cue-good';
+  for(const k of keys){const ch=k.startsWith('reach:'),el=ch?$('cb-'+k.slice(6)).closest('.chan'):CUES[k][1]();if(!el)continue;
+    el.classList.remove('cue','cue-good','cue-bad');void el.offsetWidth;el.classList.add('cue',tone);
+    const d=!ch&&CUES[k][2];if(d&&was&&typeof now[k]==='number')cueDelta(el,d(now[k]-was[k]),tone)}}
+function cueDelta(el,t,tone){const s=document.createElement('span');s.className='cue-d '+tone;s.textContent=t;el.append(s);setTimeout(()=>s.remove(),1900)}
 function flushEv(){runFx();for(const q of evQueue){const f=q[5];q[5]=null;if(f)for(const g of f)g()}}
 let evAct=null;
 function useEvAct(){const a=evAct;evAct=null;if(a)a.run();$('ev').close()}
 $('ev-act').addEventListener('click',useEvAct);
-function showEv(k,kind,name,t,act,fx,again){if(fx===undefined&&evLater){fx=evLater;evLater=[]}if(!again&&(kind==='Good news'||kind==='Bad news'))evSeen[name]=(evSeen[name]||0)+1;if($('ev').open){evQueue.push([k,kind,name,t,act,fx]);return}evFx=fx||null;evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;sfx(kind==='Milestone'?'fanfare':k);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal();if(!$('ev').open)runFx()}
+function showEv(k,kind,name,t,act,fx,again){if(fx===undefined&&evLater){fx=evLater;evLater=[]}if(!again&&(kind==='Good news'||kind==='Bad news'))evSeen[name]=(evSeen[name]||0)+1;if($('ev').open){evQueue.push([k,kind,name,t,act,fx]);return}evFx=fx||null;evKind=k;evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;sfx(kind==='Milestone'?'fanfare':k);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal();if(!$('ev').open)runFx()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
 function health(){return Math.max(-1,Math.min(1,growth*10+(netFlow()>0?.5:-.5)))}
 // Alignment exposure: each axis sums al × count over owned nodes (not the start), over ALIGN_SCALE, clamped to -1..1. Hidden from the player.

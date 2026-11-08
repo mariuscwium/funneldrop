@@ -61,3 +61,26 @@ test('closing the page applies pending effects before saving', () => {
   a.g('flushEv();save()');
   assert.ok(JSON.parse(a.store.get('funnel-drop-save-v1')).cash>10000);
 });
+
+test('closing the dialog cues the stats that changed, in the event’s colour', () => {
+  const a=game();a.g('__c=[];cue=(keys,kind)=>__c.push([keys.join(),kind])');
+  fire(a,'Startup grant');a.el('ev').close();
+  assert.equal(a.g('JSON.stringify(__c)'),'[["cash","good"]]');
+  a.g('__c=[]');fire(a,'Outage');a.el('ev').close();
+  const [[keys,kind]]=a.g('__c');assert.match(keys,/paying/);assert.match(keys,/mrr/);assert.equal(kind,'bad');
+  a.g('__c=[]');fire(a,'Ad policy change');a.el('ev').close();
+  assert.equal(a.g('JSON.stringify(__c)'),'[["reach:social","bad"]]');
+});
+
+test('a dialog that changes nothing cues nothing', () => {
+  const a=game();a.g('__c=[];cue=(keys,kind)=>__c.push(keys)');
+  a.g("showEv('good','Good news','Nothing','x')");a.el('ev').close();
+  assert.equal(a.g('__c.length'),0);
+});
+
+test('cue marks the element and adds a delta for numbers', () => {
+  const a=game();
+  a.g('__d=[];cueDelta=(el,t,kind)=>__d.push(t)');
+  fire(a,'Startup grant');a.el('ev').close();
+  assert.match(a.g('__d[0]'),/^\+\$/);
+});
