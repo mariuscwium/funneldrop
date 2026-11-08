@@ -47,7 +47,7 @@ node tests/bot.js 600 nomargin    # ads first, no margin check
 node tests/bot.js early           # months 6 and 12 of a social-ads-only start
 ```
 
-Arguments are `[months=600] [policy] [step=50]`, where step is the frame length in ms. A full run takes 40 s to 3 min of CPU.
+Arguments are `[months=600] [policy] [step=50]`, where step is the frame length in ms. A full run takes about 35 s to 2.5 min of CPU.
 
 `sim/` holds the Node scripts used to tune the slot widths:
 
