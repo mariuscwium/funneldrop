@@ -680,7 +680,7 @@ function loop(now){
   rp=Math.max(rp,Math.min(rpCap(),rp+rpIncome()*dt/MONTH));
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*cts()*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;alHist.push(companyAl().map(v=>Math.round(v*100)/100));ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();staleOn=atRisk()&&shippable();if(staleOn)stale++;rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(atRisk())rollRisk();if(atRisk()){if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent();juniorIncidents()}}}
+  eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;alHist.push(companyAl().map(v=>Math.round(v*100)/100));ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();staleOn=atRisk()&&shippable();if(staleOn)stale++;rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(atRisk())rollRisk();if(atRisk()){if(month%12===0)annualReview();else if(month>=EVENT_START&&(ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent();juniorIncidents()}}}
   if(over){draw();hud();requestAnimationFrame(loop);return}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
@@ -1154,7 +1154,8 @@ LOANS.filter(l=>!l.hidden).forEach(l=>{
   $('l-take-'+l.id).addEventListener('click',()=>borrow(l.id));
   $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;spendCash(l.bal);l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
 // Rolled once a game month. Sizes scale with the company so events still matter late on.
-const EVENT_CHANCE=.15,evScale=()=>Math.max(1,Math.min(10,MRR()/5000));
+// No random events in the first EVENT_START game months; after that a monthly chance of EVENT_CHANCE (.15 until November 2026, cut by 30%).
+const EVENT_START=12,EVENT_CHANCE=.105,evScale=()=>Math.max(1,Math.min(10,MRR()/5000));
 const burst=n=>{const t=performance.now();for(let i=0;i<n;i++)queue.push({t:t+i*22})};
 // Always takes at least one, and reports the share so the size reads at any scale.
 // Removes binom(n, frac) from each group (only the given plan if set), counting lost MRR in flow.lost. Returns how many left.
