@@ -179,7 +179,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   .side .channels{position:sticky;top:0;z-index:4;background:var(--bg);padding-bottom:6px}
   .main{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:start}
   canvas{width:clamp(176px,calc((100dvh - 146px - env(safe-area-inset-top,0px))*360/1224),400px)}
-  .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
+  .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px;padding-inline:12px;margin-inline:-12px}
   .side h2:first-child,.boardcol h2:first-child{margin-top:0}
   #h-act{display:block}
   .boardcol,.actions,.stats{gap:6px}
@@ -194,14 +194,14 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 @media (min-width:1200px){
   .wrap{max-width:1320px}
   .side{position:static;max-height:none;overflow:visible;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}
-  .actions,.stats{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
+  .actions,.stats{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px;padding-inline:12px;margin-inline:-12px}
 }
 @media (min-width:1600px){
   .wrap{max-width:1720px}
   .side{grid-template-columns:repeat(3,minmax(0,1fr))}
   .actions{display:contents}
   .play{display:flex}
-  .play,#upgrades{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
+  .play,#upgrades{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px;padding-inline:12px;margin-inline:-12px}
 }
 /* Roadmap modal: full screen. Header, then the constellation (SVG, pan and zoom) with the detail panel beside it from 860px, as a bottom sheet below. */
 #tree,#teamd{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;box-sizing:border-box;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);border:0;background:var(--bg);color:var(--fg);font-family:var(--display);overflow:hidden}
