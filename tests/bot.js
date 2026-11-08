@@ -7,7 +7,8 @@
 // idle plays full until $10M peak, then stops buying and keeps payroll; the board should oust it, and it must never file. nomargin buys
 // ads before any hiring, with no margin check and up to 3 campaign renewals per channel per decision (Rule of 40 check). harsh is full,
 // but weighs fork options that treat users worse (al[0] < 0) at 55% of their cash price, to drive users exposure down (case check).
-// Every policy takes the emergency bridge when offered and stops at an ending.
+// Every policy takes the emergency bridge when offered while burning cash or overdrawn, ships the cheapest buyable node once `stale`
+// passes STALE_GRACE (the board's Nothing shipped), and stops at an ending.
 // Frames are stepped at `step` ms (loop caps dt at 50 ms), so 50 runs about 3× faster than the game's 16 ms.
 const {load}=require('./harness.js');
 const mode=process.argv[2]||'600';
@@ -37,8 +38,9 @@ t.g('setTimeout=f=>{f();return 0}');
 t.g('draw=()=>{};hud=()=>{peak=Math.max(peak,MRR()*12*revMult());checkMilestone()}');
 // Count events by kind; the dialog never opens headless.
 t.g(`var botEv={good:0,bad:0},botBad={},botCases=[];{const se=showEv;showEv=(k,kind,name,txt,...r)=>{if(kind==='Good news'||kind==='Bad news'){botEv[k==='bad'?'bad':'good']++;if(k==='bad')botBad[name]=(botBad[name]||0)+1}if(name==='Investigation opened'||name==='Security audit ordered')botCases.push({m:month,axis:name[0]==='I'?'investigation':'audit',out:null});se(k,kind,name,txt,...r)}}`);
-// Cases: each opening (investigation or audit) with its month, and the band it was ruled in (on exposure at ruling time).
-t.g(`{const rc=ruleCase;ruleCase=()=>{const c=botCases.at(-1);if(c&&c.out==null)c.out=caseBand(companyAl()[lawCase.axis]);return rc()}}`);
+// Cases: each opening (investigation or audit) with its month, and the ruling it got (on exposure at ruling time; a first shut-band
+// ruling on an axis is an order).
+t.g(`{const rc=ruleCase;ruleCase=()=>{const c=botCases.at(-1);if(c&&c.out==null){const b=caseBand(companyAl()[lawCase.axis]);c.out=b==='shut'&&!lawStrikes[lawCase.axis]?'order':b}return rc()}}`);
 t.g(`var botBought={},botAds=0,botNodes=0,botBudget=0;
 // From $1M peak, roadmap items come out of a budget of BOT_RD of revenue, kept for up to BOT_KEEP (24) months; before that, the cash rules below alone.
 const BOT_RD=.15,BOT_KEEP=24;
@@ -58,7 +60,8 @@ function botTarget(v){const late=peak>=1e6,c=NODES.filter(n=>nodeState(n.id)==='
 const botShort=()=>rp<.75*rpCap()||NODES.some(n=>nodeState(n.id)==='available'&&nodePts(n)>rpCap()+1e-9);
 function botStep(v){
   if(over||ipoFiled)return;
-  if(bridgeOffer())takeBridge();
+  // The bridge only when insolvent and it would help: burning cash or overdrawn.
+  if(bridgeOffer()&&(netFlow()<=0||cash<0))takeBridge();
   const buy=(what,n=1)=>botBought[what]=(botBought[what]||0)+n;
   const net=()=>MRR()*(1-cts())-teamCost()-loanPay();
   const reserve=()=>teamCost()+loanPay()+MRR()*cts(); // keep a month of outgoings
@@ -66,6 +69,8 @@ function botStep(v){
   if(ipoHold>=IPO.hold){fileIPO();return}
   if(performance.now()>=postReady)post();
   if(v==='idle'&&peak>=1e7)return;
+  // Answer the board: once stale passes grace, ship the cheapest node it can buy now, ignoring the roadmap budget.
+  if(stale>STALE_GRACE){const n=NODES.filter(canBuy).sort((a,b)=>nodeCash(a)-nodeCash(b))[0];if(n&&buyNode(n.id)){botNodes++;buy(n.name)}}
   const late=peak>=1e6;if(late)botBudget=Math.min(BOT_KEEP*BOT_RD*MRR(),botBudget+BOT_RD*MRR()/10); // botStep runs 10 times a game month
   // Cheapest affordable upgrade: the policy's next roadmap node (once it has the points), SEO tiers and channel unlocks.
   for(;;){const o=[],tg=botTarget(v);

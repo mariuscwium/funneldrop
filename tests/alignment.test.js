@@ -79,11 +79,11 @@ test('no alignment words in warnings, endings, rulings or the end screen', () =>
     for(let i=0;i<a.g('INSOLVENT_MONTHS');i++){a.g('rollRisk()');clear()}}
   clear();
   // soft-lock
-  a.g('cash=0;ads=3;paying=0;subs={};balls.length=0;queue.length=0;seoLvl=0;softMonths=0;insolvent=0');
+  a.g('cash=0;ads=3;paying=0;subs={};balls.length=0;queue.length=0;seoLvl=0;softMonths=0;insolvent=0;__cp=canPost;canPost=()=>false');
   for(let i=1;i<a.g('SOFTLOCK_MONTHS');i++){a.g('rollRisk()');clear()}a.g('rollRisk()');
   assert.equal(a.g('over.kind'),'runway');
   for(const s of [a.el('over-title').textContent,a.el('over-story').innerHTML,a.el('over-stats').innerHTML,a.el('over').textContent])assert.ok(s&&!WORDS.test(s),s);
-  clear();
+  clear();a.g('canPost=__cp');
   // board warning and ultimatum, in each stance
   for(const al of [[0,0],[0,.5],[0,-.5]]){setAl(a,al);a.g('peak=2e6;board=freshBoard();board.conf=19;warnLog=[]');a.g('boardMonth=()=>{}');a.g('rollRisk()');clear();a.g('board.ult=month;rollRisk()');clear()}
   // case rulings in every band and axis

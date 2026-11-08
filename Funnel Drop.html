@@ -1026,7 +1026,7 @@ function removeSubs(frac,plan){let lost=0;for(const k in subs){const [p,pl]=unke
 function loseCustomers(lo,hi){const before=paying;if(before<1||!Object.keys(subs).length)return 'no customers';let lost=removeSubs(lo+Math.random()*(hi-lo));
   if(!lost){const k=Object.keys(subs)[0];lost=1;{const [p,pl]=unkey(k);flow.lost+=p*PLANS[pl].mult}if(--subs[k]<1)delete subs[k];paying--;churned++}return `${lost} of ${before} customers (${Math.round(lost/before*100)}%)`}
 // Cases: a fine, lawsuit or breach can open an investigation or audit. It rules CASE_MONTHS later on the exposure then; lawCase is {axis (0 users, 1 process), due}. evSeen counts events shown by name.
-const CASE_AT=-.4,CASE_SHUT=-.7,CASE_MONTHS=12;let lawCase=null,evSeen={};
+const CASE_AT=-.4,CASE_SHUT=-.7,CASE_MONTHS=12,CASE_FINE=3;let lawCase=null,evSeen={},lawStrikes=[0,0];
 const EVENTS=[
   {good:1,name:'Press mention',run(){const n=Math.round(150*evScale());burst(n);return `A trade publication wrote about you. ${n} visitors are on their way.`}},
   {good:1,name:'Newsletter feature',run(){const n=Math.round(30*evScale());for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60);return `An industry newsletter recommended you. ${n} people signed up directly.`}},
@@ -1085,12 +1085,14 @@ let over=null,warnLog=[];const ENDINGS={runway:'Ran out of runway',board:'Ousted
 const atRisk=()=>!ipoFiled&&!over;
 function warn(cause,title,text,act){warnLog.push({cause,month,text});if(warnLog.length>20)warnLog.shift();showEv('bad','Warning',title,text,act)}
 // Rules for losing the run. Each rollover step is separate; later features add their own after these.
-const INSOLVENT_MONTHS=6,SOFTLOCK_MONTHS=36;
+const INSOLVENT_MONTHS=6,SOFTLOCK_MONTHS=2;
 let insolvent=0,softMonths=0;
 const netFlow=()=>MRR()*(1-cts())-teamCost()-loanPay();
 const runway=()=>{const n=netFlow();return n<0?cash/-n:null};
 const insolventNow=()=>(cash<0||LOANS.some(l=>l.bal>0&&l.late))&&(out[4]>0||LOANS.some(l=>l.bal>0));
-const softLocked=()=>cash<adCost(CHANNELS[0])&&!balls.length&&!queue.length&&paying===0&&ads>0&&organicRate()===0;
+// A free post can always bring visitors while the run is on (cooldown or not), so it rules out the soft-lock.
+function canPost(){return atRisk()}
+const softLocked=()=>!canPost()&&cash<adCost(CHANNELS[0])&&!balls.length&&!queue.length&&paying===0&&ads>0&&organicRate()===0;
 function rollRisk(){
   if(insolventNow()){insolvent++;
     if(insolvent===1){const base='Your cash is below zero or a loan repayment is overdue. Let staff go, pay down a loan, raise your price or borrow. If this lasts '+INSOLVENT_MONTHS+' months, the company is finished.';
@@ -1113,11 +1115,12 @@ function rollRisk(){
     else if(b.ult!=null&&month>=b.ult)return endGame('board',ENDINGS.board,`Board confidence stayed below ${BOARD_WARN} past the deadline, and the board replaced you.`)}
   // A case rules on today's exposure, so a respec in between changes the outcome.
   if(lawCase&&month>=lawCase.due&&atRisk())ruleCase()}
-// closed above CASE_AT, a consent order or failed audit above CASE_SHUT, otherwise the company is shut down.
+// closed above CASE_AT, a consent order or failed audit above CASE_SHUT, otherwise the company is shut down, but only if that axis already
+// had an order (lawStrikes[axis]); a first ruling in the shut band is an order.
 const caseBand=x=>x>CASE_AT?'closed':x>CASE_SHUT?'order':'shut';
-function ruleCase(){const c=lawCase,band=caseBand(companyAl()[c.axis]);lawCase=null;let t;
+function ruleCase(){const c=lawCase,b0=caseBand(companyAl()[c.axis]),band=b0==='shut'&&!lawStrikes[c.axis]?'order':b0;lawCase=null;let t;
   if(band==='closed'){t=c.axis?'The audit found no serious gaps and the authority closed the matter.':'The regulator closed the case with no further action.';boardHit('Case closed',5);showEv('good','Good news','Case closed',t)}
-  else if(band==='order'){const cost=3*MRR();spendCash(cost);
+  else if(band==='order'){const cost=CASE_FINE*MRR();spendCash(cost);lawStrikes[c.axis]++;
     if(c.axis){const n=removeSubs(.3,2);
       t=`The audit found serious gaps. Fixing them cost ${fmt(cost)}${n?`, and ${n} Enterprise customer${n===1?'':'s'} left`:''}.`;boardHit('Audit failed',-20);showEv('bad','Bad news','Audit failed',t)}
     else{const lost=paying>0?loseCustomers(.1,.2):null;t=`The regulator ruled against you. The consent order cost ${fmt(cost)}${lost?`, and ${lost} left`:''}.`;boardHit('Consent order',-20);showEv('bad','Bad news','Consent order',t)}}
@@ -1143,7 +1146,8 @@ function boardHud(e){const b=board,c=Math.round(b.conf),d=Math.round(b.last),w=b
 const BRIDGE_MONTHS=3,BRIDGE_MIN=1000,BRIDGE_APR=.45;let bridgeUsed=false;
 const bridgeOffer=()=>atRisk()&&!bridgeUsed&&insolvent>0;
 const bridgeKind=()=>companyAl()[0]>=.3?'prepay':'bridge';
-const bridgeSize=()=>r500(Math.max(BRIDGE_MIN*Math.pow(mkt(),AD_PRICE_P),BRIDGE_MONTHS*Math.max(0,-netFlow())));
+// Enough to clear the overdraft and cover BRIDGE_MONTHS of burn, rounded up to $500.
+const bridgeSize=()=>Math.max(r500(BRIDGE_MIN*Math.pow(mkt(),AD_PRICE_P)),Math.ceil((Math.max(0,-cash)+BRIDGE_MONTHS*Math.max(0,-netFlow()))/500)*500);
 function takeBridge(){if(!bridgeOffer())return false;const l=LOANS.find(x=>x.id==='bridge'),n=bridgeSize(),pre=bridgeKind()==='prepay';
   bridgeUsed=true;l.name=pre?'Customer prepayments':'Emergency bridge';l.apr=pre?0:BRIDGE_APR;l.bal=n;l.pay=pmt(n,l.apr,l.months);cash+=n;
   say(`${pre?'Customers prepaid':'You took an emergency bridge of'} ${fmt(n)}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`);
@@ -1181,7 +1185,7 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,lawCase,evSeen,board,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,lawCase,lawStrikes,evSeen,board,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late,apr,name})=>({bal,pay,late,apr,name}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
@@ -1197,7 +1201,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
   if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}for(let i=0;i<milesHit();i++)rp+=RP_MILE[i]||0}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
-  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;insolvent=s.insolvent||0;bridgeUsed=!!s.bridgeUsed;softMonths=s.softMonths||0;lawCase=s.lawCase&&typeof s.lawCase.due==='number'?s.lawCase:null;evSeen=s.evSeen&&typeof s.evSeen==='object'?s.evSeen:{};board=s.board&&typeof s.board.conf==='number'?{...freshBoard(),...s.board}:peak>=1e6?freshBoard():null;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
+  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;insolvent=s.insolvent||0;bridgeUsed=!!s.bridgeUsed;softMonths=s.softMonths||0;lawCase=s.lawCase&&typeof s.lawCase.due==='number'?s.lawCase:null;lawStrikes=Array.isArray(s.lawStrikes)?[+s.lawStrikes[0]||0,+s.lawStrikes[1]||0]:[0,0];evSeen=s.evSeen&&typeof s.evSeen==='object'?s.evSeen:{};board=s.board&&typeof s.board.conf==='number'?{...freshBoard(),...s.board}:peak>=1e6?freshBoard():null;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();staleOn=atRisk()&&shippable();s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh()}

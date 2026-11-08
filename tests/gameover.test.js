@@ -69,7 +69,7 @@ test('soft-lock waits for organic traffic', () => {
   const a=load({dialogs:true});quiet(a.g);a.g(lock+';seoLvl=1;seoFresh=1;seoRoll=1');
   for(let i=0;i<3;i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close();a.g(lock+';seoLvl=1;seoFresh=1;seoRoll=1')}
   assert.equal(a.g('over'),null);
-  const b=load({dialogs:true});quiet(b.g);b.g(lock+';seoLvl=0');
+  const b=load({dialogs:true});quiet(b.g);b.g(lock+';seoLvl=0;canPost=()=>false');
   run(b,b.g('SOFTLOCK_MONTHS'));
   assert.equal(b.g('over.kind'),'runway');
 });
@@ -113,7 +113,7 @@ test('bridge is offered once and repays like a loan', () => {
   assert.equal(a.g('insolvent'),1);assert.equal(a.g('bridgeOffer()'),true);
   assert.match(a.el('ev-text').textContent,/45%/);
   assert.equal(a.el('ev-act').hidden,false);assert.equal(a.el('ev-act').textContent,'Take it');
-  const c=a.g('cash'),s=a.g('bridgeSize()');assert.ok(s>=a.g('BRIDGE_MIN')&&s%500===0);
+  const c=a.g('cash'),s=a.g('bridgeSize()');assert.ok(s>=a.g('BRIDGE_MIN')&&s%500===0);assert.ok(c+s>=0,'clears the overdraft');
   assert.equal(a.g('takeBridge()'),true);
   assert.equal(a.g('cash'),c+s);
   const b=bridge(a);assert.equal(b.apr,.45);assert.equal(b.name,'Emergency bridge');
@@ -149,4 +149,16 @@ test('bridgeUsed and an active prepay bridge round-trip', () => {
   const b=load({save,dialogs:true});
   assert.equal(b.g('bridgeUsed'),true);
   const x=bridge(b);assert.equal(x.apr,0);assert.equal(x.name,'Customer prepayments');assert.ok(x.bal>0);
+});
+test('no soft-lock while a free post can bring visitors', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(lock+';seoLvl=0');
+  assert.equal(a.g('canPost()'),true);assert.equal(a.g('softLocked()'),false);
+  a.g('postReady=performance.now()+1e4');assert.equal(a.g('softLocked()'),false,'cooling down still counts');
+  run(a,a.g('SOFTLOCK_MONTHS')+1);assert.equal(a.g('over'),null);assert.equal(a.g('softMonths'),0);
+});
+test('the bridge covers the overdraft plus burn', () => {
+  const a=load();quiet(a.g);a.g('subs={"49:0":10};paying=10;out[4]=10;cash=-2e4;insolvent=1');
+  const n=a.g('netFlow()'),s=a.g('bridgeSize()');
+  assert.ok(s>=2e4+a.g('BRIDGE_MONTHS')*Math.max(0,-n)-1,String(s));assert.equal(s%500,0);
+  a.g('cash=-100');assert.equal(a.g('bridgeSize()'),a.g('r500(BRIDGE_MIN*Math.pow(mkt(),AD_PRICE_P))'));
 });

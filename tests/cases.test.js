@@ -38,12 +38,12 @@ test('ruling reads exposure at ruling time', () => {
   setAl(a,[-.5,0]);a.g('subs={"49:0":100};paying=100;out[4]=100');
   a.g('__sp=[];const o=spendCash;spendCash=n=>{__sp.push([n,MRR()]);o(n)}');run(a,13);
   assert.equal(a.g('over'),null);assert.equal(a.g('lawCase'),null);
-  assert.ok(a.g('__sp').some(([n,m])=>Math.abs(n-3*m)<m*.01),'paid three months of MRR (consent order, not shut or closed)');
+  const CF=a.g('CASE_FINE');assert.ok(a.g('__sp').some(([n,m])=>Math.abs(n-CF*m)<m*.01),'paid CASE_FINE months of MRR (consent order, not shut or closed)');
 });
-test('consent order costs three months and customers', () => {
+test('consent order costs CASE_FINE months of MRR and customers', () => {
   const a=load({dialogs:true});quiet(a.g);setAl(a,[-.5,0]);a.g('subs={"49:0":100};paying=100;out[4]=100;lawCase={axis:0,due:0}');
   const c=a.g('cash'),m=a.g('MRR()'),p=a.g('paying');a.g('ruleCase()');
-  assert.ok(Math.abs(c-3*m-a.g('cash'))<1);assert.ok(a.g('paying')<p);assert.equal(a.g('lawCase'),null);
+  assert.ok(Math.abs(c-a.g('CASE_FINE')*m-a.g('cash'))<1);assert.ok(a.g('paying')<p);assert.equal(a.g('lawCase'),null);
 });
 test('closed case is good news', () => {
   const a=load({dialogs:true});quiet(a.g);setAl(a,[-.2,0]);a.g('lawCase={axis:0,due:0}');
@@ -51,7 +51,7 @@ test('closed case is good news', () => {
 });
 test('shut ends the run with a warning first', () => {
   const a=load({dialogs:true});a.g('__re=randomEvent');quiet(a.g);setAl(a,[-.9,0]);a.g("evSeen={'Regulator fine':1}");
-  a.g("pickEvent=()=>EVENTS.find(e=>e.name==='Investigation opened');__re()");
+  a.g("lawStrikes=[1,0];pickEvent=()=>EVENTS.find(e=>e.name==='Investigation opened');__re()");
   assert.equal(a.g('lawCase.axis'),0);assert.equal(a.g("warnLog.filter(w=>w.cause==='shut').length"),1);
   assert.equal(a.el('ev-kind').textContent,'Warning');
   run(a,12);
@@ -60,7 +60,7 @@ test('shut ends the run with a warning first', () => {
 });
 test('audit shut text, and the audit warning', () => {
   const a=load({dialogs:true});a.g('__re=randomEvent');quiet(a.g);setAl(a,[0,-.9]);a.g("evSeen={'Data breach':1}");
-  a.g("pickEvent=()=>EVENTS.find(e=>e.name==='Security audit ordered');__re()");
+  a.g("lawStrikes=[0,1];pickEvent=()=>EVENTS.find(e=>e.name==='Security audit ordered');__re()");
   run(a,12);
   assert.equal(a.g('over.story.at(-1).text'),'Your licence to process customer data was revoked.');
 });
@@ -76,11 +76,11 @@ test('respec before the ruling changes the band', () => {
   setAl(a,[-.1,0]);a.g('ruleCase()');assert.equal(a.g('over'),null);
 });
 test('case round-trips', () => {
-  const a=load({dialogs:true});quiet(a.g);a.g("lawCase={axis:1,due:20};evSeen={'Data breach':2}");a.g('save()');
+  const a=load({dialogs:true});quiet(a.g);a.g("lawCase={axis:1,due:20};evSeen={'Data breach':2};lawStrikes=[0,1]");a.g('save()');
   const save=JSON.parse(a.store.get('funnel-drop-save-v1'));
   const b=load({save,dialogs:true});
-  assert.equal(b.g('JSON.stringify(lawCase)'),'{"axis":1,"due":20}');assert.equal(b.g("evSeen['Data breach']"),2);
-  const c=load();assert.equal(c.g('lawCase'),null);assert.equal(c.g('JSON.stringify(evSeen)'),'{}');
+  assert.equal(b.g('JSON.stringify(lawCase)'),'{"axis":1,"due":20}');assert.equal(b.g("evSeen['Data breach']"),2);assert.equal(b.g('JSON.stringify(lawStrikes)'),'[0,1]');
+  const c=load();assert.equal(c.g('lawCase'),null);assert.equal(c.g('JSON.stringify(evSeen)'),'{}');assert.equal(c.g('JSON.stringify(lawStrikes)'),'[0,0]');
 });
 test('no ruling after filing', () => {
   const a=load({dialogs:true});quiet(a.g);setAl(a,[-.9,0]);a.g('lawCase={axis:0,due:0};ipoFiled=true');
@@ -102,4 +102,14 @@ test('audit text pluralises and drops an empty clause', () => {
   assert.match(a.g('ruleCase()'),/, and 1 Enterprise customer left\.$/);
   a.g('subs={"49:0":5};paying=5;lawCase={axis:1,due:0}');
   assert.match(a.g('ruleCase()'),/cost \$[\d,.k]+\.$/);
+});
+test('a first shut-band ruling is an order, a second on the same axis shuts', () => {
+  const a=load({dialogs:true});quiet(a.g);setAl(a,[-.9,-.9]);a.g('subs={"49:2":50,"49:0":100};paying=150;out[4]=150');
+  assert.equal(a.g('JSON.stringify(lawStrikes)'),'[0,0]');
+  a.g('lawCase={axis:0,due:0}');a.g('ruleCase()');
+  assert.equal(a.g('over'),null);assert.equal(a.el('ev-title').textContent,'Consent order');assert.equal(a.g('JSON.stringify(lawStrikes)'),'[1,0]');
+  a.el('ev').close();a.g('lawCase={axis:1,due:0}');a.g('ruleCase()');
+  assert.equal(a.g('over'),null,'the other axis has no strike yet');assert.equal(a.el('ev-title').textContent,'Audit failed');
+  a.el('ev').close();a.g('warnLog.push({cause:"shut",month,text:"w"});lawCase={axis:0,due:0}');a.g('ruleCase()');
+  assert.equal(a.g('over.kind'),'shut');
 });
