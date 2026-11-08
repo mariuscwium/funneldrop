@@ -90,3 +90,15 @@ test('a rollover that raises an event and a warning shows both', () => {
   const t2=a.el('ev-title').textContent;
   assert.deepEqual([t1,t2].sort(),['Evt','You can’t pay your bills'].sort());
 });
+for(const [name,month] of [['annual review',11],['random event',3]]) test(`an ending skips the ${name} in its rollover`, () => {
+  const a=load({dialogs:true});quiet(a.g);
+  a.g(`ads=1;month=${month};globalThis.called=[];annualReview=()=>called.push('review');randomEvent=()=>called.push('event');Math.random=()=>0;rollRisk=()=>endGame('runway','x','y')`);
+  a.months(1.05);
+  assert.equal(a.g('over.kind'),'runway');assert.equal(a.g('called.length'),0);assert.equal(a.el('ev').open,false);
+});
+test('runway readout in the hud', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g('subs={"49:0":10};paying=10;cash=1000;payroll=2000');a.frames(32);
+  assert.equal(a.el('cRunway').hidden,false);assert.match(a.el('cRunway').textContent,/^\d+\.\d months$/);
+  a.g('cash=-500');a.frames(32);assert.equal(a.el('cRunway').textContent,'0.0 months');
+  a.g('payroll=0');a.frames(32);assert.equal(a.el('cRunway').hidden,true);
+});
