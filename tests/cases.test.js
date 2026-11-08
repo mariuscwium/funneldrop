@@ -52,8 +52,9 @@ test('closed case is good news', () => {
 test('shut ends the run with a warning first', () => {
   const a=load({dialogs:true});a.g('__re=randomEvent');quiet(a.g);setAl(a,[-.9,0]);a.g("evSeen={'Regulator fine':1}");
   a.g("lawStrikes=[1,0];pickEvent=()=>EVENTS.find(e=>e.name==='Investigation opened');__re()");
-  assert.equal(a.g('lawCase.axis'),0);assert.equal(a.g("warnLog.filter(w=>w.cause==='shut').length"),1);
-  assert.equal(a.el('ev-kind').textContent,'Warning');
+  assert.equal(a.g("warnLog.filter(w=>w.cause==='shut').length"),1);
+  assert.equal(a.el('ev-kind').textContent,'Warning');assert.equal(a.g('lawCase'),null,'the case opens as the warning closes');
+  a.el('ev').close();assert.equal(a.g('lawCase.axis'),0);
   run(a,12);
   assert.equal(a.g('over.kind'),'shut');assert.ok(a.g('over.story.length')>=2);
   assert.equal(a.g('over.story.at(-1).text'),'A regulator ordered you to stop trading.');

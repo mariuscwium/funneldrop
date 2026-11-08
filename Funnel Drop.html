@@ -1022,14 +1022,16 @@ function hire(role){if(!atRisk())return;const e={role,hired:gameMonths(),pay:bas
 const newest=role=>{let i=-1;staff.forEach((e,j)=>{if((!role||e.role===role)&&(i<0||e.hired>=staff[i].hired))i=j});return staff[i]};
 function fire(role){const e=newest(role);if(!e)return;staff.splice(staff.indexOf(e),1);restaff();refit(role)}
 // Once a game year, per person: everyone with a full year served gets a raise and a little skill, then each may be headhunted, likelier the longer they've stayed.
-function annualReview(){if(!staff.length)return;
-  const now=gameMonths(),gone={};let raised=0;
-  for(const e of [...staff]){const yrs=Math.floor((now-e.hired+1e-6)/12);if(yrs>=1){e.pay*=RAISE;e.skill+=SKILL;raised++}
-    if(Math.random()<Math.min(.4,.05+.05*yrs)){staff.splice(staff.indexOf(e),1);gone[e.role]=(gone[e.role]||0)+1}}
-  restaff();BOARDS.forEach((_,b)=>zone(b));applyPrice();
+// Decided now, applied when its dialog closes (later). Leavers may also have earned a raise first, as before.
+function annualReview(){if(!staff.length)return;withFx(()=>{
+  const now=gameMonths(),gone={},up=[],out=new Set();
+  for(const e of staff){const yrs=Math.floor((now-e.hired+1e-6)/12);if(yrs>=1)up.push(e);
+    if(Math.random()<Math.min(.4,.05+.05*yrs)){out.add(e);gone[e.role]=(gone[e.role]||0)+1}}
+  const upSet=new Set(up),pay=staff.reduce((t,e)=>out.has(e)?t:t+e.pay*(upSet.has(e)?RAISE:1),0),left=staff.length-out.size;
+  later(()=>{for(const e of up){e.pay*=RAISE;e.skill+=SKILL}staff=staff.filter(e=>!out.has(e));restaff();BOARDS.forEach((_,b)=>zone(b));applyPrice()});
   const lost=Object.entries(gone).map(([r,n])=>`${n} ${roleName(r)}${n>1?'s':''}`);
-  const raise=!staff.length?'Payroll is now empty.':raised?`Raises for everyone with a full year in take payroll to ${fmt(teamCost())} a month, and they're slightly more effective.`:`No one has been here a full year yet, so payroll stays at ${fmt(teamCost())} a month.`;
-  showEv(lost.length?'bad':'good',`Year ${month/12} review`,lost.length?'Staff headhunted':'Team stayed',lost.length?`${raise} You lost ${lost.join(', ')} to other companies, and their experience went with them.`:raise)}
+  const raise=!left?'Payroll is now empty.':up.length?`Raises for everyone with a full year in take payroll to ${fmt(pay)} a month, and they're slightly more effective.`:`No one has been here a full year yet, so payroll stays at ${fmt(pay)} a month.`;
+  showEv(lost.length?'bad':'good',`Year ${month/12} review`,lost.length?'Staff headhunted':'Team stayed',lost.length?`${raise} You lost ${lost.join(', ')} to other companies, and their experience went with them.`:raise)})}
 $('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:default"><b>Customer success manager<span class="hc" id="hc-csm"></span></b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to <span id="csm-cov">${CSM.covers}</span> paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-hire10">+10</button><button class="campbtn" id="t-cover">Cover all</button><button class="campbtn" id="t-fire">Let go</button></span></div>
 <div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager<span class="hc" id="hc-mm"></span></b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: the first adds about ${Math.round(MM.visitors*dimEff(MM_K,MM_P,1)/10)*10} free visitors a month once ramped up, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. Each extra one adds less: 10 do the work of about ${Math.round(dimEff(MM_K,MM_P,10))}, 100 of about ${Math.round(dimEff(MM_K,MM_P,100))}. <span id="m-meta"></span></small>
@@ -1083,40 +1085,52 @@ const EVENT_CHANCE=.15,evScale=()=>Math.max(1,Math.min(10,MRR()/5000));
 const burst=n=>{const t=performance.now();for(let i=0;i<n;i++)queue.push({t:t+i*22})};
 // Always takes at least one, and reports the share so the size reads at any scale.
 // Removes binom(n, frac) from each group (only the given plan if set), counting lost MRR in flow.lost. Returns how many left.
-function removeSubs(frac,plan){let lost=0;for(const k in subs){const [p,pl]=unkey(k);if(plan!=null&&pl!==plan)continue;const l=binom(subs[k],frac);if(!l)continue;lost+=l;flow.lost+=l*p*PLANS[pl].mult;if(subs[k]-l)subs[k]-=l;else delete subs[k]}paying-=lost;churned+=lost;return lost}
-function loseCustomers(lo,hi){const before=paying;if(before<1||!Object.keys(subs).length)return 'no customers';let lost=removeSubs(lo+Math.random()*(hi-lo));
-  if(!lost){const k=Object.keys(subs)[0];lost=1;{const [p,pl]=unkey(k);flow.lost+=p*PLANS[pl].mult}if(--subs[k]<1)delete subs[k];paying--;churned++}return `${lost} of ${before} customers (${Math.round(lost/before*100)}%)`}
+// Customer losses are planned now (binomial per plan group) and applied through later(), so an event's dialog can say how many before they go.
+function planCut(frac,plan){const cut=[];let lost=0;for(const k in subs){if(plan!=null&&unkey(k)[1]!==plan)continue;const l=binom(subs[k],frac);if(l){cut.push([k,l]);lost+=l}}return [cut,lost]}
+function dropSubs(cut){for(const [k,l] of cut){const n=Math.min(l,subs[k]||0);if(!n)continue;const [p,pl]=unkey(k);flow.lost+=n*p*PLANS[pl].mult;if(subs[k]-n)subs[k]-=n;else delete subs[k];paying-=n;churned+=n}}
+function removeSubs(frac,plan){const [cut,lost]=planCut(frac,plan);later(()=>dropSubs(cut));return lost}
+// Always takes at least one, and reports the share so the size reads at any scale.
+function loseCustomers(lo,hi){const before=paying;if(before<1||!Object.keys(subs).length)return 'no customers';let [cut,lost]=planCut(lo+Math.random()*(hi-lo));if(!lost){cut=[[Object.keys(subs)[0],1]];lost=1}
+  later(()=>dropSubs(cut));return `${lost} of ${before} customers (${Math.round(lost/before*100)}%)`}
 // Cases: a fine, lawsuit or breach can open an investigation or audit. It rules CASE_MONTHS later on the exposure then; lawCase is {axis (0 users, 1 process), due}. evSeen counts events shown by name.
 const CASE_AT=-.4,CASE_SHUT=-.7,CASE_MONTHS=12,CASE_FINE=3;let lawCase=null,evSeen={},lawStrikes=[0,0];
 const EVENTS=[
-  {good:1,name:'Press mention',run(){const n=Math.round(150*evScale());burst(n);return `A trade publication wrote about you. ${n} visitors are on their way.`}},
-  {good:1,name:'Newsletter feature',run(){const n=Math.round(30*evScale());for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60);return `An industry newsletter recommended you. ${n} people signed up directly.`}},
-  {good:1,name:'Rival shut down',when:()=>paying>0,run(){const n=Math.max(3,Math.round(paying*.03));paying+=n;addSub(price,0,n);flow.new+=price*n;return `A competitor closed. ${n} of their customers moved to you at ${fmt(price)} a month.`}},
-  {good:1,name:'Startup grant',run(){const n=Math.max(1000,MRR()*.5);cash+=n;return `You won a ${fmt(n)} grant. No repayments.`}},
-  {good:1,name:'Ad promotion',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach=c.base;return 'An ad platform changed its auction. Reach is back to full on every open channel.'}},
-  {good:1,name:'Social ad promo',run(){const c=CHANNELS[0];let n=0;for(let i=0;i<3;i++)n+=runAd(c,performance.now()+n*22);return `A social platform gave you three free ads. ${n} visitors are on their way.`}},
-  {name:'Search update',when:()=>seoLvl>0,run(){seoFresh=Math.max(SEO_FLOOR,seoFresh*.4);return 'A search engine update buried your rankings. Search traffic fell by up to 60%.'}},
+  {good:1,name:'Press mention',run(){const n=Math.round(150*evScale());later(()=>burst(n));return `A trade publication wrote about you. ${n} visitors are on their way.`}},
+  {good:1,name:'Newsletter feature',run(){const n=Math.round(30*evScale());later(()=>{for(let i=0;i<n;i++)setTimeout(()=>spawn(enter(1,1)),i*60)});return `An industry newsletter recommended you. ${n} people signed up directly.`}},
+  {good:1,name:'Rival shut down',when:()=>paying>0,run(){const n=Math.max(3,Math.round(paying*.03)),p=price;later(()=>{paying+=n;addSub(p,0,n);flow.new+=p*n});return `A competitor closed. ${n} of their customers moved to you at ${fmt(p)} a month.`}},
+  {good:1,name:'Startup grant',run(){const n=Math.max(1000,MRR()*.5);later(()=>{cash+=n});return `You won a ${fmt(n)} grant. No repayments.`}},
+  {good:1,name:'Ad promotion',when:()=>ads>0,run(){later(()=>{for(const c of CHANNELS)if(c.open)c.reach=c.base});return 'An ad platform changed its auction. Reach is back to full on every open channel.'}},
+  {good:1,name:'Social ad promo',run(){const c=CHANNELS[0];let n=0,r=c.reach;for(let i=0;i<3;i++){n+=Math.max(1,Math.round(r*reachK()));r*=DECAY}later(()=>{let m=0;for(let i=0;i<3;i++)m+=runAd(c,performance.now()+m*22)});return `A social platform gave you three free ads. ${n} visitors are on their way.`}},
+  {name:'Search update',when:()=>seoLvl>0,run(){later(()=>{seoFresh=Math.max(SEO_FLOOR,seoFresh*.4)});return 'A search engine update buried your rankings. Search traffic fell by up to 60%.'}},
   {name:'Outage',when:()=>paying>0,run(){return `A long outage cost you customers. ${loseCustomers(.08,.12)} cancelled.`}},
   {name:'Cheaper rival',when:()=>paying>0,run(){return `A competitor launched a cheaper plan. ${loseCustomers(.15,.25)} left.`}},
-  {name:'Tax bill',run(){const n=Math.max(500,MRR()*1.5,cash*.2);spendCash(n);return `An unexpected tax bill cost you ${fmt(n)}.${cash<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
-  {good:1,al:[0,1],name:'Enterprise deal',when:()=>paying>0,run(){const n=Math.max(2,Math.round(paying*.02));paying+=n;addSub(price,2,n);flow.new+=price*PLANS[2].mult*n;return `A large company signed up. ${n} Enterprise customers joined at ${fmt(price)} a month each, before the plan multiple.`}},
-  {good:1,al:[1,0],name:'Customers rave',run(){const n=Math.round(120*evScale());burst(n);return `Customers are posting about you. ${n} visitors are on their way.`}},
-  {good:1,al:[.5,1],name:'Security review passed',run(){const n=Math.max(1000,MRR()*.75);cash+=n;return `A large buyer finished its security review and paid a ${fmt(n)} pilot fee.`}},
-  {al:[-1,0],name:'Regulator fine',when:()=>paying>0&&companyAl()[0]<=-.15,run(){boardHit('Regulator fine',-6);const n=Math.max(500,MRR()*2);spendCash(n);return `A regulator fined you ${fmt(n)}.${cash<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
-  {al:[-1,-.5],name:'Class action',when:()=>paying>0&&companyAl()[0]<=-.15,run(){boardHit('Class action',-6);const n=Math.max(500,MRR());spendCash(n);return `Customers filed a class action and you paid ${fmt(n)} to settle. ${loseCustomers(.05,.1)} cancelled.`}},
-  {al:[0,-1],name:'Data breach',when:()=>paying>0&&companyAl()[1]<=-.15,run(){boardHit('Data breach',-6);return `Customer data leaked. ${loseCustomers(.08,.15)} cancelled.`}},
-  {al:[-1,0],name:'Viral complaint',when:()=>paying>0&&companyAl()[0]<=-.15,run(){boardHit('Viral complaint',-6);for(const c of CHANNELS)if(c.open)c.reach*=.5;return `A complaint thread went viral. Reach halved on every open channel, and ${loseCustomers(.03,.06)} cancelled.`}},
-  {name:'Ad policy change',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach*=.5;return 'An ad platform tightened its targeting. Reach halved on every open channel.'}},
-  {al:[-1,0],warn:1,name:'Investigation opened',when:()=>paying>0&&!lawCase&&companyAl()[0]<=CASE_AT&&(evSeen['Regulator fine']||evSeen['Class action']),run(){lawCase={axis:0,due:month+CASE_MONTHS};boardHit('Investigation',-10);return `Regulators opened an investigation into your billing and cancellation practices. A ruling is due in ${CASE_MONTHS} months.`}},
-  {al:[0,-1],warn:1,name:'Security audit ordered',when:()=>paying>0&&!lawCase&&companyAl()[1]<=CASE_AT&&evSeen['Data breach'],run(){lawCase={axis:1,due:month+CASE_MONTHS};boardHit('Audit',-10);return `After the breach, a data protection authority ordered a full audit of your systems. Findings are due in ${CASE_MONTHS} months.`}}
+  {name:'Tax bill',run(){const n=Math.max(500,MRR()*1.5,cash*.2);later(()=>spendCash(n));return `An unexpected tax bill cost you ${fmt(n)}.${cash-n<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
+  {good:1,al:[0,1],name:'Enterprise deal',when:()=>paying>0,run(){const n=Math.max(2,Math.round(paying*.02)),p=price;later(()=>{paying+=n;addSub(p,2,n);flow.new+=p*PLANS[2].mult*n});return `A large company signed up. ${n} Enterprise customers joined at ${fmt(p)} a month each, before the plan multiple.`}},
+  {good:1,al:[1,0],name:'Customers rave',run(){const n=Math.round(120*evScale());later(()=>burst(n));return `Customers are posting about you. ${n} visitors are on their way.`}},
+  {good:1,al:[.5,1],name:'Security review passed',run(){const n=Math.max(1000,MRR()*.75);later(()=>{cash+=n});return `A large buyer finished its security review and paid a ${fmt(n)} pilot fee.`}},
+  {al:[-1,0],name:'Regulator fine',when:()=>paying>0&&companyAl()[0]<=-.15,run(){const n=Math.max(500,MRR()*2);later(()=>{boardHit('Regulator fine',-6);spendCash(n)});return `A regulator fined you ${fmt(n)}.${cash-n<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
+  {al:[-1,-.5],name:'Class action',when:()=>paying>0&&companyAl()[0]<=-.15,run(){const n=Math.max(500,MRR());later(()=>{boardHit('Class action',-6);spendCash(n)});return `Customers filed a class action and you paid ${fmt(n)} to settle. ${loseCustomers(.05,.1)} cancelled.`}},
+  {al:[0,-1],name:'Data breach',when:()=>paying>0&&companyAl()[1]<=-.15,run(){later(()=>boardHit('Data breach',-6));return `Customer data leaked. ${loseCustomers(.08,.15)} cancelled.`}},
+  {al:[-1,0],name:'Viral complaint',when:()=>paying>0&&companyAl()[0]<=-.15,run(){later(()=>{boardHit('Viral complaint',-6);for(const c of CHANNELS)if(c.open)c.reach*=.5});return `A complaint thread went viral. Reach halved on every open channel, and ${loseCustomers(.03,.06)} cancelled.`}},
+  {name:'Ad policy change',when:()=>ads>0,run(){later(()=>{for(const c of CHANNELS)if(c.open)c.reach*=.5});return 'An ad platform tightened its targeting. Reach halved on every open channel.'}},
+  {al:[-1,0],warn:1,name:'Investigation opened',when:()=>paying>0&&!lawCase&&companyAl()[0]<=CASE_AT&&(evSeen['Regulator fine']||evSeen['Class action']),run(){later(()=>{lawCase={axis:0,due:month+CASE_MONTHS};boardHit('Investigation',-10)});return `Regulators opened an investigation into your billing and cancellation practices. A ruling is due in ${CASE_MONTHS} months.`}},
+  {al:[0,-1],warn:1,name:'Security audit ordered',when:()=>paying>0&&!lawCase&&companyAl()[1]<=CASE_AT&&evSeen['Data breach'],run(){later(()=>{lawCase={axis:1,due:month+CASE_MONTHS};boardHit('Audit',-10)});return `After the breach, a data protection authority ordered a full audit of your systems. Findings are due in ${CASE_MONTHS} months.`}}
 ];
 // Saved as soon as it fires, so reloading can't dodge a bad one. Timers shift on resume so bursts and cooldowns don't run out during the pause.
 let pausedAt=0;
 const evQueue=[];
+// A dialog's effects wait until it closes, so the player sees the stat change. While withFx collects (evLater), later(f) holds f, and showEv takes
+// what has been collected for its dialog; outside withFx, later runs f at once. Headless, where no dialog opens, effects run straight away.
+// flushEv runs every pending effect (pagehide), so reloading can't dodge one.
+let evLater=null,evFx=null;
+const later=f=>{if(evLater)evLater.push(f);else f()};
+function withFx(fn){const was=evLater;evLater=[];try{return fn()}finally{const left=evLater;evLater=was;for(const f of left)later(f)}}
+function runFx(){const f=evFx;evFx=null;if(f)for(const g of f)g()}
+function flushEv(){runFx();for(const q of evQueue){const f=q[5];q[5]=null;if(f)for(const g of f)g()}}
 let evAct=null;
 function useEvAct(){const a=evAct;evAct=null;if(a)a.run();$('ev').close()}
 $('ev-act').addEventListener('click',useEvAct);
-function showEv(k,kind,name,t,act,again){if(!again&&(kind==='Good news'||kind==='Bad news'))evSeen[name]=(evSeen[name]||0)+1;if($('ev').open){evQueue.push([k,kind,name,t,act]);return}evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;sfx(kind==='Milestone'?'fanfare':k);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
+function showEv(k,kind,name,t,act,fx,again){if(fx===undefined&&evLater){fx=evLater;evLater=[]}if(!again&&(kind==='Good news'||kind==='Bad news'))evSeen[name]=(evSeen[name]||0)+1;if($('ev').open){evQueue.push([k,kind,name,t,act,fx]);return}evFx=fx||null;evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;sfx(kind==='Milestone'?'fanfare':k);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal();if(!$('ev').open)runFx()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
 function health(){return Math.max(-1,Math.min(1,growth*10+(netFlow()>0?.5:-.5)))}
 // Alignment exposure: each axis sums al × count over owned nodes (not the start), over ALIGN_SCALE, clamped to -1..1. Hidden from the player.
@@ -1130,18 +1144,18 @@ function pickEvent(good){const can=EVENTS.filter(e=>!e.when||e.when()),sided=can
   for(let i=0;i<ok.length;i++){r-=w[i];if(r<0)return ok[i]}return ok[ok.length-1]}
 // The first SAFE_MONTHS game months bring only good news, so a new company isn't knocked out before it gets going.
 const SAFE_MONTHS=24;
-function randomEvent(){const e=pickEvent(month<SAFE_MONTHS||Math.random()<.4-.3*health()+FX.evGood),t=e.run();if(e.warn)warn('shut',e.name,t);else showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
+function randomEvent(){withFx(()=>{const e=pickEvent(month<SAFE_MONTHS||Math.random()<.4-.3*health()+FX.evGood),t=e.run();if(e.warn)warn('shut',e.name,t);else showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)})}
 // Based on peak valuation, so a dip can't repeat one and msLvl needs no saving. Crossing several at once shows the highest.
 // A 4th entry replaces the usual "Next up" line.
 const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn','Next goal: an IPO. See IPO readiness under Company.']];let msLvl=0;
 // Game month each milestone was first reached, by MILES index. Saves from before this leave earlier ones empty.
 let mileMonth=[];
 const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;
-function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||!atRisk()||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());let pts=0;for(let i=msLvl;i<n;i++)pts+=RP_MILE[i]||0;rp+=pts;const hadBoard=!!board,k=n-msLvl;msLvl=n;const m=MILES[n-1],nx=MILES[n];let bd='';if(!board&&n>=2){board=freshBoard();bd=' Your investors now sit on a board, and it expects steady growth and a roadmap that ships.'}else if(hadBoard)for(let i=0;i<k;i++)boardHit('Milestone',10);
-  showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}${pts?` Your team banks ${pts} roadmap points.`:''}${bd}`)}
+function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||!atRisk()||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());let pts=0;for(let i=msLvl;i<n;i++)pts+=RP_MILE[i]||0;const hadBoard=!!board,k=n-msLvl,fx=[()=>{rp+=pts}];msLvl=n;const m=MILES[n-1],nx=MILES[n];let bd='';if(!board&&n>=2){fx.push(()=>{board??=freshBoard()});bd=' Your investors now sit on a board, and it expects steady growth and a roadmap that ships.'}else if(hadBoard)fx.push(()=>{for(let i=0;i<k;i++)boardHit('Milestone',10)});
+  showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}${pts?` Your team banks ${pts} roadmap points.`:''}${bd}`,undefined,fx)}
 $('over').addEventListener('cancel',e=>e.preventDefault());
 for(const id of ['ev','sum','over','tree'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
-$('ev').addEventListener('close',()=>{if(evQueue.length&&atRisk())showEv(...evQueue.shift(),true)});
+$('ev').addEventListener('close',()=>{runFx();if(evQueue.length&&atRisk())showEv(...evQueue.shift(),true)});
 // IPO readiness. Targets are game simplifications. Every criterion must hold at IPO.hold month rollovers in a row before filing.
 const IPO={arr:1e8,nrr:1.10,r40:40,growth:.30,hold:3};let ipoHold=0,ipoFiled=false,ipoSnap=null,playMs=0;
 // The ending. over is {kind,month,story,snap} once the game is lost. warnLog keeps the last 20 warnings; an ending needs one for its cause.
@@ -1181,16 +1195,16 @@ function rollRisk(){
     else if(b.ult!=null&&b.conf>BOARD_WARN){b.lastUlt=month;b.ult=null;say('<b>The board backed off.</b> Confidence is back above '+BOARD_WARN+'.')}
     else if(b.ult!=null&&month>=b.ult)return endGame('board',ENDINGS.board,`Board confidence stayed below ${BOARD_WARN} past the deadline, and the board replaced you.`)}
   // A case rules on today's exposure, so a respec in between changes the outcome.
-  if(lawCase&&month>=lawCase.due&&atRisk())ruleCase()}
+  if(lawCase&&month>=lawCase.due&&atRisk())withFx(ruleCase)}
 // closed above CASE_AT, a consent order or failed audit above CASE_SHUT, otherwise the company is shut down, but only if that axis already
 // had an order (lawStrikes[axis]); a first ruling in the shut band is an order.
 const caseBand=x=>x>CASE_AT?'closed':x>CASE_SHUT?'order':'shut';
 function ruleCase(){const c=lawCase,b0=caseBand(companyAl()[c.axis]),band=b0==='shut'&&!lawStrikes[c.axis]?'order':b0;lawCase=null;let t;
-  if(band==='closed'){t=c.axis?'The audit found no serious gaps and the authority closed the matter.':'The regulator closed the case with no further action.';boardHit('Case closed',5);showEv('good','Good news','Case closed',t)}
-  else if(band==='order'){const cost=CASE_FINE*MRR();spendCash(cost);lawStrikes[c.axis]++;
+  if(band==='closed'){t=c.axis?'The audit found no serious gaps and the authority closed the matter.':'The regulator closed the case with no further action.';later(()=>boardHit('Case closed',5));showEv('good','Good news','Case closed',t)}
+  else if(band==='order'){const cost=CASE_FINE*MRR(),ax=c.axis;later(()=>{spendCash(cost);lawStrikes[ax]++});
     if(c.axis){const n=removeSubs(.3,2);
-      t=`The audit found serious gaps. Fixing them cost ${fmt(cost)}${n?`, and ${n} Enterprise customer${n===1?'':'s'} left`:''}.`;boardHit('Audit failed',-20);showEv('bad','Bad news','Audit failed',t)}
-    else{const lost=paying>0?loseCustomers(.1,.2):null;t=`The regulator ruled against you. The consent order cost ${fmt(cost)}${lost?`, and ${lost} left`:''}.`;boardHit('Consent order',-20);showEv('bad','Bad news','Consent order',t)}}
+      t=`The audit found serious gaps. Fixing them cost ${fmt(cost)}${n?`, and ${n} Enterprise customer${n===1?'':'s'} left`:''}.`;later(()=>boardHit('Audit failed',-20));showEv('bad','Bad news','Audit failed',t)}
+    else{const lost=paying>0?loseCustomers(.1,.2):null;t=`The regulator ruled against you. The consent order cost ${fmt(cost)}${lost?`, and ${lost} left`:''}.`;later(()=>boardHit('Consent order',-20));showEv('bad','Bad news','Consent order',t)}}
   else{t=c.axis?'Your licence to process customer data was revoked.':'A regulator ordered you to stop trading.';endGame('shut',ENDINGS.shut,t)}
   return t}
 // The board. conf runs 0-100. boardReasons() is what the state says now; pend holds one-off hits queued since the last rollover (scandals, emergency funding, milestones).
@@ -1308,7 +1322,7 @@ $('theme').addEventListener('click',()=>{theme=document.documentElement.dataset.
 darkOS.addEventListener('change',showTheme);
 function newGame(){if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()}
 $('reset').addEventListener('click',newGame);$('sum-new').addEventListener('click',newGame);$('over-new').addEventListener('click',newGame);
-load();histTick=histNow();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',save);
+load();histTick=histNow();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',()=>{flushEv();save()});
 resize();window.addEventListener('resize',resize);hud();gateReady=true;if(ipoFiled)openSum();if(over)openOver();requestAnimationFrame(loop);
 </script>
 

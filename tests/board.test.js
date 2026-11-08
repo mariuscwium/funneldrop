@@ -10,7 +10,8 @@ test('no board before $1M', () => {
   const a=load({dialogs:true});quiet(a.g);a.g('peak=5e5;checkMilestone()');
   assert.equal(a.g('board'),null);a.el('ev').close();
   a.g('peak=1e6;checkMilestone()');
-  assert.equal(a.g('board.conf'),70);assert.match(a.g('$("ev-text").textContent'),/investors now sit on a board/);
+  assert.match(a.g('$("ev-text").textContent'),/investors now sit on a board/);assert.equal(a.g('board'),null,'the board arrives as the dialog closes');
+  a.el('ev').close();assert.equal(a.g('board.conf'),70);
 });
 test('stale months cost up to 3 a month', () => {
   const a=load();quiet(a.g);a.g(fresh);
