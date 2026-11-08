@@ -157,10 +157,99 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   .play{display:flex}
   .play,#upgrades{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px}
 }
+/* Roadmap modal: full screen. Header, then the constellation (SVG, pan and zoom) with the detail panel beside it from 860px, as a bottom sheet below. */
+#tree{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;box-sizing:border-box;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);border:0;background:var(--bg);color:var(--fg);font-family:var(--display);overflow:hidden}
+#tree[open]{display:flex;flex-direction:column}
+#tree::backdrop{background:var(--bg)}
+html:has(#tree[open]){overflow:hidden}
+.tr-top{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"t r c" "s s s";gap:8px;align-items:center;padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+#tree-title{grid-area:t;font-size:20px;letter-spacing:.05em;text-transform:uppercase}
+.tr-stats{grid-area:s;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:6px}
+.tr-stats #tr-pts{font:inherit;letter-spacing:0;text-transform:none;color:inherit}
+.tr-stats small{font:500 11px var(--mono);color:var(--muted)}
+#tr-respec{grid-area:r;flex-direction:row;gap:6px}
+.tr-top form{grid-area:c;display:flex}
+.tr-top .buy{padding:8px 14px;font-size:13px}
+.tr-main{flex:1;min-height:0;position:relative;display:flex}
+.tr-canvas{position:relative;flex:1;min-width:0;overflow:hidden}
+#tr-svg{outline:none;position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+#tr-svg.drag{cursor:grabbing}
+#tr-svg text{font-family:var(--display);pointer-events:none}
+.tr-zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px}
+.tr-zoom .campbtn{min-width:40px;min-height:36px;justify-content:center;font-size:14px}
+.tr-wedge{fill:var(--c);fill-opacity:.06;stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
+.tr-wedge.shut{fill:url(#tr-hatch);fill-opacity:1}
+#tr-hatch line{stroke:var(--line);stroke-width:2}
+.tr-ring{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:2 5;vector-effect:non-scaling-stroke}
+.tr-area{fill:var(--c);font-size:calc(12px / var(--k,1));font-weight:700;letter-spacing:.14em;text-anchor:middle;dominant-baseline:central}
+.tr-shut{fill:var(--muted);font-size:calc(14px / var(--k,1));font-weight:700;letter-spacing:.06em;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:var(--bg);stroke-width:4px}
+.tr-edge{stroke:var(--line);stroke-width:1.5;vector-effect:non-scaling-stroke}
+.tr-edge.next{stroke:var(--c);stroke-opacity:.55;stroke-dasharray:4 3}
+.tr-edge.lit{stroke:var(--c);stroke-width:3.5}
+.tr-edge.dead{opacity:.35}
+.tr-node{cursor:pointer;outline:none}
+.tr-shape{fill:var(--panel);stroke:var(--muted);stroke-width:1.5;vector-effect:non-scaling-stroke;transition:fill .3s,stroke .3s}
+.tr-in{fill:var(--c2);stroke:none}
+.tr-node.own .tr-shape{fill:var(--c);stroke:var(--c);stroke-width:2}
+.tr-node.available .tr-shape{stroke:var(--c);stroke-width:2;stroke-opacity:.75}
+.tr-node.available:not(.own) .tr-in{opacity:.35}
+.tr-node.can .tr-shape{stroke-width:3;stroke-opacity:1;filter:drop-shadow(0 0 3px var(--c))}
+.tr-pulse{fill:none;stroke:var(--c);stroke-width:2;vector-effect:non-scaling-stroke;animation:trpulse 1.8s ease-out infinite;pointer-events:none}
+@keyframes trpulse{from{transform:scale(1);opacity:.8}to{transform:scale(1.9);opacity:0}}
+.tr-node.locked{opacity:.5}
+.tr-node.locked .tr-shape{fill:var(--rail);stroke:var(--muted);stroke-dasharray:3 2}
+.tr-node.locked .tr-in{opacity:.3}
+.tr-strike{stroke:var(--warn);stroke-width:2;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.tr-node.unreachable{opacity:.3}
+.tr-node.unreachable .tr-in{opacity:.4}
+.tr-node.sel .tr-shape,.tr-node:focus-visible .tr-shape{stroke:var(--fg);stroke-width:3;stroke-opacity:1}
+.tr-node:focus-visible .tr-shape{stroke-dasharray:4 2}
+.tr-cnt{fill:var(--fg);font:700 9px var(--mono);text-anchor:middle;dominant-baseline:central}
+.tr-node.own .tr-cnt{fill:var(--panel)}
+.tr-lbl{fill:var(--fg);font-size:calc(11px / var(--k,1));font-weight:500;paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round;opacity:0;transition:opacity .2s}
+#tr-svg.lbl .tr-lbl,.tr-node.sel .tr-lbl,.tr-node:focus-visible .tr-lbl{opacity:1}
+.tr-node.unreachable .tr-lbl,.tr-node.locked .tr-lbl{fill:var(--muted)}
+.tr-node.pop .tr-pop{animation:trpop .55s ease-out}
+@keyframes trpop{0%{transform:scale(1)}35%{transform:scale(1.55)}100%{transform:scale(1)}}
+.b-ring{fill:none;stroke:var(--c);stroke-width:3;vector-effect:non-scaling-stroke;animation:trring .8s ease-out both}
+.b-ring.b2{animation-delay:.14s;stroke-width:2}
+@keyframes trring{from{transform:scale(.7);opacity:1}to{transform:scale(4.2);opacity:0}}
+.b-spark{stroke:var(--c);stroke-width:2.5;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:trspark .75s ease-out both}
+@keyframes trspark{from{transform:translateY(0);opacity:1}to{transform:translateY(-34px);opacity:0}}
+.b-txt{fill:var(--c);font-size:calc(14px / var(--k,1));font-weight:700;text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round;animation:trrise 1.5s ease-out both}
+@keyframes trrise{from{transform:translateY(0);opacity:0}12%{opacity:1}70%{opacity:1}to{transform:translateY(-28px);opacity:0}}
+.stat.flash b{animation:trflash .9s ease-out}
+@keyframes trflash{from{color:var(--paid)}to{color:var(--fg)}}
+@media (prefers-reduced-motion:reduce){.tr-pulse,.b-ring,.b-spark{display:none}.tr-node.pop .tr-pop,.b-txt{animation:none}}
+.tr-detail{position:absolute;left:0;right:0;bottom:0;max-height:55%;overflow-y:auto;box-sizing:border-box;background:var(--panel);border-top:1px solid var(--line);border-radius:14px 14px 0 0;padding:14px 16px 16px;box-shadow:0 -4px 18px var(--shadow)}
+.tr-detail.empty{padding:10px 16px}
+.tr-detail small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--c,var(--muted));padding-right:40px}
+.tr-detail h3{font-size:20px;margin:2px 0 0;padding-right:40px}
+.tr-detail p{font-size:14px;line-height:1.45;margin:8px 0}
+.tr-cost{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;font:13px var(--mono);font-variant-numeric:tabular-nums;margin:10px 0}
+.tr-cost dt{color:var(--muted)}
+.tr-cost dd{margin:0;text-align:right}
+p.tr-state{color:var(--muted);font-size:13px}
+p.tr-state.fork{color:var(--fg)}
+.tr-detail .buy{width:100%;justify-content:center}
+.tr-btns{display:flex;gap:8px}
+.tr-btns .buy{flex:1}
+.tr-btns .campbtn{justify-content:center}
+p.tr-hint{color:var(--muted);font-size:13px;margin:0}
+.tr-dx{position:absolute;top:10px;right:10px;width:34px;height:34px;justify-content:center;font-size:16px}
+@media (min-width:860px){
+  .tr-top{grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"t s r c";gap:16px;padding-inline:24px}
+  .tr-stats{max-width:420px}
+  .tr-detail{position:static;flex:none;width:340px;max-height:none;border-top:0;border-left:1px solid var(--line);border-radius:0;box-shadow:none;padding:20px}
+  .tr-detail.empty{padding:20px}
+  .tr-dx{display:none}
+}
 </style>
 
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><form method="dialog"><button class="buy">Continue</button></form></dialog>
 <dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
+<dialog id="tree" aria-labelledby="tree-title"><div class="tr-top"><b id="tree-title">Roadmap</b><div class="tr-stats"><div class="stat" id="tr-pts-s"><span>Points</span><b><span id="tr-pts">2 / 4</span> <small id="tr-inc">+0.5 a month</small></b></div><div class="stat"><span>Cash</span><b id="tr-cash">$1,500</b></div></div><button class="campbtn" id="tr-respec">Respec</button><form method="dialog"><button class="buy" id="tr-close">Close</button></form></div>
+<div class="tr-main"><div class="tr-canvas"><svg id="tr-svg" tabindex="-1" role="group" aria-label="Roadmap: product work linked outward from the founding idea. Drag to move, scroll or pinch to zoom."><defs><pattern id="tr-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8"/></pattern></defs><g id="tr-view"><g id="tr-bg"></g><g id="tr-edges"></g><g id="tr-nodes"></g><g id="tr-fx"></g></g></svg><div class="tr-zoom"><button class="campbtn" id="tr-zin" aria-label="Zoom in">+</button><button class="campbtn" id="tr-zout" aria-label="Zoom out">&minus;</button><button class="campbtn" id="tr-fit" aria-label="Fit to view">Fit</button></div></div><aside class="tr-detail empty" id="tr-detail" aria-live="polite"></aside></div></dialog>
 <div class="wrap">
   <div class="top" id="top">
     <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns"><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="theme"></button><button class="campbtn" id="reset">New game</button></span></div>
@@ -175,7 +264,7 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   </div>
   <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month), and about 22% of that goes on hosting and support. You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
-  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Roadmap items quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Product</h2><div class="upgrades" id="upglist"><div class="upg" id="roadmap" style="--c:var(--act);cursor:default"><b>Roadmap</b><span class="cost" id="rm-pts">2 points</span><small id="rm-meta">Product work you can ship. Each item costs roadmap points and cash.</small></div></div><h2 id="h-team">Team <span id="team-n"></span></h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
+  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Roadmap items quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Roadmap</h2><div class="upgrades" id="upglist"><button class="upg" id="rm-open" style="--c:var(--act)"><b>Open roadmap</b><span class="cost" id="rm-pts">2 points</span><small id="rm-meta">Product work you can ship. Each item costs roadmap points and cash.</small></button></div><h2 id="h-team">Team <span id="team-n"></span></h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
   <canvas id="cv" aria-label="Six stacked boards: one per pirate metric (acquisition, activation, retention, referral and revenue), then expansion, locked until a $1M valuation."></canvas>
   </div><div class="side" id="side"><div class="stats">
@@ -272,7 +361,7 @@ const SFX={tick:[125,()=>tone(900,0,.03,.015)],ching:[250,()=>notes([1320,1760],
 function sfx(name){if(muted||!ac)return;const n=performance.now(),[gap,play]=SFX[name];if(n-(sfxLast[name]||0)<gap)return;sfxLast[name]=n;play()}
 for(const type of ['pointerdown','keydown'])addEventListener(type,()=>{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;ac??=new A();ac.resume()});
 
-let cash=1500,ads=0,spend=0,ledger=[],monthOut=0,monthRev=0,balls=[],floats=[],queue=[];
+let rmT=-1e9,rmN=0,cash=1500,ads=0,spend=0,ledger=[],monthOut=0,monthRev=0,balls=[],floats=[],queue=[];
 const COST_TO_SERVE=.22,cts=()=>COST_TO_SERVE*(1+FX.cts);
 function spendCash(n){cash-=n;monthOut+=n}
 function margin3(){const l=ledger.slice(-3),rv=l.reduce((t,e)=>t+e.rev,0);return rv>0?(rv-l.reduce((t,e)=>t+e.out,0))/rv:null}
@@ -445,7 +534,7 @@ function hud(){
   const mrr=MRR(),mult=revMult(),val=mrr*12*mult;peak=Math.max(peak,val);
   $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);{const r=NRR12();$('cNrr').textContent=(r==null?'–':Math.round(r*100)+'%')+' / 109%'}checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
-  $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;{const sc=Math.round((staleMult()-1)*100);$('rm-meta').textContent=`+${rpIncome().toFixed(1)} points a month, up to ${Math.floor(rpCap()+1e-9)} stored. ${sc?'Ship something to stop falling behind.':'Product work you can ship. Each item costs roadmap points and cash.'}`;$('cStale').textContent=sc?`+${sc}%`:'–';$('cStale').className=sc?'warn':'';$('cStale').previousElementSibling.hidden=$('cStale').hidden=!sc}$('csm-cov').textContent=csmCovers();
+  $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;{const t=performance.now();if(t-rmT>250||t<rmT){rmT=t;rmN=ipoFiled?0:readyNow()}}{const sc=Math.round((staleMult()-1)*100);$('rm-meta').textContent=`${rmN?`${rmN} ready to buy now. `:''}+${rpIncome().toFixed(1)} points a month, up to ${Math.floor(rpCap()+1e-9)} stored. ${sc?'Ship something to stop falling behind.':rmN?'':'Each item costs roadmap points and cash.'}`;$('cStale').textContent=sc?`+${sc}%`:'–';$('cStale').className=sc?'warn':'';$('cStale').previousElementSibling.hidden=$('cStale').hidden=!sc}$('csm-cov').textContent=csmCovers();
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),gate('eng',ENG.at,heads('eng'),'Engineer'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
@@ -468,7 +557,7 @@ function binom(n,p){if(n<=0||p<=0)return 0;if(p>=1)return n;
   const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
   return Math.max(0,Math.min(n,Math.round(n*p+Math.sqrt(n*p*(1-p))*z)))}
 function loop(now){
-  if($('ev').open||$('sum').open){last=now;draw();requestAnimationFrame(loop);return}
+  if($('ev').open||$('sum').open||$('tree').open){last=now;draw();requestAnimationFrame(loop);return}
   const dt=Math.min(.05,(now-last)/1000);adaptCap(now-last);last=now;if(!ipoFiled)playMs+=dt*1000;
   while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
   if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+mmEff()),dt/MONTH));
@@ -534,7 +623,7 @@ function shown(B){if(!B.anim)return B.zones;const p=(performance.now()-B.anim.t0
   return B.zones.map((z,i)=>{const f=B.anim.from[i]||z;return [f[0]+(z[0]-f[0])*e,f[1]+(z[1]-f[1])*e]})}
 // Upgrade payoff: glow, sparks from both walls, a floating gain and a chime.
 let sparks=[];
-function celebrate(b,text,slot){const B=BOARDS[b],y0=b*BH;sfx('upgrade');addFloat({x:W/2,y:y0+WALLTOP-26,t:text,c:C[B.col],life:1.4,size:14});if(!slot)return;B.glow=1;
+function celebrate(b,text,slot,quiet){const B=BOARDS[b],y0=b*BH;if(!quiet)sfx('upgrade');addFloat({x:W/2,y:y0+WALLTOP-26,t:text,c:C[B.col],life:1.4,size:14});if(!slot)return;B.glow=1;
   for(const [a,c] of B.zones)for(const [x,dir] of [[a,-1],[c,1]])for(let i=0;i<9;i++)sparks.push({x,y:y0+WALLTOP+Math.random()*(FLOOR-WALLTOP),vx:dir*(40+Math.random()*120),vy:-(40+Math.random()*130),life:1,c:C[B.col]})}
 function applyPrice(){const t=trackOf(4);zone(4);
   $('p-val').textContent=fmt(price);$('p-meta').textContent=`At ${fmt(price)}: ${p1(rateOf(t))} paid conversion, ${p1(paidChurn())} monthly churn.`}
@@ -583,9 +672,10 @@ function buyNode(id){const n=NODE_IX[id];if(!n||ipoFiled||nodeState(id)!=='avail
   const k=nodeCash(n),pts=nodePts(n);if(rp<pts||cash<k)return false;
   const was=RATES.map(rateOf),pc=paidChurn();
   spendCash(k);rp-=pts;paid[id]=(paid[id]||0)+pts;owned[id]=(owned[id]||0)+1;refx();applyPrice();markShipped();
-  for(let b=0;b<NB;b++){const d=rateOf(RATES[b])-was[b];if(Math.abs(d)>1e-9)celebrate(b,signed(d*100,' pts ')+RATES[b].label,true)}
-  if(Math.abs(paidChurn()-pc)>1e-9)celebrate(4,signed((paidChurn()-pc)*100,' pts churn'),false);
-  say(`<b>${n.name}</b> shipped: ${fxText(n.fx)}.`);return true}
+  // With the roadmap open, the boards celebrate when it closes instead (its close handler compares against TREE.was).
+  if(!TREE.was){for(let b=0;b<NB;b++){const d=rateOf(RATES[b])-was[b];if(Math.abs(d)>1e-9)celebrate(b,signed(d*100,' pts ')+RATES[b].label,true)}
+    if(Math.abs(paidChurn()-pc)>1e-9)celebrate(4,signed((paidChurn()-pc)*100,' pts churn'),false)}
+  say(`<b>${n.name}</b> ${n.rep&&owned[id]>1?`shipped again (${plural(owned[id],'time')})`:'shipped'}: ${fxText(n.fx)}.`);return true}
 // One respec a run: refunds every point paid (may top the cap), clears the tree back to the start node and so frees fork locks.
 const respecCost=()=>Math.max(5000,3*MRR());
 function respec(){if(respecUsed||ipoFiled||cash<respecCost())return false;
@@ -603,6 +693,103 @@ const STALE_GRACE=6,STALE_STEP=.02,STALE_MAX=.3;let stale=0;
 const staleMult=()=>1+Math.min(STALE_MAX,Math.max(0,stale-STALE_GRACE)*STALE_STEP);
 const markShipped=()=>{stale=0};
 const shippable=()=>NODES.some(n=>nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=nodeCash(n));
+const readyNow=()=>NODES.filter(n=>nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=nodeCash(n)).length;
+// Roadmap modal. Layout is pure: nodePos puts wedge a at -90° + a·60° (Acquisition at the top, clockwise in funnel order), ring r at r·RING_R, slot -1..1 spreads ±WEDGE_SPREAD° inside the wedge.
+// A keystone [a,b] sits on the boundary between its wedges. The view pans and zooms over it: screen = tree·k + (x,y), in SVG pixels.
+const RING_R=70,WEDGE_SPREAD=25,TREE_K=[.5,3],SVGNS='http://www.w3.org/2000/svg';
+const wedgeAng=n=>{if(!Array.isArray(n.area))return -90+n.area*60;const [a,b]=n.area.map(i=>(-90+i*60)*Math.PI/180);return Math.atan2(Math.sin(a)+Math.sin(b),Math.cos(a)+Math.cos(b))*180/Math.PI};
+function nodePos(n){if(!n.ring)return{x:0,y:0};const t=(wedgeAng(n)+(n.slot||0)*WEDGE_SPREAD)*Math.PI/180,r=n.ring*RING_R;return{x:r*Math.cos(t),y:r*Math.sin(t)}}
+const nodeR=n=>!n.ring?13:Array.isArray(n.area)?16:10;
+const colOf=(n,i=0)=>n.area==null?'var(--fg)':`var(--${BOARDS[Array.isArray(n.area)?n.area[i]:n.area].col})`;
+const areaName=n=>n.area==null?'Start':Array.isArray(n.area)?n.area.map(a=>BOARDS[a].name).join(' + ')+' keystone':BOARDS[n.area].name;
+const andList=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a.at(-1);
+const forkMates=n=>n.fork?NODES.filter(m=>m.fork===n.fork&&m.id!==n.id):[];
+const canBuy=n=>!ipoFiled&&nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=nodeCash(n);
+// was: rates when the roadmap opened, so closing it can celebrate every board that changed. sel: the selected node id. confirm: the respec confirm step is showing.
+const TREE={x:0,y:0,k:1,sel:null,was:null,confirm:false};
+function nodeLabel(n,s){const c=owned[n.id]||0;return `${n.name}, ${n.ring===0?'start':c&&n.rep?`shipped ${plural(c,'time')}`:c?'shipped':s==='available'?(canBuy(n)?'ready to buy':'available, not affordable yet'):s==='locked'?'ruled out':'not reachable yet'}`}
+function treeHead(){const cap=Math.floor(rpCap()+1e-9);$('tr-pts').textContent=`${Math.floor(rp+1e-9)} / ${cap}`;$('tr-inc').textContent=`+${rpIncome().toFixed(1)} a month`;$('tr-cash').textContent=fmt(cash);$('tr-cash').className=cash<0?'warn':'';
+  const b=$('tr-respec'),k=respecCost();setBtn(b,respecUsed?'Respec used':`Respec <b>${fmt(k)}</b>`);b.disabled=respecUsed||ipoFiled||cash<k||!NODES.some(n=>n.ring&&owned[n.id])}
+function renderTree(){const st={};for(const n of NODES)st[n.id]=nodeState(n.id);const vis=NODES.filter(n=>st[n.id]!=='closed'),has=n=>n.ring===0||owned[n.id]>0;
+  const rings=Math.max(1,...NODES.map(n=>n.ring)),R=(rings+.7)*RING_R,h=Math.PI/6,pt=(r,t)=>`${(r*Math.cos(t)).toFixed(1)} ${(r*Math.sin(t)).toFixed(1)}`;let bg='';
+  for(let a=0;a<NB;a++){const c=(-90+a*60)*Math.PI/180,shut=a===5&&!expOpen();
+    bg+=`<path class="tr-wedge${shut?' shut':''}" style="--c:var(--${BOARDS[a].col})" d="M0 0L${pt(R,c-h)}A${R} ${R} 0 0 1 ${pt(R,c+h)}Z"/><text class="tr-area" style="--c:var(--${BOARDS[a].col})" x="${(R+16)*Math.cos(c)}" y="${(R+16)*Math.sin(c)}">${BOARDS[a].name.toUpperCase()}</text>`;
+    if(shut)bg+=`<text class="tr-shut" x="${R*.55*Math.cos(c)}" y="${R*.55*Math.sin(c)}">Unlocks at $${EXP_AT/1e6}M</text>`}
+  for(let r=1;r<=rings;r++)bg+=`<circle class="tr-ring" r="${r*RING_R}"/>`;$('tr-bg').innerHTML=bg;
+  let ed='';const seen=new Set();
+  for(const n of vis)for(const id of n.adj){const m=NODE_IX[id],k=n.id<id?n.id+'|'+id:id+'|'+n.id;if(st[id]==='closed'||seen.has(k))continue;seen.add(k);
+    const a=nodePos(n),b=nodePos(m),o=n.ring>=m.ring?n:m,cls=has(n)&&has(m)?' lit':(has(n)&&st[id]==='available')||(has(m)&&st[n.id]==='available')?' next':st[n.id]==='locked'||st[id]==='locked'?' dead':'';
+    ed+=`<line class="tr-edge${cls}" style="--c:${colOf(o)}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"/>`}
+  $('tr-edges').innerHTML=ed;
+  let nd='';for(const n of [...vis].sort((a,b)=>a.ring-b.ring||((wedgeAng(a)+(a.slot||0)*WEDGE_SPREAD+450)%360)-((wedgeAng(b)+(b.slot||0)*WEDGE_SPREAD+450)%360))){
+    const p=nodePos(n),s=st[n.id],c=owned[n.id]||0,r=nodeR(n),key=Array.isArray(n.area),shape=key?`<path class="tr-shape" d="M0 ${-r}L${r} 0L0 ${r}L${-r} 0Z"/><path class="tr-in" d="M0 -5L5 0L0 5L-5 0Z"/>`:`<circle class="tr-shape" r="${r}"/>`;
+    const L=Math.hypot(p.x,p.y)||1,dx=n.ring?p.x/L:0,dy=n.ring?p.y/L:1,anc=dx>.35?'start':dx<-.35?'end':'middle',base=dy>.35?'hanging':dy<-.35?'auto':'central';
+    nd+=`<g class="tr-node ${has(n)?'own':s}${canBuy(n)?' can':''}${TREE.sel===n.id?' sel':''}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(nodeLabel(n,s))}" transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})" style="--c:${colOf(n)};--c2:${colOf(n,1)}">`+
+      (canBuy(n)?(key?`<path class="tr-pulse" d="M0 ${-r}L${r} 0L0 ${r}L${-r} 0Z"/>`:`<circle class="tr-pulse" r="${r}"/>`):'')+`<g class="tr-pop">${shape}`+
+      (s==='locked'?`<line class="tr-strike" x1="${-r-3}" y1="${r+3}" x2="${r+3}" y2="${-r-3}"/>`:'')+(n.rep?`<text class="tr-cnt">${c}</text>`:'')+
+      `</g><text class="tr-lbl" x="${(dx*(r+5)).toFixed(1)}" y="${(dy*(r+5)).toFixed(1)}" text-anchor="${anc}" dominant-baseline="${base}">${esc(n.name)}</text></g>`}
+  $('tr-nodes').innerHTML=nd;treeHead();renderDetail()}
+function renderDetail(){const d=$('tr-detail'),n=TREE.sel&&NODE_IX[TREE.sel],x='<button class="campbtn tr-dx" id="tr-dx" aria-label="Close details">&times;</button>';d.style.removeProperty('--c');
+  if(TREE.confirm){let back=0;for(const id in paid)back+=paid[id];const k=respecCost();d.className='tr-detail';
+    d.innerHTML=`${x}<small>Respec · once a game</small><h3>Start the roadmap over</h3><p>Every node you've shipped is removed and its roadmap points come back (${plural(back,'point')}, which can go over the usual limit). Forks you closed open again. You can only do this once.</p><dl class="tr-cost"><dt>Cash</dt><dd class="${cash<k?'warn':''}">${fmt(k)}</dd></dl><div class="tr-btns"><button class="campbtn" id="tr-rs-no">Cancel</button><button class="buy" id="tr-rs-yes"${respecUsed||ipoFiled||cash<k?' disabled':''}>Respec <b>${fmt(k)}</b></button></div>`;return}
+  if(!n||nodeState(n.id)==='closed'){d.className='tr-detail empty';d.innerHTML=`<p class="tr-hint">${wide.matches?'Click a node to see what it does. Drag to move, scroll to zoom.':'Tap a node to see what it does. Drag to move, pinch to zoom.'} You can ship a node linked to one you own.</p>`;return}
+  const s=nodeState(n.id),c=owned[n.id]||0,pts=nodePts(n),k=nodeCash(n),mates=forkMates(n);d.className='tr-detail';d.style.setProperty('--c',colOf(n));
+  let state;if(n.ring===0)state='Where every roadmap starts. Ship the nodes linked to it first.';
+  else if(s==='locked')state=`Ruled out by ${andList(mates.filter(m=>owned[m.id]).map(m=>m.name))}.${respecUsed?'':' A respec frees it.'}`;
+  else if(s==='unreachable')state='Ship a linked node first.';
+  else if(s==='owned')state='Shipped.';
+  else if(ipoFiled)state='Buying closed when you filed for an IPO.';
+  else if(mates.length)state=`Taking this rules out ${andList(mates.map(m=>m.name))}.`;
+  else state=n.rep?(c?`Shipped ${plural(c,'time')}. Each one costs a point more.`:'Repeatable: each one costs a point more.'):canBuy(n)?'Ready to ship.':'Ready to ship once you can afford it.';
+  const buy=s==='available'?`<button class="buy" id="tr-buy"${canBuy(n)?'':' disabled'}>${ipoFiled?'Buying is closed':`Buy <b>${plural(pts,'point')} · ${fmt(k)}</b>`}</button>`:'';
+  d.innerHTML=`${x}<small>${esc(areaName(n))}${n.rep?' · repeatable':''}</small><h3>${esc(n.name)}</h3><p>${esc(n.desc)}</p>`+
+    (s==='available'||s==='unreachable'||s==='locked'?`<dl class="tr-cost"><dt>Roadmap points</dt><dd class="${rp<pts?'warn':''}">${pts}</dd><dt>Cash</dt><dd class="${cash<k?'warn':''}">${fmt(k)}</dd></dl>`:'')+
+    `<p class="tr-state${mates.length&&s==='available'?' fork':''}">${esc(state)}</p>${buy}`}
+function treeView(){$('tr-view').setAttribute('transform',`translate(${TREE.x.toFixed(1)} ${TREE.y.toFixed(1)}) scale(${TREE.k.toFixed(4)})`);const v=$('tr-svg');v.style.setProperty('--k',TREE.k);v.classList.toggle('lbl',TREE.k>=1.15)}
+const sheetH=()=>wide.matches?0:$('tr-detail').offsetHeight||0;
+// Fit every node you own or can take, leaving room for the bottom sheet on phones.
+function fitTree(){const r=$('tr-svg').getBoundingClientRect(),H=Math.max(80,r.height-sheetH()),ps=NODES.filter(n=>{const s=nodeState(n.id);return s!=='unreachable'&&s!=='closed'}).map(nodePos),pad=RING_R*.75;
+  const x0=Math.min(...ps.map(p=>p.x))-pad,x1=Math.max(...ps.map(p=>p.x))+pad,y0=Math.min(...ps.map(p=>p.y))-pad,y1=Math.max(...ps.map(p=>p.y))+pad;
+  TREE.k=Math.max(TREE_K[0],Math.min(2.2,r.width/(x1-x0),H/(y1-y0)));TREE.x=r.width/2-(x0+x1)/2*TREE.k;TREE.y=H/2-(y0+y1)/2*TREE.k;treeView()}
+function zoomAt(px,py,f){const k=Math.max(TREE_K[0],Math.min(TREE_K[1],TREE.k*f)),q=k/TREE.k;TREE.x=px-(px-TREE.x)*q;TREE.y=py-(py-TREE.y)*q;TREE.k=k;treeView()}
+// Pan a node into view if it sits off screen or under the bottom sheet.
+function showNode(n){const r=$('tr-svg').getBoundingClientRect(),p=nodePos(n),sx=p.x*TREE.k+TREE.x,sy=p.y*TREE.k+TREE.y,m=40,H=r.height-sheetH();
+  if(sx<m||sx>r.width-m)TREE.x+=r.width/2-sx;if(sy<m||sy>H-m)TREE.y+=Math.max(m,H/2)-sy;treeView()}
+function selectNode(id){TREE.sel=id;TREE.confirm=false;for(const g of $('tr-nodes').querySelectorAll('.tr-node'))g.classList.toggle('sel',g.dataset.id===id);renderDetail();const n=id&&NODE_IX[id];if(n)showNode(n)}
+function hitNode(px,py){const tx=(px-TREE.x)/TREE.k,ty=(py-TREE.y)/TREE.k;let best=null,bd=Infinity;
+  for(const n of NODES){if(nodeState(n.id)==='closed')continue;const p=nodePos(n),d=Math.hypot(p.x-tx,p.y-ty);if(d<bd){bd=d;best=n}}
+  return best&&bd*TREE.k<=Math.max(22,nodeR(best)*TREE.k+6)?best:null}
+function openTree(){TREE.was={rates:RATES.map(rateOf),pc:paidChurn()};TREE.sel=null;TREE.confirm=false;pausedAt=performance.now();$('tree').showModal();$('tr-svg').focus({preventScroll:true});renderTree();fitTree()}
+// The level-up moment: rings, sparks and the gain rising off the node, plus the chime. The boards celebrate when the roadmap closes.
+function burstAt(n){const p=nodePos(n),g=document.createElementNS(SVGNS,'g');g.setAttribute('class','tr-burst');g.setAttribute('transform',`translate(${p.x} ${p.y})`);g.style.setProperty('--c',colOf(n));
+  let h='<circle class="b-ring" r="12"/><circle class="b-ring b2" r="12"/>';for(let i=0;i<12;i++)h+=`<g transform="rotate(${i*30})"><line class="b-spark" y1="${-nodeR(n)-3}" y2="${-nodeR(n)-11}" style="animation-delay:${(i%3)*50}ms"/></g>`;
+  g.innerHTML=h+`<text class="b-txt" y="${-nodeR(n)-14}">${esc(fxText(n.fx))}</text>`;$('tr-fx').append(g);setTimeout(()=>g.remove(),1600)}
+function treeBuy(id){const n=NODE_IX[id];if(!buyNode(id))return;sfx('upgrade');renderTree();burstAt(n);
+  const e=$('tr-nodes').querySelector(`[data-id="${id}"]`);if(e)e.classList.add('pop');const s=$('tr-pts-s');s.classList.remove('flash');void s.offsetWidth;s.classList.add('flash')}
+$('rm-open').addEventListener('click',openTree);
+$('tree').addEventListener('close',()=>{const w=TREE.was;TREE.was=null;TREE.confirm=false;$('tr-fx').innerHTML='';if(!w)return;let q=false;
+  for(let b=0;b<NB;b++){const d=rateOf(RATES[b])-w.rates[b];if(Math.abs(d)>1e-9){celebrate(b,signed(d*100,' pts ')+RATES[b].label,true,q);q=true}}
+  const dc=paidChurn()-w.pc;if(Math.abs(dc)>1e-9)celebrate(4,signed(dc*100,' pts churn'),false,q)});
+$('tr-detail').addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.id==='tr-buy')treeBuy(TREE.sel);else if(t.id==='tr-dx')selectNode(null);else if(t.id==='tr-rs-no'){TREE.confirm=false;renderDetail()}
+  else if(t.id==='tr-rs-yes'){const k=respecCost();if(respec()){TREE.sel=null;TREE.confirm=false;sfx('good');say(`<b>Roadmap reset</b> for ${fmt(k)}. Your roadmap points are back and every fork is open again.`);renderTree();fitTree()}}});
+$('tr-respec').addEventListener('click',()=>{TREE.confirm=true;TREE.sel=null;renderTree()});
+$('tr-zin').addEventListener('click',()=>{const r=$('tr-svg').getBoundingClientRect();zoomAt(r.width/2,(r.height-sheetH())/2,1.3)});
+$('tr-zout').addEventListener('click',()=>{const r=$('tr-svg').getBoundingClientRect();zoomAt(r.width/2,(r.height-sheetH())/2,1/1.3)});
+$('tr-fit').addEventListener('click',fitTree);
+// Input: one pointer drags, two pinch (zoom about their midpoint and pan with it), a press that barely moves is a tap. Wheel zooms toward the cursor.
+{const P=new Map(),svg=$('tr-svg');let rect=null,moved=0;const loc=e=>({x:e.clientX-rect.left,y:e.clientY-rect.top});
+  svg.addEventListener('pointerdown',e=>{if(e.button>0)return;rect=svg.getBoundingClientRect();try{svg.setPointerCapture(e.pointerId)}catch{}P.set(e.pointerId,loc(e));if(P.size===1)moved=0;else moved=1e9;svg.classList.add('drag')});
+  svg.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;const a=P.get(e.pointerId),b=loc(e);
+    if(P.size===1){TREE.x+=b.x-a.x;TREE.y+=b.y-a.y;moved+=Math.hypot(b.x-a.x,b.y-a.y);P.set(e.pointerId,b);treeView();return}
+    const [o]=[...P.entries()].filter(([id])=>id!==e.pointerId).map(([,p])=>p),m0={x:(a.x+o.x)/2,y:(a.y+o.y)/2},m1={x:(b.x+o.x)/2,y:(b.y+o.y)/2},d0=Math.hypot(a.x-o.x,a.y-o.y),d1=Math.hypot(b.x-o.x,b.y-o.y);
+    P.set(e.pointerId,b);TREE.x+=m1.x-m0.x;TREE.y+=m1.y-m0.y;if(d0>4)zoomAt(m1.x,m1.y,d1/d0);else treeView()});
+  const up=e=>{if(!P.has(e.pointerId))return;const p=loc(e);P.delete(e.pointerId);if(!P.size)svg.classList.remove('drag');
+    if(e.type==='pointerup'&&!P.size&&moved<8){const n=hitNode(p.x,p.y);selectNode(n?n.id:null)}};
+  svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+  svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect(),d=e.deltaMode===1?e.deltaY*16:e.deltaY;zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-d*.0015))},{passive:false});
+  $('tr-nodes').addEventListener('keydown',e=>{const g=e.target.closest('.tr-node');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectNode(g.dataset.id)}});
+  $('tr-nodes').addEventListener('focusin',e=>{const g=e.target.closest('.tr-node');if(g&&!P.size)showNode(NODE_IX[g.dataset.id])});}
 const ROLE_LIFT=.15,ROLE_MAX=3;
 const ROLES=[
   {id:'pd',name:'Product designer',board:1,salary:6000,at:75e4,label:'activation',blurb:'Smooths onboarding'},
@@ -739,7 +926,7 @@ let mileMonth=[];
 const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;
 function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||ipoFiled||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());let pts=0;for(let i=msLvl;i<n;i++)pts+=RP_MILE[i]||0;rp+=pts;msLvl=n;const m=MILES[n-1],nx=MILES[n];
   showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}${pts?` Your team banks ${pts} roadmap points.`:''}`)}
-for(const id of ['ev','sum'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
+for(const id of ['ev','sum','tree'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
 // IPO readiness. Targets are game simplifications. Every criterion must hold at IPO.hold month rollovers in a row before filing.
 const IPO={arr:1e8,nrr:1.10,r40:40,growth:.30,hold:3};let ipoHold=0,ipoFiled=false,ipoSnap=null,playMs=0;
 // Year-on-year MRR growth against the oldest ledger entry (13 months back at most). Null until there is one with MRR.
