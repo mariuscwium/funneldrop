@@ -4,10 +4,19 @@ const {load}=require('./harness.js');
 const near=(a,b,e=1e-9)=>assert.ok(Math.abs(a-b)<e,`${a} vs ${b}`);
 const fresh=o=>{const a=load(o);a.g('randomEvent=()=>{};annualReview=()=>{}');return a};
 
-test('founders alone earn RP_FOUNDER a month', () => {
+test('founders alone earn one point a year', () => {
   const {g,months}=fresh();
-  g('rp=0;cash=0');months(4);
-  near(g('rp'),4*g('RP_FOUNDER'),.05);
+  near(g('RP_FOUNDER*12'),1);
+  g('rp=0;cash=0');months(12);
+  near(g('rp'),1,.05);
+});
+
+test('point income reads per year below half a point a month', () => {
+  const {g}=fresh();
+  g('staff=[];restaff()');
+  assert.equal(g('rpRate()'),'1 point a year');
+  g('for(let i=0;i<3;i++)hire("eng");staff.forEach(e=>e.hired=-99);restaff()');
+  assert.match(g('rpRate()'),/^\d+\.\d points a month$/);
 });
 
 test('engineers add RP_ENG*engEff, with diminishing returns', () => {
@@ -22,7 +31,7 @@ test('engineers add RP_ENG*engEff, with diminishing returns', () => {
 
 test('rp stops at the cap and an overshoot is kept', () => {
   const {g,months}=fresh();
-  g('rp=0');months(14);near(g('rp'),g('rpCap()'),1e-6);near(g('rp'),6,1e-6);
+  g('rp=5.9');months(3);near(g('rp'),g('rpCap()'),1e-6);near(g('rp'),6,1e-6);
   g('rp=rpCap()+5');const v=g('rp');months(1);assert.equal(g('rp'),v);
 });
 

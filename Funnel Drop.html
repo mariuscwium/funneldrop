@@ -65,6 +65,14 @@ h1 em{font-style:normal;color:var(--paid)}
 .msg b{color:var(--fg)}
 .msg b.good,#ev.good #ev-title{color:var(--paid)}
 .msg b.bad,#ev.bad #ev-title{color:var(--warn)}
+#toasts{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:16px;z-index:20;display:flex;flex-direction:column;gap:8px;width:min(340px,calc(100vw - 32px));pointer-events:none}
+.toast{pointer-events:auto;cursor:pointer;background:var(--panel);color:var(--muted);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.4;box-shadow:0 6px 20px rgb(0 0 0/.18);animation:toast-in .2s ease-out;transition:opacity .25s,transform .25s}
+.toast b{color:var(--fg)}
+.toast.good{border-left-color:var(--paid)}.toast.bad{border-left-color:var(--warn)}
+.toast b.good{color:var(--paid)}.toast b.bad{color:var(--warn)}
+.toast.out{opacity:0;transform:translateX(8px)}
+@keyframes toast-in{from{opacity:0;transform:translateX(12px)}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none;transition:none}}
 #ev,#sum,#over{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
 #sum,#over{width:min(420px,calc(100vw - 32px))}
 #ev::backdrop,#sum::backdrop,#over::backdrop{background:var(--scrim)}
@@ -158,8 +166,8 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   #h-act{display:block}
   .boardcol,.actions,.stats{gap:6px}
   .side>*{flex:none}
-  .side .msg{flex:none;min-height:4lh}
-  .side .msg.intro{visibility:hidden;height:4lh;overflow:hidden}
+  .side .msg{display:none}
+  #toasts{top:calc(env(safe-area-inset-top,0px) + 76px)}
   .play{display:contents}
 }
 @media (min-width:860px) and (max-width:1599px){
@@ -266,6 +274,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 }
 </style>
 
+<div id="toasts" role="status" aria-live="polite"></div>
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><button class="buy" id="ev-act" type="button" hidden></button><form method="dialog"><button class="buy">Continue</button></form></dialog>
 <dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><div id="sum-reveal" class="reveal"></div><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
 <dialog id="over" aria-labelledby="over-title"><small>Game over</small><b id="over-title"></b><ol id="over-story"></ol><div id="over-reveal" class="reveal"></div><dl id="over-stats"></dl><div class="sumbtns"><button class="campbtn" id="over-new">New game</button></div></dialog>
@@ -285,7 +294,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
   </div>
   <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month), and about 22% of that goes on hosting and support. You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
-  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Roadmap items quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div></div><div class="upgrades" id="upgrades"><h2>Roadmap</h2><div class="upgrades" id="upglist"><button class="upg" id="rm-open" style="--c:var(--act)"><b>Open roadmap</b><span class="cost" id="rm-pts">2 points</span><small id="rm-meta">Product work you can ship. Each item costs roadmap points and cash.</small></button></div><h2 id="h-team">Team <span id="team-n"></span></h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
+  <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Roadmap</h2><div class="upgrades" id="upglist"><button class="upg" id="rm-open" style="--c:var(--act)"><b>Open roadmap</b><span class="cost" id="rm-pts">0 points</span><small id="rm-meta">Product work you can ship. Each item costs roadmap points and cash.</small></button></div></div><div class="upgrades" id="upgrades"><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Roadmap items quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div><h2 id="h-team">Team <span id="team-n"></span></h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
   <canvas id="cv" aria-label="Six stacked boards: one per pirate metric (acquisition, activation, retention, referral and revenue), then expansion, locked until a $1M valuation."></canvas>
   </div><div class="side" id="side"><div class="stats">
@@ -444,7 +453,14 @@ function renderCh(){
     <button class="campbtn" data-camp="${c.id}" id="cc-${c.id}">New campaign <b>${fmt(campCost(c))}</b></button></div>`
    :`<div class="chan locked"><div class="nm"><b>${c.name}</b><small id="cl-${c.id}">${c.pitch}: ${perAd(c)} visitors per ad, at ${fmt(adCost(c))} an ad.</small></div><button class="campbtn" data-unlock="${c.id}" id="cu-${c.id}">Unlock <b>${fmt(c.unlock)}</b></button></div>`).join('');
 }
-function say(t){const m=$('msg');m.classList.remove('intro');m.innerHTML=t}
+// Messages are toasts, top right: newest first, at most TOAST_MAX, a repeat replaces its earlier copy. They stay longer for longer text,
+// wait while hovered and close on click. The first one also hides the phone intro in #msg.
+const TOAST_MAX=3,toastMs=t=>Math.min(12000,3500+45*t.replace(/<[^>]*>/g,'').length);
+function say(t){$('msg').hidden=true;const box=$('toasts');for(const e of Array.from(box.children))if(e.innerHTML===t)e.remove();
+  const e=document.createElement('div');e.className='toast';const k=/class="(good|bad)"/.exec(t);if(k)e.classList.add(k[1]);e.innerHTML=t;box.prepend(e);
+  let timer=0;const out=()=>{e.classList.add('out');setTimeout(()=>e.remove(),250)},arm=()=>{clearTimeout(timer);timer=setTimeout(out,toastMs(t))};arm();
+  e.addEventListener('mouseenter',()=>clearTimeout(timer));e.addEventListener('mouseleave',arm);e.addEventListener('click',out);
+  for(const x of Array.from(box.children).slice(TOAST_MAX))x.remove()}
 const aimed=(src,b)=>{const c=src&&CHANNELS.find(x=>x.id===src);return c&&c.aim===b?c:null};
 function enter(b,friend,x,src){x??=12+Math.random()*(W-24);const a=aimed(src,b);if(a){const c=CENTERS[b].reduce((p,q)=>Math.abs(q-x)<Math.abs(p-x)?q:p);x=c+(x-c)*a.pull}into[b]++;return{b,friend,src,x,y:b*BH+12,vx:(Math.random()-.5)*30,vy:0,age:0}}
 // 3rd lowest of 8 uniforms is Beta(3,6): 1 to 25, peaking near 8.
@@ -561,12 +577,12 @@ function hud(){
   const mrr=MRR(),mult=revMult(),val=mrr*12*mult;peak=Math.max(peak,val);
   $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);{const r=NRR12();$('cNrr').textContent=(r==null?'–':Math.round(r*100)+'%')+' / 109%'}checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
-  $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;{const t=performance.now();if(t-rmT>250||t<rmT){rmT=t;rmN=!atRisk()?0:readyNow()}}{const sc=Math.round((staleMult()-1)*100);$('rm-meta').textContent=`${rmN?`${rmN} ready to buy now. `:''}+${rpIncome().toFixed(1)} points a month, up to ${Math.floor(rpCap()+1e-9)} stored. ${sc?'Ship something to stop falling behind.':rmN?'':'Each item costs roadmap points and cash.'}`;$('cStale').textContent=sc?`+${sc}%`:'–';$('cStale').className=sc?'warn':'';$('cStale').previousElementSibling.hidden=$('cStale').hidden=!sc}$('csm-cov').textContent=csmCovers();
+  $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;{const t=performance.now();if(t-rmT>250||t<rmT){rmT=t;rmN=!atRisk()?0:readyNow()}}{const sc=Math.round((staleMult()-1)*100);$('rm-meta').textContent=`${rmN?`${rmN} ready to buy now. `:''}+${rpRate()}, up to ${Math.floor(rpCap()+1e-9)} stored. ${sc?'Ship something to stop falling behind.':rmN?'':'Each item costs roadmap points and cash.'}`;$('cStale').textContent=sc?`+${sc}%`:'–';$('cStale').className=sc?'warn':'';$('cStale').previousElementSibling.hidden=$('cStale').hidden=!sc}$('csm-cov').textContent=csmCovers();
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),gate('eng',ENG.at,heads('eng'),'Engineer'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.filter(l=>!l.hidden).map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=netFlow(),rw=runway(),rc=rw==null?null:Math.max(0,rw);{const e=$('cInsol');e.previousElementSibling.hidden=e.hidden=insolvent<=0||!atRisk();if(insolvent>0){const n=Math.max(0,INSOLVENT_MONTHS-insolvent);e.textContent=`closes in ${n} month${n===1?'':'s'}`;e.className='warn'}}{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rc==null;if(rc!=null){e.textContent=`${rc<3?rc.toFixed(1):Math.round(rc)} months`;e.className=rc<6?'warn':''}}{const e=$('cCase'),l=$('cCaseL');l.hidden=e.hidden=!lawCase;if(lawCase){l.textContent=lawCase.axis?'Audit':'Investigation';const n=Math.max(0,lawCase.due-month);e.textContent=`ruling in ${n} month${n===1?'':'s'}`}}{const e=$('cBoard');e.previousElementSibling.hidden=e.hidden=!board;if(board)boardHud(e)}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
-   showCount('csm');showCount('mm');showCount('eng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpIncome().toFixed(1)} roadmap points a month in total`;$('e-hire').disabled=!atRisk()||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=!atRisk()||cash<10*ENG.salary;{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=!atRisk()||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=!atRisk()||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
+   showCount('csm');showCount('mm');showCount('eng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpRate().replace('point','roadmap point')} in total`;$('e-hire').disabled=!atRisk()||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=!atRisk()||cash<10*ENG.salary;{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=!atRisk()||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=!atRisk()||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
    {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=!atRisk()||!g||cash<g*CSM.salary;$('t-hire10').disabled=!atRisk()||cash<10*CSM.salary;$('m-hire10').disabled=!atRisk()||cash<10*MM.salary}
    for(const r of ROLES){showCount(r.id,ROLE_MAX);$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=!atRisk()||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
   ipoHud();$('price').disabled=!atRisk();
@@ -669,7 +685,7 @@ $('price').addEventListener('input',e=>setPrice(+e.target.value));
 // Roadmap (tech tree). Nodes cost roadmap points and cash. You can take a node linked to one you own; nodes sharing a fork id exclude each other.
 // area 0-5 is a funnel wedge, [a,b] a keystone between two; ring is the distance out, slot the angle inside the wedge (-1..1). al is hidden ([g,l], each -1..1).
 // fx holds the node's effects (see FX_KEYS); a repeatable (rep) can be bought again for a point more each time.
-const RP_START=2;
+const RP_START=0;
 const mkNode=(id,name,desc,area,ring,slot,links,pts,cash,al,fx,fork=null,rep=false)=>({id,name,desc,area,ring,slot,links,fork,pts,cash,al,fx,rep});
 // Costs from the ring: points equal the ring (keystones 6, repeatables from 4), cash by ring, EXP_CASH times that for anything touching
 // Expansion (enterprise features take more work to sell and support). The seeds keep their own.
@@ -823,9 +839,11 @@ const OLD_SEEDS={acq:'acq1',act:'act1',ret:'ret1',ref:'ref1',rev:'rev1',churn:'c
 const CSM={salary:6000,covers:150,mult:.75,at:5e5},csmCovers=()=>Math.round(CSM.covers*(1+FX.csm));let warnedNeg=0;
 const MM={salary:6000,visitors:400,at:5e5};
 // Roadmap points. Founders give a trickle, engineers (diminishing returns like mmEff) and the product roles more. Invented numbers.
-const RP_FOUNDER=.5,ENG={salary:7000,at:2e4},RP_ENG=.5,ENG_K=5,ENG_P=.5,RP_PD=.15,RP_CAP_MONTHS=3,RP_CAP_MIN=6,RP_MILE=[2,3,5,8,12];
+const RP_FOUNDER=1/12,ENG={salary:7000,at:2e4},RP_ENG=.5,ENG_K=5,ENG_P=.5,RP_PD=.15,RP_CAP_MONTHS=3,RP_CAP_MIN=6,RP_MILE=[2,3,5,8,12];
 const engEff=()=>dimEff(ENG_K,ENG_P,strength('eng'));
 const rpIncome=()=>(RP_FOUNDER+RP_ENG*engEff()+RP_PD*(strength('pd')+strength('pe')))*(1+FX.rp),rpCap=()=>Math.max(RP_CAP_MIN,RP_CAP_MONTHS*rpIncome());
+// Income as copy: per year while it's a trickle (founders alone make 1 a year), per month from half a point a month.
+function rpRate(){const m=rpIncome();if(m>=.5)return `${m.toFixed(1)} points a month`;const y=Math.round(m*12*10)/10;return `${y} point${y===1?'':'s'} a year`}
 // Falling behind: month rollovers since the last ship that found something shippable. Raises paid churn after a grace period,
 // but only while the latest rollover found something shippable (staleOn, cached so churn code needn't call shippable()) and never after filing.
 const STALE_GRACE=6,STALE_STEP=.02,STALE_MAX=.3;let stale=0,staleOn=false;
@@ -847,7 +865,7 @@ const canBuy=n=>atRisk()&&nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=n
 // was: rates when the roadmap opened, so closing it can celebrate every board that changed. sel: the selected node id. confirm: the respec confirm step is showing. lk: the zoom the labels were placed for.
 const TREE={x:0,y:0,k:1,sel:null,was:null,confirm:false,lk:null};
 function nodeLabel(n,s){const c=owned[n.id]||0;return `${n.name}, ${n.ring===0?'start':c&&n.rep?`shipped ${plural(c,'time')}`:c?'shipped':s==='available'?(canBuy(n)?'ready to buy':'available, not affordable yet'):s==='locked'?'ruled out':'not reachable yet'}`}
-function treeHead(){const cap=Math.floor(rpCap()+1e-9);$('tr-pts').textContent=`${Math.floor(rp+1e-9)} / ${cap}`;$('tr-inc').textContent=`+${rpIncome().toFixed(1)} a month`;$('tr-cash').textContent=fmt(cash);$('tr-cash').className=cash<0?'warn':'';
+function treeHead(){const cap=Math.floor(rpCap()+1e-9);$('tr-pts').textContent=`${Math.floor(rp+1e-9)} / ${cap}`;$('tr-inc').textContent=`+${rpRate()}`;$('tr-cash').textContent=fmt(cash);$('tr-cash').className=cash<0?'warn':'';
   const b=$('tr-respec'),k=respecCost();setBtn(b,respecUsed?'Respec used':`Respec <b>${fmt(k)}</b>`);b.disabled=respecUsed||!atRisk()||cash<k||!NODES.some(n=>n.ring&&owned[n.id])}
 function renderTree(){const st={};for(const n of NODES)st[n.id]=nodeState(n.id);const vis=NODES.filter(n=>st[n.id]!=='closed'),has=n=>n.ring===0||owned[n.id]>0;
   const rings=Math.max(1,...NODES.map(n=>n.ring)),R=(rings+.7)*RING_R,h=Math.PI/6,pt=(r,t)=>`${(r*Math.cos(t)).toFixed(1)} ${(r*Math.sin(t)).toFixed(1)}`;let bg='';
@@ -991,7 +1009,7 @@ $('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:de
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-hire10">+10</button><button class="campbtn" id="t-cover">Cover all</button><button class="campbtn" id="t-fire">Let go</button></span></div>
 <div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager<span class="hc" id="hc-mm"></span></b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: the first adds about ${Math.round(MM.visitors*dimEff(MM_K,MM_P,1)/10)*10} free visitors a month once ramped up, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. Each extra one adds less: 10 do the work of about ${Math.round(dimEff(MM_K,MM_P,10))}, 100 of about ${Math.round(dimEff(MM_K,MM_P,100))}. <span id="m-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-hire10">+10</button><button class="campbtn" id="m-fire">Let go</button></span></div>
-<div class="upg" id="c-eng" style="--c:var(--act);cursor:default"><b>Engineer<span class="hc" id="hc-eng"></span></b><span class="cost" id="s-eng"></span><small>Builds the roadmap: about ${RP_ENG} point a month once ramped up, on top of the founders' ${RP_FOUNDER}. Each extra one adds less: 10 do the work of about ${Math.round(dimEff(ENG_K,ENG_P,10))}, 100 of about ${Math.round(dimEff(ENG_K,ENG_P,100))}. <span id="e-meta"></span></small>
+<div class="upg" id="c-eng" style="--c:var(--act);cursor:default"><b>Engineer<span class="hc" id="hc-eng"></span></b><span class="cost" id="s-eng"></span><small>Builds the roadmap: about ${RP_ENG} point a month once ramped up, on top of the founders' ${Math.round(RP_FOUNDER*12)} a year. Each extra one adds less: 10 do the work of about ${Math.round(dimEff(ENG_K,ENG_P,10))}, 100 of about ${Math.round(dimEff(ENG_K,ENG_P,100))}. <span id="e-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="e-hire">Hire</button><button class="campbtn" id="e-hire10">+10</button><button class="campbtn" id="e-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}<span class="hc" id="hc-${r.id}"></span></b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
 ROLES.forEach(r=>{
@@ -1073,7 +1091,7 @@ const evQueue=[];
 let evAct=null;
 function useEvAct(){const a=evAct;evAct=null;if(a)a.run();$('ev').close()}
 $('ev-act').addEventListener('click',useEvAct);
-function showEv(k,kind,name,t,act,again){if(!again&&(kind==='Good news'||kind==='Bad news'))evSeen[name]=(evSeen[name]||0)+1;if($('ev').open){evQueue.push([k,kind,name,t,act]);return}evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
+function showEv(k,kind,name,t,act,again){if(!again&&(kind==='Good news'||kind==='Bad news'))evSeen[name]=(evSeen[name]||0)+1;if($('ev').open){evQueue.push([k,kind,name,t,act]);return}evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;sfx(kind==='Milestone'?'fanfare':k);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
 function health(){return Math.max(-1,Math.min(1,growth*10+(netFlow()>0?.5:-.5)))}
 // Alignment exposure: each axis sums al × count over owned nodes (not the start), over ALIGN_SCALE, clamped to -1..1. Hidden from the player.

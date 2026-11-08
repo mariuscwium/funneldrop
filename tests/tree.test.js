@@ -112,7 +112,7 @@ test('effects sum and reach the game', () => {
 
 test('the start node is owned and free; refx is idempotent', () => {
   const {g}=tree();
-  assert.equal(g('nodeState("start")'),'owned');assert.equal(g('rp'),g('RP_START'));assert.equal(g('RP_START'),2);
+  assert.equal(g('nodeState("start")'),'owned');assert.equal(g('rp'),g('RP_START'));assert.equal(g('RP_START'),0);
   g('rp=9;cash=1e6;buyNode("rev1");buyNode("ret1")');
   const fx=g('JSON.stringify(FX)'),z=g('JSON.stringify(BOARDS.map(B=>B.zones))');
   g('refx();refx()');
