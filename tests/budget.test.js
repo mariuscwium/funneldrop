@@ -57,15 +57,21 @@ test('closed channels take no budget', () => {
   a.g('setBudget("search",100)');assert.equal(a.g('CHANNELS[1].budget'),0);
 });
 
-test('slider maps 0 to nothing and the top to BUDGET_MAX_ADS ads a day, and back', () => {
+test('slider is a fixed dollar scale: 0 is off, then BUDGET_MIN to BUDGET_TOP times the base ad price, and back', () => {
   const {g}=load();
-  const k=g('adCost(CHANNELS[0])');
+  const k=g('CHANNELS[0].cost');
   assert.equal(g('budgetAt(CHANNELS[0],0)'),0);
-  near(g('budgetAt(CHANNELS[0],1)'),k*.01);
-  near(g(`budgetAt(CHANNELS[0],${g('BUDGET_STEPS')})`),k*g('BUDGET_MAX_ADS'));
+  near(g('budgetAt(CHANNELS[0],1)'),k*g('BUDGET_MIN'));
+  near(g(`budgetAt(CHANNELS[0],${g('BUDGET_STEPS')})`),k*g('BUDGET_TOP'),1e-3);
   let prev=-1;for(let p=0;p<=1000;p+=37){const b=g(`budgetAt(CHANNELS[0],${p})`);assert.ok(b>prev);prev=b}
   for(const p of [0,1,250,600,1000])assert.equal(g(`budgetPos(CHANNELS[0],budgetAt(CHANNELS[0],${p}))`),p);
-  assert.equal(g(`budgetPos(CHANNELS[0],${k*1000})`),1000);
+  assert.equal(g(`budgetPos(CHANNELS[0],${k*1e9})`),1000);
+});
+
+test('a budget keeps its slider position as the company grows', () => {
+  const {g}=load();
+  g('peak=0');const p=g('budgetPos(CHANNELS[0],37)');
+  g('peak=1e9;refx()');assert.equal(g('budgetPos(CHANNELS[0],37)'),p);
 });
 
 test('budgets survive save and load', () => {

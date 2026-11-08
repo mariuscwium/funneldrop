@@ -450,10 +450,12 @@ function runAd(c,t=performance.now()){const v=perAd(c);c.reach*=DECAY;for(let i=
 // Daily ad budgets, as ad platforms run. Spending one ad's price (adCost) brings perAd visitors and multiplies reach by DECAY, exactly as one
 // bought ad did, but continuously: u ads' worth brings c.reach·reachK·(1−DECAY^u)/(1−DECAY), which adds up exactly however it is split.
 // Visitors spawn straight away (like organic traffic), not through queue, so they don't wait behind bursts.
-const DAY=MONTH/30,BUDGET_MAX_ADS=30,BUDGET_MIN=.01,BUDGET_STEPS=1000;let adsBroke=false;
-// The slider: position 0 is off, 1..BUDGET_STEPS run exponentially from BUDGET_MIN to BUDGET_MAX_ADS ads' worth a day, so small budgets get fine control.
-const budgetAt=(c,p)=>p<=0?0:adCost(c)*BUDGET_MIN*(BUDGET_MAX_ADS/BUDGET_MIN)**((p-1)/(BUDGET_STEPS-1));
-const budgetPos=(c,b)=>b<=0?0:Math.max(1,Math.min(BUDGET_STEPS,1+Math.round(Math.log(b/(adCost(c)*BUDGET_MIN))/Math.log(BUDGET_MAX_ADS/BUDGET_MIN)*(BUDGET_STEPS-1))));
+const DAY=MONTH/30,BUDGET_MIN=.01,BUDGET_TOP=1e4,BUDGET_STEPS=1000;let adsBroke=false;
+// The slider: position 0 is off, 1..BUDGET_STEPS run exponentially from BUDGET_MIN to BUDGET_TOP times the channel's base ad price (c.cost) a day
+// ($1 to $1M for social), so small budgets get fine control. The scale is fixed dollars: if it followed adCost, which rises with the company,
+// a steady budget's handle would creep left.
+const budgetAt=(c,p)=>p<=0?0:c.cost*BUDGET_MIN*(BUDGET_TOP/BUDGET_MIN)**((p-1)/(BUDGET_STEPS-1));
+const budgetPos=(c,b)=>b<=0?0:Math.max(1,Math.min(BUDGET_STEPS,1+Math.round(Math.log(b/(c.cost*BUDGET_MIN))/Math.log(BUDGET_TOP/BUDGET_MIN)*(BUDGET_STEPS-1))));
 function setBudget(id,b){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||!c||!c.open)return;c.budget=Math.max(0,+b||0)}
 function adSpend(c,d){const u=d/adCost(c),was=ads;spendCash(d);spend+=d;ads+=u;c.ads+=u;c.vacc+=c.reach*reachK()*(1-DECAY**u)/(1-DECAY);c.reach*=DECAY**u;
   let n=0;while(c.vacc>=1-1e-9){c.vacc--;n++;spawn(enter(0,0,undefined,c.id))}

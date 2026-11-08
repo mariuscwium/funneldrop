@@ -17,8 +17,8 @@ Real ad platforms (Meta, Google, LinkedIn) run on a daily budget per campaign. S
 
 ## The slider (my call)
 
-- An exponential scale from $0 up to a per-channel maximum of `BUDGET_MAX_ADS` (30) ads' worth a day, so small budgets get fine control: 1,000 steps, position 0 = $0, position 1 = 1% of an ad a day.
-- The maximum and minimum follow `adCost(c)`, so the slider keeps its meaning as prices rise. The stored budget is dollars a day. A budget above a new maximum is shown at the end of the track.
+- An exponential scale from $0, then from `BUDGET_MIN` (1%) to `BUDGET_TOP` (10,000×) the channel's base ad price a day: $1 to $1M for social. Small budgets get fine control: 1,000 steps, position 0 = $0.
+- The scale is fixed dollars. A first version followed `adCost(c)`, which rises with the company, so a steady budget's handle crept left (changed 2026-11-08 after Marius spotted it).
 - The label shows "$X/day · about N visitors a day". The channel line shows the cost per visitor at current reach and the channel note.
 
 ## Copy that changes
