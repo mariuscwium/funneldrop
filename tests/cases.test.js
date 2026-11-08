@@ -38,12 +38,12 @@ test('ruling reads exposure at ruling time', () => {
   setAl(a,[-.5,0]);a.g('subs={"49:0":100};paying=100;out[4]=100');
   a.g('__sp=[];const o=spendCash;spendCash=n=>{__sp.push([n,MRR()]);o(n)}');run(a,13);
   assert.equal(a.g('over'),null);assert.equal(a.g('lawCase'),null);
-  assert.ok(a.g('__sp').some(([n,m])=>Math.abs(n-6*m)<m*.01),'paid six months of MRR (consent order, not shut or closed)');
+  assert.ok(a.g('__sp').some(([n,m])=>Math.abs(n-3*m)<m*.01),'paid three months of MRR (consent order, not shut or closed)');
 });
-test('consent order costs six months and customers', () => {
+test('consent order costs three months and customers', () => {
   const a=load({dialogs:true});quiet(a.g);setAl(a,[-.5,0]);a.g('subs={"49:0":100};paying=100;out[4]=100;lawCase={axis:0,due:0}');
   const c=a.g('cash'),m=a.g('MRR()'),p=a.g('paying');a.g('ruleCase()');
-  assert.ok(Math.abs(c-6*m-a.g('cash'))<1);assert.ok(a.g('paying')<p);assert.equal(a.g('lawCase'),null);
+  assert.ok(Math.abs(c-3*m-a.g('cash'))<1);assert.ok(a.g('paying')<p);assert.equal(a.g('lawCase'),null);
 });
 test('closed case is good news', () => {
   const a=load({dialogs:true});quiet(a.g);setAl(a,[-.2,0]);a.g('lawCase={axis:0,due:0}');

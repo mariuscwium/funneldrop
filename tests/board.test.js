@@ -12,16 +12,16 @@ test('no board before $1M', () => {
   a.g('peak=1e6;checkMilestone()');
   assert.equal(a.g('board.conf'),70);assert.match(a.g('$("ev-text").textContent'),/investors now sit on a board/);
 });
-test('stale months cost up to 5 a month', () => {
+test('stale months cost up to 3 a month', () => {
   const a=load();quiet(a.g);a.g(fresh);
   a.g('staleOn=true;stale=STALE_GRACE+9');
-  assert.equal(a.g('JSON.stringify(boardReasons().find(r=>r[0]=="Nothing shipped"))'),'["Nothing shipped",-5]');
+  assert.equal(a.g('JSON.stringify(boardReasons().find(r=>r[0]=="Nothing shipped"))'),'["Nothing shipped",-3]');
   a.g('stale=STALE_GRACE+2');
   assert.equal(a.g('boardReasons().find(r=>r[0]=="Nothing shipped")[1]'),-2);
 });
-test('shipping adds 2', () => {
+test('shipping adds 3', () => {
   const a=load();quiet(a.g);a.g(fresh);a.g('board.shipped=true;boardMonth()');
-  assert.equal(a.g('JSON.stringify(board.why)'),'[["Shipped",2]]');assert.equal(a.g('board.conf'),72);
+  assert.equal(a.g('JSON.stringify(board.why)'),'[["Shipped",3]]');assert.equal(a.g('board.conf'),73);
   assert.equal(a.g('board.shipped'),false);
 });
 test('buying a node counts as shipping', () => {

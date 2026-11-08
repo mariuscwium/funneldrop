@@ -46,9 +46,9 @@ test('reloading into the ending banks no milestone', () => {
 
 const run=(a,n)=>{for(let i=0;i<n;i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close()}};
 const broke='subs={"49:0":10};paying=10;out[4]=10;cash=-1e6';
-test('three insolvent rollovers end the run', () => {
+test('INSOLVENT_MONTHS insolvent rollovers in a row end the run', () => {
   const a=load({dialogs:true});quiet(a.g);a.g(broke);
-  for(let i=0;i<4&&!a.g('over');i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close()}
+  for(let i=0;i<=a.g('INSOLVENT_MONTHS')&&!a.g('over');i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close()}
   assert.equal(a.g('over.kind'),'runway');assert.ok(a.g('over.story[0].month')<a.g('over.month'));
 });
 test('a solvent month resets the count', () => {
@@ -70,7 +70,7 @@ test('soft-lock waits for organic traffic', () => {
   for(let i=0;i<3;i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close();a.g(lock+';seoLvl=1;seoFresh=1;seoRoll=1')}
   assert.equal(a.g('over'),null);
   const b=load({dialogs:true});quiet(b.g);b.g(lock+';seoLvl=0');
-  run(b,2);
+  run(b,b.g('SOFTLOCK_MONTHS'));
   assert.equal(b.g('over.kind'),'runway');
 });
 test('insolvency round-trips', () => {
@@ -113,7 +113,7 @@ test('bridge is offered once and repays like a loan', () => {
   assert.equal(a.g('insolvent'),1);assert.equal(a.g('bridgeOffer()'),true);
   assert.match(a.el('ev-text').textContent,/45%/);
   assert.equal(a.el('ev-act').hidden,false);assert.equal(a.el('ev-act').textContent,'Take it');
-  const c=a.g('cash'),s=a.g('bridgeSize()');assert.ok(s>=5000&&s%500===0);
+  const c=a.g('cash'),s=a.g('bridgeSize()');assert.ok(s>=a.g('BRIDGE_MIN')&&s%500===0);
   assert.equal(a.g('takeBridge()'),true);
   assert.equal(a.g('cash'),c+s);
   const b=bridge(a);assert.equal(b.apr,.45);assert.equal(b.name,'Emergency bridge');

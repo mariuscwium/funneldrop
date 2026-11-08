@@ -76,11 +76,11 @@ test('no alignment words in warnings, endings, rulings or the end screen', () =>
   const clear=()=>{a.g('over=null;ipoFiled=false;warnLog=[];evQueue.length=0;if($("ev").open)$("ev").close();if($("over").open)$("over").close()');};
   // insolvency, with both bridge offers, and the end
   for(const al of [[0,0],[.5,0]]){setAl(a,al);a.g('subs={"49:0":10};paying=10;out[4]=10;cash=-1e6;insolvent=0;bridgeUsed=false');
-    for(let i=0;i<3;i++){a.g('rollRisk()');clear()}}
+    for(let i=0;i<a.g('INSOLVENT_MONTHS');i++){a.g('rollRisk()');clear()}}
   clear();
   // soft-lock
   a.g('cash=0;ads=3;paying=0;subs={};balls.length=0;queue.length=0;seoLvl=0;softMonths=0;insolvent=0');
-  a.g('rollRisk()');clear();a.g('rollRisk()');
+  for(let i=1;i<a.g('SOFTLOCK_MONTHS');i++){a.g('rollRisk()');clear()}a.g('rollRisk()');
   assert.equal(a.g('over.kind'),'runway');
   for(const s of [a.el('over-title').textContent,a.el('over-story').innerHTML,a.el('over-stats').innerHTML,a.el('over').textContent])assert.ok(s&&!WORDS.test(s),s);
   clear();

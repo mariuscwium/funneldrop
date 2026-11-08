@@ -19,6 +19,7 @@ Progress saves in your browser, so you can reload and carry on. **New game** sta
 - **Track net revenue retention.** The Company panel shows how much of last year's recurring revenue you kept from existing customers, after upgrades, downgrades and churn. Over 100% means they grow without new sign-ups. It is a chained monthly approximation and appears after about 13 months.
 - **Borrow if you must.** Loans buy time, but repayments come out of cash every month.
 - **Go public.** From $1M valuation, the IPO readiness panel tracks four targets: $100M ARR, 110% net revenue retention, a Rule of 40 score of 40 (year-on-year growth plus profit margin) and 30% year-on-year growth. Hold all four for 3 months in a row and you can file for an IPO, which ends the game with a summary of your run. Growth alone won't get you there: 110% retention needs churn work on the roadmap, customer success managers and Expansion working together.
+- **You can lose.** Run out of cash for too long and you **ran out of runway**. From $1M valuation a board watches growth, runway and whether the roadmap ships, and if its confidence stays too low past its deadline you're **ousted by the board**. Some ways of treating customers or their data draw regulators, and a ruling can **shut you down**. Each comes with a warning first, a deadline you can see and a way out, including one emergency bridge when you can't pay your bills. Filing for the IPO ends the risk.
 - **Expect surprises.** Random events can help or hurt, and they're more likely to go against you when things are going well.
 
 One month passes every 10 seconds. Valuation is annual recurring revenue times a multiple that rises with growth, and new team members and loans unlock as it climbs.
@@ -42,7 +43,8 @@ node --test 'tests/*.test.js'
 ```sh
 node tests/bot.js                 # 600 game months, full greedy policy (cheapest roadmap item), 50 ms frames
 node tests/bot.js 600 growth      # prefers Acquisition and Referral items; also retention, enterprise
-node tests/bot.js 600 idle        # stops buying after $10M peak; must never file for the IPO
+node tests/bot.js 600 idle        # stops buying after $10M peak; the board should oust it
+node tests/bot.js 600 harsh       # full, but prefers forks that treat users worse; draws investigations
 node tests/bot.js 600 nomargin    # ads first, no margin check
 node tests/bot.js early           # months 6 and 12 of a social-ads-only start
 ```
