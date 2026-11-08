@@ -43,3 +43,50 @@ test('reloading into the ending banks no milestone', () => {
   const b=load({save,dialogs:true});b.frames(64);
   assert.equal(b.g('rp'),3);assert.equal(b.el('ev').open,false);assert.equal(b.el('price').disabled,true);
 });
+
+const run=(a,n)=>{for(let i=0;i<n;i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close()}};
+const broke='subs={"49:0":10};paying=10;out[4]=10;cash=-1e6';
+test('three insolvent rollovers end the run', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(broke);
+  for(let i=0;i<4&&!a.g('over');i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close()}
+  assert.equal(a.g('over.kind'),'runway');assert.ok(a.g('over.story[0].month')<a.g('over.month'));
+});
+test('a solvent month resets the count', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(broke);run(a,2);
+  assert.equal(a.g('insolvent'),2);a.g('cash=1e6');a.months(1.05);
+  assert.equal(a.g('insolvent'),0);assert.equal(a.g('over'),null);
+});
+test('no insolvency before the first customer or loan', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g('cash=-100;out[4]=0');a.months(4.05);
+  assert.equal(a.g('over'),null);assert.equal(a.g('insolvent'),0);
+});
+test('a late loan counts as insolvent', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g('LOANS[0].bal=1000;LOANS[0].pay=100;LOANS[0].late=1;cash=0;out[4]=1');a.months(1.05);
+  assert.ok(a.g('insolvent')>=1);
+});
+const lock='cash=0;ads=3;paying=0;subs={};balls.length=0;queue.length=0';
+test('soft-lock waits for organic traffic', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(lock+';seoLvl=1;seoFresh=1;seoRoll=1');
+  for(let i=0;i<3;i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close();a.g(lock+';seoLvl=1;seoFresh=1;seoRoll=1')}
+  assert.equal(a.g('over'),null);
+  const b=load({dialogs:true});quiet(b.g);b.g(lock+';seoLvl=0');
+  run(b,2);
+  assert.equal(b.g('over.kind'),'runway');
+});
+test('insolvency round-trips', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g('insolvent=2;softMonths=1');a.g('save()');
+  const save=JSON.parse(a.store.get('funnel-drop-save-v1'));
+  const b=load({save,dialogs:true});assert.equal(b.g('insolvent'),2);assert.equal(b.g('softMonths'),1);
+});
+test('runway readout', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g('subs={"49:0":10};paying=10;cash=1000;payroll=2000');
+  assert.ok(a.g('netFlow()')<0);assert.equal(a.g('runway()'),a.g('cash/-netFlow()'));
+  a.g('payroll=0');assert.ok(a.g('netFlow()')>=0);assert.equal(a.g('runway()'),null);
+});
+test('a rollover that raises an event and a warning shows both', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g("{const r=rollRisk;rollRisk=()=>{r();showEv('bad','Bad news','Evt','x')}}");a.g(broke);
+  a.months(1.05);
+  const t1=a.el('ev-title').textContent;assert.ok(a.el('ev').open);a.el('ev').close();
+  const t2=a.el('ev-title').textContent;
+  assert.deepEqual([t1,t2].sort(),['Evt','You can’t pay your bills'].sort());
+});

@@ -285,6 +285,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
     <span>Net revenue retention, 12 months</span><span id="cNrr">– / 109%</span>
     <span hidden>Falling behind competitors: churn</span><span id="cStale" hidden>–</span>
     <span>Debt outstanding</span><span id="cDebt">$0</span>
+    <span hidden>Runway</span><span id="cRunway" hidden>–</span>
   </div>
   <h2 id="h-ipo" hidden>IPO readiness</h2>
   <div class="econ ipo" id="ipo" hidden></div>
@@ -544,7 +545,7 @@ function hud(){
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),gate('eng',ENG.at,heads('eng'),'Engineer'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
-  {const lp=loanPay(),net=MRR()*(1-cts())-teamCost()-lp;$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
+  {const lp=loanPay(),net=netFlow(),rw=runway();{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rw==null;if(rw!=null){e.textContent=`${rw<3?rw.toFixed(1):Math.round(rw)} months`;e.className=rw<6?'warn':''}}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
    showCount('csm');showCount('mm');showCount('eng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpIncome().toFixed(1)} roadmap points a month in total`;$('e-hire').disabled=!atRisk()||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=!atRisk()||cash<10*ENG.salary;{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=!atRisk()||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=!atRisk()||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
    {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=!atRisk()||!g||cash<g*CSM.salary;$('t-hire10').disabled=!atRisk()||cash<10*CSM.salary;$('m-hire10').disabled=!atRisk()||cash<10*MM.salary}
    for(const r of ROLES){showCount(r.id,ROLE_MAX);$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=!atRisk()||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
@@ -587,7 +588,6 @@ function loop(now){
   if(paying>0){const q=1-Math.pow(1-custRefer(),dt/MONTH),nr=binom(Math.min(paying,REFER_CAP),q);for(let i=0;i<nr;i++){refer(30+Math.random()*(W-60),4*BH+WALLTOP-34);if(!custRefs++)say('A paying customer told their friends. Customers can refer every month for as long as they stay, so churn costs you more than revenue.')}
     let cov=Math.min(paying,heads('csm')*csmCovers()),lost=0;for(const k in subs){const [kp,kpl]=unkey(k),c=paidChurn(kp)*PLANS[kpl].stick,pc=1-Math.pow(1-c*csmMult(),dt/MONTH),p=1-Math.pow(1-c,dt/MONTH),n0=subs[k],nc=Math.min(n0,cov);cov-=nc;const l=binom(nc,pc)+binom(n0-nc,p);lost+=l;flow.lost+=l*kp*PLANS[kpl].mult;if(n0-l)subs[k]=n0-l;else delete subs[k]}
     if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:C.warn,life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
-  if(cash<adCost(CHANNELS[0])&&!balls.length&&!queue.length&&paying===0&&ads>0)say('Out of cash with no paying customers. Press <b>New game</b> to try again.');
   draw();hud();requestAnimationFrame(loop);
 }
 $('channels').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
@@ -1043,7 +1043,7 @@ let pausedAt=0;
 const evQueue=[];
 function showEv(k,kind,name,t,act){if($('ev').open){evQueue.push([k,kind,name,t,act]);return}sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
-function health(){return Math.max(-1,Math.min(1,growth*10+(MRR()*(1-cts())-teamCost()-loanPay()>0?.5:-.5)))}
+function health(){return Math.max(-1,Math.min(1,growth*10+(netFlow()>0?.5:-.5)))}
 // Alignment exposure: each axis sums al × count over owned nodes (not the start), over ALIGN_SCALE, clamped to -1..1. Hidden from the player.
 // A sum, not a mean, so building outward through plain nodes doesn't dilute what the fork choices said about the company.
 const ALIGN_SCALE=5,clampAl=v=>Math.max(-1,Math.min(1,v/ALIGN_SCALE));
@@ -1070,7 +1070,22 @@ const IPO={arr:1e8,nrr:1.10,r40:40,growth:.30,hold:3};let ipoHold=0,ipoFiled=fal
 let over=null,warnLog=[];const ENDINGS={runway:'Ran out of runway',board:'Ousted by the board',shut:'Shut down'};
 const atRisk=()=>!ipoFiled&&!over;
 function warn(cause,title,text,act){warnLog.push({cause,month,text});if(warnLog.length>20)warnLog.shift();showEv('bad','Warning',title,text,act)}
-function rollRisk(){}
+// Rules for losing the run. Each rollover step is separate; later features add their own after these.
+const INSOLVENT_MONTHS=3,SOFTLOCK_MONTHS=2;
+let insolvent=0,softMonths=0;
+const netFlow=()=>MRR()*(1-cts())-teamCost()-loanPay();
+const runway=()=>{const n=netFlow();return n<0?cash/-n:null};
+const insolventNow=()=>(cash<0||LOANS.some(l=>l.bal>0&&l.late))&&(out[4]>0||LOANS.some(l=>l.bal>0));
+const softLocked=()=>cash<adCost(CHANNELS[0])&&!balls.length&&!queue.length&&paying===0&&ads>0&&organicRate()===0;
+function rollRisk(){
+  if(insolventNow()){insolvent++;
+    if(insolvent===1)warn('runway','You can’t pay your bills','Your cash is below zero or a loan repayment is overdue. Let staff go, pay down a loan, raise your price or borrow. If this lasts 3 months, the company is finished.');
+    else if(insolvent>=INSOLVENT_MONTHS)return endGame('runway',ENDINGS.runway,`You couldn’t pay your bills for ${INSOLVENT_MONTHS} months in a row, and the company closed.`)}
+  else insolvent=0;
+  if(softLocked()){softMonths++;
+    if(softMonths===1)warn('runway','You’re out of cash and customers','You have no cash for an ad, no paying customers and no free traffic. If nothing changes in 2 months, the company is finished.');
+    else if(softMonths>=SOFTLOCK_MONTHS)return endGame('runway',ENDINGS.runway,'You had no cash for ads, no customers and no free traffic, so nothing more could come in.')}
+  else softMonths=0}
 function endGame(kind,title,text){if(!atRisk())return;evQueue.length=0;const story=warnLog.filter(w=>w.cause===kind).slice(-3);warnLog.push({cause:kind,month,text});story.push({cause:kind,month,text});over={kind,month,story,snap:ipoSummary('At the end')};save();sfx('bad');say(`<b class="bad">${esc(title)}.</b> ${esc(text)}`);openOver()}
 // Year-on-year MRR growth against the oldest ledger entry (13 months back at most). Null until there is one with MRR.
 function yoy(){const e=ledger.at(-13);return e&&e.mrr>0?MRR()/e.mrr-1:null}
@@ -1104,7 +1119,7 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
@@ -1120,7 +1135,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
   if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}for(let i=0;i<milesHit();i++)rp+=RP_MILE[i]||0}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
-  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
+  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;insolvent=s.insolvent||0;softMonths=s.softMonths||0;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();staleOn=atRisk()&&shippable();s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh()}
