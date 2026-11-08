@@ -91,3 +91,15 @@ test('company panel shows the countdown', () => {
   assert.equal(a.el('cCase').hidden,false);assert.match(a.el('cCase').textContent,/ruling in 5 months/);
   a.g('lawCase=null;hud()');assert.equal(a.el('cCase').hidden,true);
 });
+test('consent order with no customers stays finite', () => {
+  const a=load({dialogs:true});quiet(a.g);setAl(a,[-.5,0]);a.g('subs={};paying=0;lawCase={axis:0,due:0}');
+  const t=a.g('ruleCase()');
+  assert.equal(a.g("'undefined' in subs"),false);assert.equal(a.g('paying'),0);assert.ok(Number.isFinite(a.g('flow.lost')));
+  assert.ok(!/NaN|undefined|0 of 0/.test(t),t);
+});
+test('audit text pluralises and drops an empty clause', () => {
+  const a=load({dialogs:true});quiet(a.g);setAl(a,[0,-.5]);a.g('subs={"49:2":1};paying=1;lawCase={axis:1,due:0};binom=()=>1');
+  assert.match(a.g('ruleCase()'),/, and 1 Enterprise customer left\.$/);
+  a.g('subs={"49:0":5};paying=5;lawCase={axis:1,due:0}');
+  assert.match(a.g('ruleCase()'),/cost \$[\d,.k]+\.$/);
+});
