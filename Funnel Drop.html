@@ -460,8 +460,12 @@ function adSpend(c,d){const u=d/adCost(c),was=ads;spendCash(d);spend+=d;ads+=u;c
   if(was<=0&&ads>0)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
   if(c.ads>=12&&c.ads-u<12)say(`Each extra dollar on ${c.name.toLowerCase()} reaches fewer new people. Lower the budget and let reach recover, or pay for a new campaign.`);
   return n}
-function runBudgets(dt){if(!atRisk())return;for(const c of CHANNELS)if(c.open&&c.budget>0){const d=Math.min(c.budget*dt/DAY,Math.max(0,cash));
-  if(d>0){adSpend(c,d);adsBroke=false}else if(!adsBroke){adsBroke=true;say('<b class="bad">Ads paused.</b> You’re out of cash. They restart by themselves when cash comes in.')}}}
+// Out of cash pauses every channel, as an ad account stops when the card fails. Ads restart only once cash covers a whole day of the total
+// budget, so income trickling in doesn't keep a trickle of ads running.
+function runBudgets(dt){if(!atRisk())return;const live=CHANNELS.filter(c=>c.open&&c.budget>0),day=live.reduce((t,c)=>t+c.budget,0);if(!day)return;
+  if(adsBroke){if(cash<day)return;adsBroke=false;say('Ads are running again.')}
+  if(cash<day*dt/DAY){adsBroke=true;say(`<b class="bad">Ads paused.</b> You’re out of cash. They restart when you have ${fmt(day)} for a day of ads.`);return}
+  for(const c of live)adSpend(c,c.budget*dt/DAY)}
 const per100=c=>Math.round(perAd(c)*100/adCost(c));
 function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);const k=campCost(c);if(!atRisk()||!c.open||cash<k||c.reach>=c.base-.5)return;spendCash(k);spend+=k;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to full.`)}
 function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience, about ${per100(c)} visitors per $100. Set a daily budget to start.`);renderCh()}
@@ -589,7 +593,7 @@ let gateReady=false;
 function gate(id,at,held,name){const el=$('c-'+id),vis=peak>=at||held>0;if(el.hidden===vis){el.hidden=!vis;if(vis&&gateReady)say(`<b>${name}</b> is now available.`)}return vis}
 function hud(){
   $('vCash').textContent=fmt(cash);$('vCash').className=cash<0?'warn':'';$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;$('vDays').textContent=Math.floor((month+eventT/MONTH)*30).toLocaleString('en');
-  for(const c of visibleCh()){const ac=adCost(c),r=perAd(c);if(c.open){const cc=campCost(c);$('cr-'+c.id).textContent=`${fmt(ac/r)} a visitor now${c.note?' · '+c.note:''}`;{const sl=$('cs-'+c.id),b=c.budget;if(document.activeElement!==sl)sl.value=budgetPos(c,b);sl.disabled=!atRisk();$('cv-'+c.id).textContent=b>0?`${fmt(b)}/day · ~${Math.round(b/ac*c.reach*reachK())} visitors a day`:'Off'}$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
+  for(const c of visibleCh()){const ac=adCost(c),r=perAd(c);if(c.open){const cc=campCost(c);$('cr-'+c.id).textContent=`${fmt(ac/r)} a visitor now${c.note?' · '+c.note:''}`;{const sl=$('cs-'+c.id),b=c.budget;if(document.activeElement!==sl)sl.value=budgetPos(c,b);sl.disabled=!atRisk();$('cv-'+c.id).textContent=b>0?(adsBroke?`${fmt(b)}/day · paused, no cash`:`${fmt(b)}/day · ~${Math.round(b/ac*c.reach*reachK())} visitors a day`):'Off'}$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
       setBtn($('cc-'+c.id),`New campaign <b>${fmt(cc)}</b>`);$('cc-'+c.id).disabled=!atRisk()||cash<cc||c.reach>=c.base-.5}
     else{$('cl-'+c.id).textContent=`${c.pitch}: about ${per100(c)} visitors per $100.`;$('cu-'+c.id).disabled=!atRisk()||cash<c.unlock}}
   {const top=Math.max(1,...STAGES.map(s=>s[2]()));STAGES.forEach(([,,v,b],i)=>{const n=v();$('fb'+i).style.width=n?Math.max(2,Math.sqrt(n/top)*100)+'%':'0';$('fv'+i).textContent=n.toLocaleString('en');if(b==='nrr'){const r=NRR12();$('fy'+i).textContent=r==null?'–':Math.round(r*100)+'%'}else if(b!==undefined)$('fy'+i).textContent=pct(out[b],into[b])})}

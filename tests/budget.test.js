@@ -38,7 +38,7 @@ test('ads never overdraw, and say so once', () => {
   const a=counted(load());quiet(a.g);
   a.g('__m=[];say=t=>__m.push(t);cash=50;setBudget("social",1000)');
   a.months(.5);
-  assert.ok(a.g('cash')>=0&&a.g('cash')<1,String(a.g('cash')));
+  assert.ok(a.g('cash')>=0&&a.g('cash')<50,String(a.g('cash')));assert.ok(a.g('spend')>0);
   assert.equal(a.g('__m.filter(t=>/paused/i.test(t)).length'),1);
 });
 
@@ -73,4 +73,15 @@ test('budgets survive save and load', () => {
   a.g('setBudget("social",42);save()');
   const b=load({save:JSON.parse(a.store.get('funnel-drop-save-v1'))});
   assert.equal(b.g('CHANNELS[0].budget'),42);
+});
+
+test('broke means paused: income trickling in doesn’t restart ads until a day’s budget is covered', () => {
+  const a=load();a.g('randomEvent=()=>{};annualReview=()=>{};expCheck=()=>{}');
+  a.g('__n=0;spawn=o=>{if(o&&o.src)__n++};subs={"49:0":20};paying=20;cash=0;setBudget("social",500)');
+  // 20 customers bring about $33 a game day: never a whole day of a $500 budget within the first few days.
+  a.frames(3000);
+  assert.equal(a.g('__n'),0,'no ad visitors while broke');
+  assert.ok(a.g('adsBroke'));
+  a.g('cash=600');a.frames(300);
+  assert.ok(a.g('__n')>0,'ads resume once a day is covered');
 });
