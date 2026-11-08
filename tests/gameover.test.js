@@ -37,3 +37,9 @@ test('a warning raised while #ev is open waits for it', () => {
   a.el('ev').close();
   assert.equal(a.el('ev-title').textContent,'W');
 });
+test('reloading into the ending banks no milestone', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g("endGame('runway','x','y')");a.g('save()');
+  const save=JSON.parse(a.store.get('funnel-drop-save-v1'));save.peak=2e6;save.rp=3;
+  const b=load({save,dialogs:true});b.frames(64);
+  assert.equal(b.g('rp'),3);assert.equal(b.el('ev').open,false);assert.equal(b.el('price').disabled,true);
+});
