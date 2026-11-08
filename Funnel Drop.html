@@ -79,12 +79,17 @@ h1 em{font-style:normal;color:var(--paid)}
 .toast.out{opacity:0;transform:translateX(8px)}
 @keyframes toast-in{from{opacity:0;transform:translateX(12px)}}
 @media (prefers-reduced-motion:reduce){.toast{animation:none;transition:none}}
-#ev,#sum,#over{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
+#ev,#sum,#over,#info{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
 #sum,#over{width:min(420px,calc(100vw - 32px))}
-#ev::backdrop,#sum::backdrop,#over::backdrop{background:var(--scrim)}
-#ev small,#sum>small,#over>small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-#ev b,#sum-title,#over-title{display:block;font-size:20px;margin-top:2px}
+#ev::backdrop,#sum::backdrop,#over::backdrop,#info::backdrop{background:var(--scrim)}
+#ev small,#sum>small,#over>small,#info>small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+#ev b,#sum-title,#over-title,#info-title{display:block;font-size:20px;margin-top:2px}
 #sum-title{color:var(--paid)}
+#info-body p{margin:10px 0 0;font-size:14px;line-height:1.45}
+#info form{margin-top:14px}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:5px;padding:0;border:1px solid var(--line);border-radius:50%;background:none;color:var(--muted);font:600 10px/1 var(--display);font-style:normal;letter-spacing:0;text-transform:none;cursor:pointer;vertical-align:middle;flex:none}
+.nw{white-space:nowrap}
+.ib:hover,.ib:focus-visible{color:var(--fg);border-color:var(--muted)}
 #ev-ok.campbtn{width:100%;justify-content:center;margin-top:8px;padding:10px}
 #over-title{color:var(--warn)}
 #over-story{margin:10px 0;padding-left:20px;font-size:13px}
@@ -125,7 +130,7 @@ h1 em{font-style:normal;color:var(--paid)}
 canvas{display:block;width:100%;aspect-ratio:360/1224;background:var(--board);border:1px solid var(--line);border-radius:10px}
 h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
 .fnl{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
-.fr{display:grid;grid-template-columns:66px minmax(0,1fr) 88px;gap:8px;align-items:center}
+.fr{display:grid;grid-template-columns:86px minmax(0,1fr) 88px;gap:8px;align-items:center}
 .fr.branch{margin-top:4px;padding-top:6px;border-top:1px dashed var(--line)}
 .fbar{position:relative;display:flex;justify-content:center;height:22px}
 .fbar i{display:block;height:100%;width:0;background:var(--c);opacity:.4;border-radius:3px}
@@ -288,6 +293,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 </style>
 
 <div id="toasts" role="status" aria-live="polite"></div>
+<dialog id="info" aria-labelledby="info-title"><small>About</small><b id="info-title"></b><div id="info-body"></div><form method="dialog"><button class="buy">Got it</button></form></dialog>
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><button class="buy" id="ev-act" type="button" hidden></button><form method="dialog"><button class="buy" id="ev-ok">Continue</button></form></dialog>
 <dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><div id="sum-reveal" class="reveal"></div><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
 <dialog id="over" aria-labelledby="over-title"><small>Game over</small><b id="over-title"></b><ol id="over-story"></ol><div id="over-reveal" class="reveal"></div><dl id="over-stats"></dl><div class="sumbtns"><button class="campbtn" id="over-new">New game</button></div></dialog>
@@ -645,7 +651,7 @@ function binom(n,p){if(n<=0||p<=0)return 0;if(p>=1)return n;
   const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
   return Math.max(0,Math.min(n,Math.round(n*p+Math.sqrt(n*p*(1-p))*z)))}
 function loop(now){
-  if($('ev').open||$('sum').open||$('over').open||over||$('tree').open){last=now;draw();requestAnimationFrame(loop);return}
+  if($('ev').open||$('sum').open||$('over').open||over||$('tree').open||$('info').open){last=now;draw();requestAnimationFrame(loop);return}
   if(paused||$('teamd').open){last=now;draw();hud();requestAnimationFrame(loop);return} // paused by the player: buying still works, so the screen keeps up
   const dt=Math.min(.05,(now-last)/1000);adaptCap(now-last);last=now;if(!ipoFiled)playMs+=dt*1000;
   while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
@@ -1193,7 +1199,7 @@ $('over').addEventListener('cancel',e=>e.preventDefault());
 // Timers shift by any pause so bursts and cooldowns don't run out meanwhile. A dialog closing during the player's own pause shifts nothing:
 // resuming shifts by the whole pause.
 const shiftTimers=d=>{for(const q of queue)q.t+=d;postReady+=d;nextCut+=d};
-for(const id of ['ev','sum','over','tree','teamd'])$(id).addEventListener('close',()=>{if(!paused)shiftTimers(performance.now()-pausedAt)});
+for(const id of ['ev','sum','over','tree','teamd','info'])$(id).addEventListener('close',()=>{if(!paused)shiftTimers(performance.now()-pausedAt)});
 // The team screen pauses the game like the roadmap, but hud keeps running (loop) since hiring changes the numbers. Toasts move inside it while
 // it's open, as a modal dialog would cover them.
 function openTeam(){pausedAt=performance.now();$('teamd').append($('toasts'));$('teamd').showModal()}
@@ -1370,6 +1376,62 @@ $('theme').addEventListener('click',()=>{theme=document.documentElement.dataset.
 darkOS.addEventListener('change',showTheme);
 function newGame(){if(!confirm('Start a new game? This wipes your saved progress.'))return;saving=false;try{localStorage.removeItem(SAVE)}catch{}location.reload()}
 $('reset').addEventListener('click',newGame);$('sum-new').addEventListener('click',newGame);$('over-new').addEventListener('click',newGame);
+// Info cards: a small i button next to each metric opens #info with what it means, how the game works it out, how to move it and the real
+// benchmark where there is one. INFO[key] = [title, ...paragraphs]; INFO_AT maps an element id to its key (the button goes on its label),
+// INFO_FNL the pirate metrics rows in STAGES order and INFO_IPO the four IPO checks. Copy quotes the constants so retuning keeps it right.
+const pc=v=>Math.round(v*100)+'%';
+const INFO={
+  cash:['Cash','What you have in the bank. You start with $1,500. Revenue comes in continuously; ads, payroll, cost to serve, loan repayments and anything you buy go out.','If cash can’t cover the next moment of ad spend, every ad pauses until you have a day’s budget. Overdrawn for long once you’re past $100k peak valuation, and you can run out of runway.'],
+  mrr:['MRR','Monthly recurring revenue: what all paying customers pay each month, at the price they signed up at times their plan’s multiple (Base 1×, Pro 2.5×, Enterprise 6×).','Grow it with more paying customers (ads, posts, SEO, better conversion on the boards) and with upgrades on the Expansion board. Churn shrinks it.'],
+  paying:['Paying customers','Customers on a paid plan right now. Each one churns at a monthly rate set by your price, your plan mix, customer success managers and churn work on the roadmap.','Paying customers also refer friends now and then, so keeping them grows the top of the funnel too.'],
+  days:['Days','Game time. One game month is 10 seconds of real time, and most things run monthly: churn, payroll, events, reviews and the ledger behind the charts.','The Pause button stops the clock; dialogs and the roadmap and team screens pause it too.'],
+  valuation:['Valuation','ARR times a revenue multiple. It drives milestones, unlocks and ad prices (through peak valuation), and the end goal: a $1B company that can go public.','Grow ARR, and grow it fast: faster growth raises the multiple.'],
+  arr:['ARR','Annual recurring revenue: MRR × 12. The IPO needs $100M.','Every lever on MRR moves ARR.'],
+  growth:['MRR growth per month','The compounded monthly growth of MRR over the last 3 months (30 seconds).','It feeds the revenue multiple: each 1% a month adds 0.4× to it. A burst of ads lifts it for a while; only a funnel that keeps converting holds it up.'],
+  mult:['Revenue multiple','What investors pay per dollar of ARR: 6× at flat growth, plus 0.4× for every 1% of monthly MRR growth, between 2× and 25×.','A simplification of how private SaaS companies are valued: fast growers get far higher multiples than flat ones.'],
+  peak:['Peak valuation','The highest valuation you have reached. It doesn’t fall when valuation dips.','Milestones, team and financing unlocks, the Expansion board and ad prices all key off it. Above $100k, ads cost more per visitor the bigger you get, as customer acquisition does in real markets.'],
+  next:['Milestones','$100k, $1M, $10M, $100M and $1B in valuation. Each one banks roadmap points ('+RP_MILE.join(', ')+').','At $1M the Expansion board opens and investors take board seats. At $1B, the next goal is an IPO.'],
+  nrr:['Net revenue retention','Revenue kept from existing customers over 12 months: starting MRR plus upgrades, minus downgrades and churn, over starting MRR. New customers don’t count. The median private SaaS company keeps about 109% (KeyBanc 2022); the IPO needs 110%.','Raise it by cutting churn (customer success managers, the Retention wedge, a sensible price, shipping regularly) and by moving customers up a plan on the Expansion board (account managers, Expansion roadmap work). Churn is the bigger lever early; expansion takes it past 100%.'],
+  stale:['Falling behind competitors',`While something on the roadmap is affordable but unshipped for more than ${STALE_GRACE} months, competitors catch up: churn rises ${pc(STALE_STEP)} for each month after that, up to ${pc(STALE_MAX)}.`,'Ship anything on the roadmap to reset it.'],
+  debt:['Debt outstanding','What you still owe on loans, emergency funding included. Repayments come out of cash monthly; a missed one adds a 25% late fee to what you owe.','Pay a loan off early from its card to stop the interest.'],
+  insol:['Can’t pay bills',`Your cash is below zero or a loan repayment is overdue. Once you’re past $100k peak valuation, ${INSOLVENT_MONTHS} months like this in a row ends the company.`,'Let staff go, cut ad budgets, raise your price or borrow. The first time it happens you’re offered emergency funding once.'],
+  runway:['Runway','How many months your cash lasts at the current monthly burn (revenue after cost to serve, minus payroll and loan repayments, before ad spend). Shown only while you’re burning cash.','Under 6 months it turns red and the board starts to worry.'],
+  case:['Investigation',`A regulator or data authority is looking into how you run things. It rules ${CASE_MONTHS} months after it opens.`,'The outcome depends on how the company is run by the time of the ruling, not when it opened: the case can be closed, end in a heavy fine and lost customers, or shut the company down after a second ruling against you.'],
+  board:['Board confidence',`From $1M, investors sit on a board. Confidence runs 0–100 and moves each month for reasons it shows: shipping or not, growth, runway, unpaid bills, bad news and milestones.`,`Below ${BOARD_WARN} it warns you; below ${BOARD_ULT} it gives you an ultimatum to get back above ${BOARD_WARN}, usually within ${ULT_MONTHS} months, or you’re out.`],
+  adbudget:['Daily ad budget','What all your ad channels spend a game day together. Each channel has its own slider.','Each channel reaches a limited audience a day, so spending far past it buys few extra visitors, and heavy spending tires the audience over weeks. Spread budget across channels and start a new campaign when reach runs low.'],
+  adspend:['Total ad spend','Everything spent on ads, campaigns and publishing content so far.','It is the cost side of customer acquisition cost.'],
+  cac:['Cost per paying customer','Customer acquisition cost (CAC): total ad spend divided by customers won.','Lower it with cheaper visitors (posts, SEO, fresh campaigns, budgets below each channel’s audience limit) and better conversion through the funnel.'],
+  payback:['Months to earn it back','CAC payback: how many months of a customer’s margin (price after 22% cost to serve) it takes to recover what you paid to win them.','Under 12 months is the usual SaaS rule of thumb; it turns red above that.'],
+  churned:['Customers churned','Paying customers who have cancelled, in total.','Base churn depends on price; customer success managers, Retention roadmap work and stickier plans (Pro, Enterprise) reduce it.'],
+  serve:['Cost to serve',`Hosting and support: ${Math.round(COST_TO_SERVE*100)}% of MRR each month, which leaves a ${100-Math.round(COST_TO_SERVE*100)}% gross margin, typical for SaaS.`,'Some roadmap items lower it.'],
+  team:['Team cost','Monthly payroll for everyone on staff. People with a full year in get a 5% raise at each annual review, and some get headhunted.','Manage it on the Team screen.'],
+  loans:['Loan repayments','What your loans take from cash each month.','Missing one adds late fees and counts as not paying your bills.'],
+  net:['Net cash flow','Revenue after cost to serve, minus payroll and loan repayments, per month. Ad spend is on top of this.','Negative means you are burning cash; runway shows how long it lasts.'],
+  ltv:['Lifetime value per customer','What a customer is worth over their life: monthly margin (price after cost to serve) divided by their monthly churn, with customer success managers counted in.','Raise it with a higher price that doesn’t drive churn up, or with lower churn.'],
+  ratio:['LTV : CAC','Lifetime value against what it cost to win the customer. SaaS investors look for 3 : 1 or better; it turns red below 3.','Raise LTV or lower CAC.'],
+  free:['Free users','People who signed up and stayed but don’t pay.','They are the pool the Revenue board converts from, and they can refer friends.'],
+  ipoarr:['ARR target','The IPO needs $100M in annual recurring revenue.','Hold all four IPO targets for 3 months in a row and you can file.'],
+  r40:['Rule of 40','Year-on-year revenue growth (%) plus profit margin (%). Margin here is the last 3 months of revenue minus everything spent, ads, payroll, cost to serve and loan repayments included, as a share of revenue. Healthy SaaS companies score 40 or more; the IPO needs 40.','Growth and margin pull against each other: spend to grow and margin falls. Companies usually score on growth early and on margin later. Trim ads that don’t pay back, hire people who pay for themselves, and price sensibly.'],
+  yoy:['Growth, year on year','MRR now against MRR 12 months ago. The IPO needs 30%.','Shown once there is a year of history.'],
+  visitors:['Visitors','Everyone who reached the Acquisition board: from ads, posts, SEO, marketing managers and events.','Daily ad budgets, followers and fresh content bring more.'],
+  signups:['Sign-ups (Acquisition)','Visitors who landed in the Acquisition slot. Freemium sign-up without a credit card runs about 2–10% of visitors; the benchmark here is 5%.','Widen the slot with Acquisition roadmap work. Search ads aim visitors at it.'],
+  activated:['Activated','Sign-ups who got value in their first session. The benchmark is 36% (average across 500+ products).','Activation roadmap work and product designers widen the slot.'],
+  retained:['Retained','Activated users still around after their first month. The benchmark is 47% (B2B SaaS average).','Retention roadmap work and product engineers widen the slots.'],
+  paid:['Paid','Retained users who start paying. The benchmark is 30%, so about 5% of sign-ups end up paying, in line with freemium’s 3–7%.','Price changes the slot (cheaper converts more), and account executives and Revenue roadmap work widen it. LinkedIn ads aim at it.'],
+  referrers:['Referrers','Retained users who told friends. Each brings 1 to 25, usually about 8, straight into Activation. The benchmark is 10%; mature companies reach 25–30%.','Referral roadmap work and community managers widen the slot.'],
+  upgrades:['Upgrades','Customers moved up a plan on the Expansion board, from $1M. About one customer in twelve drops through it each month.','Account managers and Expansion roadmap work widen the Upgrade slot. Upgrades push net revenue retention past 100%.']
+};
+const INFO_AT={vCash:'cash',vMrr:'mrr',vPaying:'paying',vVal:'valuation',vDays:'days',cVal:'valuation',cArr:'arr',cGrowth:'growth',cMult:'mult',cPeak:'peak',cNext:'next',cNrr:'nrr',cStale:'stale',cDebt:'debt',cInsol:'insol',cRunway:'runway',cCase:'case',cBoard:'board',
+  eAds:'adbudget',eSpend:'adspend',eCac:'cac',ePay:'payback',eChurn:'churned',eServe:'serve',eTeam:'team',eLoan:'loans',eNet:'net',eLtv:'ltv',eRatio:'ratio',eFree:'free'};
+const INFO_FNL=['visitors','signups','activated','retained','paid','referrers','upgrades'],INFO_IPO=['ipoarr','nrr','r40','yoy'];
+const ib=k=>`<button class="ib" type="button" data-info="${k}" aria-label="About ${esc(INFO[k][0])}">i</button>`;
+// The button sticks to the label's last word, so a wrapping label never leaves it alone on a line.
+const stick=(l,k)=>{l.innerHTML=String(l.innerHTML).replace(/(\S+)\s*$/,`<span class="nw">$1${ib(k)}</span>`)};
+function placeInfo(){for(const id in INFO_AT){const l=$(id).previousElementSibling;if(l)stick(l,INFO_AT[id])}
+  INFO_IPO.forEach((k,i)=>$('ipo-n'+i).insertAdjacentHTML('beforeend',ib(k)));INFO_FNL.forEach((k,i)=>stick($('fb'+i).closest('.fr').firstElementChild,k))}
+function openInfo(k){const x=INFO[k];if(!x)return;$('info-title').textContent=x[0];$('info-body').innerHTML=x.slice(1).map(p=>`<p>${esc(p)}</p>`).join('');pausedAt=performance.now();$('info').showModal()}
+document.addEventListener('click',e=>{const b=e.target.closest?.('.ib');if(!b)return;e.preventDefault();e.stopPropagation();openInfo(b.dataset.info)},true);
+placeInfo();
 load();histTick=histNow();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',()=>{flushEv();save()});
 resize();window.addEventListener('resize',resize);hud();gateReady=true;if(ipoFiled)openSum();if(over)openOver();requestAnimationFrame(loop);
 </script>
