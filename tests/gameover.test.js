@@ -203,3 +203,12 @@ test('an ending on a rollover leaves the rest of the frame alone', () => {
   a.months(1.05);
   assert.equal(a.g('over.kind'),'runway');assert.deepEqual(a.g('[cash,staff.length]'),a.g('s0'));
 });
+
+test('the bridge offer reads Take it or Don’t take it; other dialogs Continue', () => {
+  const a=load({dialogs:true});a.g('randomEvent=()=>{};annualReview=()=>{};expCheck=()=>{}');
+  a.g('subs={"49:0":10};paying=10;out[4]=10;peak=2e5;cash=-5000;eventT=MONTH-.01');a.frames(32);
+  assert.equal(a.el('ev-title').textContent,'You can’t pay your bills');
+  assert.equal(a.el('ev-act').textContent,'Take it');assert.equal(a.el('ev-ok').textContent,'Don’t take it');
+  a.el('ev').close();a.g("showEv('good','Good news','Fine','x')");
+  assert.equal(a.el('ev-ok').textContent,'Continue');
+});

@@ -85,6 +85,7 @@ h1 em{font-style:normal;color:var(--paid)}
 #ev small,#sum>small,#over>small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 #ev b,#sum-title,#over-title{display:block;font-size:20px;margin-top:2px}
 #sum-title{color:var(--paid)}
+#ev-ok.campbtn{width:100%;justify-content:center;margin-top:8px;padding:10px}
 #over-title{color:var(--warn)}
 #over-story{margin:10px 0;padding-left:20px;font-size:13px}
 #over-reveal:empty{display:none}
@@ -287,7 +288,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 </style>
 
 <div id="toasts" role="status" aria-live="polite"></div>
-<dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><button class="buy" id="ev-act" type="button" hidden></button><form method="dialog"><button class="buy">Continue</button></form></dialog>
+<dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><button class="buy" id="ev-act" type="button" hidden></button><form method="dialog"><button class="buy" id="ev-ok">Continue</button></form></dialog>
 <dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><div id="sum-reveal" class="reveal"></div><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
 <dialog id="over" aria-labelledby="over-title"><small>Game over</small><b id="over-title"></b><ol id="over-story"></ol><div id="over-reveal" class="reveal"></div><dl id="over-stats"></dl><div class="sumbtns"><button class="campbtn" id="over-new">New game</button></div></dialog>
 <dialog id="tree" aria-labelledby="tree-title"><div class="tr-top"><b id="tree-title">Roadmap</b><div class="tr-stats"><div class="stat" id="tr-pts-s"><span>Points</span><b><span id="tr-pts">2 / 4</span> <small id="tr-inc">+0.5 a month</small></b></div><div class="stat"><span>Cash</span><b id="tr-cash">$1,500</b></div></div><button class="campbtn" id="tr-respec">Respec</button><form method="dialog"><button class="buy" id="tr-close">Close</button></form></div>
@@ -1157,7 +1158,7 @@ function flushEv(){runFx();for(const q of evQueue){const f=q[5];q[5]=null;if(f)f
 let evAct=null;
 function useEvAct(){const a=evAct;evAct=null;if(a)a.run();$('ev').close()}
 $('ev-act').addEventListener('click',useEvAct);
-function showEv(k,kind,name,t,act,fx,again){if(fx===undefined&&evLater){fx=evLater;evLater=[]}if(!again&&(kind==='Good news'||kind==='Bad news'))evSeen[name]=(evSeen[name]||0)+1;if($('ev').open){evQueue.push([k,kind,name,t,act,fx]);return}evFx=fx||null;evKind=k;evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;sfx(kind==='Milestone'?'fanfare':k);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal();if(!$('ev').open)runFx()}
+function showEv(k,kind,name,t,act,fx,again){if(fx===undefined&&evLater){fx=evLater;evLater=[]}if(!again&&(kind==='Good news'||kind==='Bad news'))evSeen[name]=(evSeen[name]||0)+1;if($('ev').open){evQueue.push([k,kind,name,t,act,fx]);return}evFx=fx||null;evKind=k;evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;$('ev-ok').textContent=act?.no||'Continue';$('ev-ok').className=act?'campbtn':'buy';sfx(kind==='Milestone'?'fanfare':k);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal();if(!$('ev').open)runFx()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
 function health(){return Math.max(-1,Math.min(1,growth*10+(netFlow()>0?.5:-.5)))}
 // Alignment exposure: each axis sums al × count over owned nodes (not the start), over ALIGN_SCALE, clamped to -1..1. Hidden from the player.
@@ -1215,7 +1216,7 @@ const softLocked=()=>!canPost()&&cash<adCost(CHANNELS[0])&&!balls.length&&!queue
 function rollRisk(){
   if(insolventNow()){insolvent++;
     if(insolvent===1){const base=`Your cash is below zero or a loan repayment is overdue. Let staff go, cut costs, raise your price or borrow. If you still can’t pay your bills after ${INSOLVENT_MONTHS-1} more months, the company is finished.`;
-      if(bridgeOffer()){const s=fmt(bridgeSize()),pre=bridgeKind()==='prepay';warn('runway','You can’t pay your bills',`${base} ${pre?'Some of your customers offered to prepay a year to keep you going.':`A lender will advance you ${s} at ${Math.round(BRIDGE_APR*100)}% APR.`} You can take this once. ${pre?`It is ${s}, repaid monthly over 12 months at no interest.`:'It is repaid monthly over 12 months.'}`,{label:'Take it',run:takeBridge})}
+      if(bridgeOffer()){const s=fmt(bridgeSize()),pre=bridgeKind()==='prepay';warn('runway','You can’t pay your bills',`${base} ${pre?'Some of your customers offered to prepay a year to keep you going.':`A lender will advance you ${s} at ${Math.round(BRIDGE_APR*100)}% APR.`} You can take this once. ${pre?`It is ${s}, repaid monthly over 12 months at no interest.`:'It is repaid monthly over 12 months.'}`,{label:'Take it',no:'Don’t take it',run:takeBridge})}
       else warn('runway','You can’t pay your bills',base)}
     else if(insolvent===INSOLVENT_MONTHS-1)warn('runway','One month left','You still can’t pay your bills. If that’s still true after one more month, the company is finished.');
     else if(insolvent>=INSOLVENT_MONTHS)return endGame('runway',ENDINGS.runway,`You couldn’t pay your bills for ${INSOLVENT_MONTHS} months in a row, and the company closed.`)}
