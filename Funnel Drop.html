@@ -287,6 +287,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
     <span hidden>Falling behind competitors: churn</span><span id="cStale" hidden>–</span>
     <span>Debt outstanding</span><span id="cDebt">$0</span>
     <span hidden>Runway</span><span id="cRunway" hidden>–</span>
+    <span hidden>Board confidence</span><span id="cBoard" hidden>–</span>
   </div>
   <h2 id="h-ipo" hidden>IPO readiness</h2>
   <div class="econ ipo" id="ipo" hidden></div>
@@ -371,7 +372,7 @@ let rmT=-1e9,rmN=0,cash=1500,ads=0,spend=0,ledger=[],monthOut=0,monthRev=0,balls
 const COST_TO_SERVE=.22,cts=()=>COST_TO_SERVE*(1+FX.cts);
 function spendCash(n){cash-=n;monthOut+=n}
 function margin3(){const l=ledger.slice(-3),rv=l.reduce((t,e)=>t+e.rev,0);return rv>0?(rv-l.reduce((t,e)=>t+e.out,0))/rv:null}
-const into=Array(NB).fill(0),out=Array(NB).fill(0);let staff=[],eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
+const into=Array(NB).fill(0),out=Array(NB).fill(0);let board=null,staff=[],eventT=0,month=0,custRefs=0,free=0,paying=0,churned=0,peak=0,growth=0;const mrrHist=[];let histT=0;
 
 let textK=1;const mono=(w,s)=>`${w} ${s*textK}px JetBrains Mono, monospace`;
 // The board scales down to fit short screens, so canvas text grows to stay readable.
@@ -546,7 +547,7 @@ function hud(){
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),gate('eng',ENG.at,heads('eng'),'Engineer'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.filter(l=>!l.hidden).map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
-  {const lp=loanPay(),net=netFlow(),rw=runway(),rc=rw==null?null:Math.max(0,rw);{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rc==null;if(rc!=null){e.textContent=`${rc<3?rc.toFixed(1):Math.round(rc)} months`;e.className=rc<6?'warn':''}}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
+  {const lp=loanPay(),net=netFlow(),rw=runway(),rc=rw==null?null:Math.max(0,rw);{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rc==null;if(rc!=null){e.textContent=`${rc<3?rc.toFixed(1):Math.round(rc)} months`;e.className=rc<6?'warn':''}}{const e=$('cBoard');e.previousElementSibling.hidden=e.hidden=!board;if(board)boardHud(e)}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
    showCount('csm');showCount('mm');showCount('eng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpIncome().toFixed(1)} roadmap points a month in total`;$('e-hire').disabled=!atRisk()||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=!atRisk()||cash<10*ENG.salary;{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=!atRisk()||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=!atRisk()||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
    {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=!atRisk()||!g||cash<g*CSM.salary;$('t-hire10').disabled=!atRisk()||cash<10*CSM.salary;$('m-hire10').disabled=!atRisk()||cash<10*MM.salary}
    for(const r of ROLES){showCount(r.id,ROLE_MAX);$('r-meta-'+r.id).textContent=`${teamLine(r.id)} · ${r.label} about ${p1(rateOf(trackOf(r.board)))}`;$('s-'+r.id).textContent=fmt(r.salary)+'/mo';$('r-hire-'+r.id).disabled=!atRisk()||cash<r.salary||heads(r.id)>=ROLE_MAX;$('r-fire-'+r.id).disabled=!heads(r.id)}}
@@ -788,7 +789,7 @@ function fxText(fx){return Object.entries(fx).map(([k,v])=>/^r\d$/.test(k)?`${RA
 function buyNode(id){const n=NODE_IX[id];if(!n||!atRisk()||nodeState(id)!=='available')return false;
   const k=nodeCash(n),pts=nodePts(n);if(rp<pts||cash<k)return false;
   const was=RATES.map(rateOf),pc=paidChurn();
-  spendCash(k);rp-=pts;paid[id]=(paid[id]||0)+pts;owned[id]=(owned[id]||0)+1;refx();applyPrice();markShipped();
+  spendCash(k);rp-=pts;paid[id]=(paid[id]||0)+pts;owned[id]=(owned[id]||0)+1;refx();applyPrice();markShipped();if(board)board.shipped=true;
   // With the roadmap open, the boards celebrate when it closes instead (its close handler compares against TREE.was).
   if(!TREE.was){for(let b=0;b<NB;b++){const d=rateOf(RATES[b])-was[b];if(Math.abs(d)>1e-9)celebrate(b,signed(d*100,' pts ')+RATES[b].label,true)}
     if(Math.abs(paidChurn()-pc)>1e-9)celebrate(4,signed((paidChurn()-pc)*100,' pts churn'),false)}
@@ -1035,10 +1036,10 @@ const EVENTS=[
   {good:1,al:[0,1],name:'Enterprise deal',when:()=>paying>0,run(){const n=Math.max(2,Math.round(paying*.02));paying+=n;addSub(price,2,n);flow.new+=price*PLANS[2].mult*n;return `A large company signed up. ${n} Enterprise customers joined at ${fmt(price)} a month each, before the plan multiple.`}},
   {good:1,al:[1,0],name:'Customers rave',run(){const n=Math.round(120*evScale());burst(n);return `Customers are posting about you. ${n} visitors are on their way.`}},
   {good:1,al:[.5,1],name:'Security review passed',run(){const n=Math.max(1000,MRR()*.75);cash+=n;return `A large buyer finished its security review and paid a ${fmt(n)} pilot fee.`}},
-  {al:[-1,0],name:'Regulator fine',when:()=>paying>0&&companyAl()[0]<=-.15,run(){const n=Math.max(500,MRR()*2);spendCash(n);return `A regulator fined you ${fmt(n)}.${cash<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
-  {al:[-1,-.5],name:'Class action',when:()=>paying>0&&companyAl()[0]<=-.15,run(){const n=Math.max(500,MRR());spendCash(n);return `Customers filed a class action and you paid ${fmt(n)} to settle. ${loseCustomers(.05,.1)} cancelled.`}},
-  {al:[0,-1],name:'Data breach',when:()=>paying>0&&companyAl()[1]<=-.15,run(){return `Customer data leaked. ${loseCustomers(.08,.15)} cancelled.`}},
-  {al:[-1,0],name:'Viral complaint',when:()=>paying>0&&companyAl()[0]<=-.15,run(){for(const c of CHANNELS)if(c.open)c.reach*=.5;return `A complaint thread went viral. Reach halved on every open channel, and ${loseCustomers(.03,.06)} cancelled.`}},
+  {al:[-1,0],name:'Regulator fine',when:()=>paying>0&&companyAl()[0]<=-.15,run(){boardHit('Regulator fine',-6);const n=Math.max(500,MRR()*2);spendCash(n);return `A regulator fined you ${fmt(n)}.${cash<0?' You’re overdrawn until revenue covers it, and you can’t buy anything.':''}`}},
+  {al:[-1,-.5],name:'Class action',when:()=>paying>0&&companyAl()[0]<=-.15,run(){boardHit('Class action',-6);const n=Math.max(500,MRR());spendCash(n);return `Customers filed a class action and you paid ${fmt(n)} to settle. ${loseCustomers(.05,.1)} cancelled.`}},
+  {al:[0,-1],name:'Data breach',when:()=>paying>0&&companyAl()[1]<=-.15,run(){boardHit('Data breach',-6);return `Customer data leaked. ${loseCustomers(.08,.15)} cancelled.`}},
+  {al:[-1,0],name:'Viral complaint',when:()=>paying>0&&companyAl()[0]<=-.15,run(){boardHit('Viral complaint',-6);for(const c of CHANNELS)if(c.open)c.reach*=.5;return `A complaint thread went viral. Reach halved on every open channel, and ${loseCustomers(.03,.06)} cancelled.`}},
   {name:'Ad policy change',when:()=>ads>0,run(){for(const c of CHANNELS)if(c.open)c.reach*=.5;return 'An ad platform tightened its targeting. Reach halved on every open channel.'}}
 ];
 // Saved as soon as it fires, so reloading can't dodge a bad one. Timers shift on resume so bursts and cooldowns don't run out during the pause.
@@ -1066,8 +1067,8 @@ const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$1
 // Game month each milestone was first reached, by MILES index. Saves from before this leave earlier ones empty.
 let mileMonth=[];
 const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;
-function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||!atRisk()||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());let pts=0;for(let i=msLvl;i<n;i++)pts+=RP_MILE[i]||0;rp+=pts;msLvl=n;const m=MILES[n-1],nx=MILES[n];
-  showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}${pts?` Your team banks ${pts} roadmap points.`:''}`)}
+function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||!atRisk()||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());let pts=0;for(let i=msLvl;i<n;i++)pts+=RP_MILE[i]||0;rp+=pts;const hadBoard=!!board,k=n-msLvl;msLvl=n;const m=MILES[n-1],nx=MILES[n];let bd='';if(!board&&n>=2){board=freshBoard();bd=' Your investors now sit on a board, and it expects steady growth and a roadmap that ships.'}else if(hadBoard)for(let i=0;i<k;i++)boardHit('Milestone',10);
+  showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}${pts?` Your team banks ${pts} roadmap points.`:''}${bd}`)}
 for(const id of ['ev','sum','over','tree'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
 $('ev').addEventListener('close',()=>{if(evQueue.length&&atRisk())showEv(...evQueue.shift())});
 // IPO readiness. Targets are game simplifications. Every criterion must hold at IPO.hold month rollovers in a row before filing.
@@ -1093,7 +1094,32 @@ function rollRisk(){
   if(softLocked()){softMonths++;
     if(softMonths===1)warn('runway','You’re out of cash and customers','You have no cash for an ad, no paying customers and no free traffic. If nothing changes in 2 months, the company is finished.');
     else if(softMonths>=SOFTLOCK_MONTHS)return endGame('runway',ENDINGS.runway,'You had no cash for ads, no customers and no free traffic, so nothing more could come in.')}
-  else softMonths=0}
+  else softMonths=0
+  // The board (from $1M peak). Confidence moves once a month; below BOARD_WARN it warns, below BOARD_ULT it sets a deadline to get back above BOARD_WARN.
+  if(board){boardMonth();const b=board;
+    if(b.conf>=50)b.warned=false;
+    if(b.conf<BOARD_WARN&&!b.warned){b.warned=true;const bad=b.why.filter(r=>r[1]<0).sort((x,y)=>x[1]-y[1]).slice(0,2);
+      warn('board','The board is concerned',`Board confidence is ${Math.round(b.conf)} out of 100.${bad.length?` ${bad.map(r=>`${r[0]} (${r[1]}): ${boardFix(r[0])}.`).join(' ')}`:''}${companyAl()[1]>=.3?' Your track record buys you some patience.':''} If it falls below ${BOARD_ULT}, the board will set a deadline.`)}
+    if(b.conf<BOARD_ULT&&b.ult==null){const n=ultMonths();b.ult=month+n;
+      warn('board','Ultimatum from the board',`Board confidence is ${Math.round(b.conf)}. Get it back above ${BOARD_WARN} within ${n} months or the board will replace you.`)}
+    else if(b.ult!=null&&b.conf>BOARD_WARN){b.lastUlt=month;b.ult=null;say('<b>The board backed off.</b> Confidence is back above '+BOARD_WARN+'.')}
+    else if(b.ult!=null&&month>=b.ult)return endGame('board',ENDINGS.board,`Board confidence stayed below ${BOARD_WARN} past the deadline, and the board replaced you.`)}}
+// The board. conf runs 0-100. boardReasons() is what the state says now; pend holds one-off hits queued since the last rollover (scandals, emergency funding, milestones).
+const BOARD_START=70,BOARD_REST=60,BOARD_WARN=40,BOARD_ULT=20,ULT_MONTHS=6,ULT_LAWFUL=9,ULT_SHORT=4,ULT_REPEAT=24;
+const freshBoard=()=>({conf:BOARD_START,last:0,why:[],pend:[],shipped:false,ult:null,lastUlt:null,warned:false});
+function boardHit(label,n){if(board)board.pend.push([label,n*(n<0&&companyAl()[1]<=-.3?1.5:1)])}
+function boardReasons(){const r=[],y=yoy(),up=y!=null?y>.4:growth*12>.4,down=y!=null?y<0:growth<0,rw=runway();
+  if(staleOn)r.push(['Nothing shipped',-Math.min(5,Math.max(0,stale-STALE_GRACE))]);
+  if(up)r.push(['Growing',2]);if(down)r.push(['Shrinking',-3]);
+  if(rw!=null&&rw<6)r.push(['Runway',-2]);if(insolventNow())r.push(['Can’t pay bills',-5]);
+  return r.filter(x=>x[1]!==0)}
+function boardMonth(){const b=board;let why=[...boardReasons(),...b.pend,...(b.shipped?[['Shipped',2]]:[])];
+  if(!why.length&&b.conf!==BOARD_REST)why=[['Steady',b.conf<BOARD_REST?1:-1]];
+  b.last=why.reduce((a,r)=>a+r[1],0);b.conf=Math.max(0,Math.min(100,b.conf+b.last));b.why=why;b.pend=[];b.shipped=false}
+const ultMonths=()=>board&&board.lastUlt!=null&&month-board.lastUlt<ULT_REPEAT?ULT_SHORT:companyAl()[1]>=.3?ULT_LAWFUL:companyAl()[1]<=-.3?ULT_SHORT:ULT_MONTHS;
+const boardFix=l=>({'Nothing shipped':'ship something from the roadmap','Shrinking':'win back growth','Runway':'cut costs or raise cash','Can’t pay bills':'get cash above zero'})[l]||'steady the company';
+function boardHud(e){const b=board,c=Math.round(b.conf),d=Math.round(b.last),w=b.why.map(r=>`${r[0]} ${r[1]>0?'+':''}${Math.round(r[1])}`).join(', ');
+  e.className=b.conf<BOARD_WARN?'warn':'';e.textContent=`${c} / 100${d?` (${d>0?'+':''}${d}${w?': '+w:''})`:''}${b.ult!=null?` Ultimatum: ${Math.max(0,b.ult-month)} months`:''}`}
 // The lifeline: one bridge at the brink. A company with enough of what customers like gets prepayments at no interest, otherwise an expensive bridge.
 const BRIDGE_MONTHS=3,BRIDGE_MIN=5000,BRIDGE_APR=.45;let bridgeUsed=false;
 const bridgeOffer=()=>atRisk()&&!bridgeUsed&&insolvent>0;
@@ -1136,7 +1162,7 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,board,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
   channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late,apr,name})=>({bal,pay,late,apr,name}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
@@ -1152,7 +1178,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
   if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}for(let i=0;i<milesHit();i++)rp+=RP_MILE[i]||0}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
-  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;insolvent=s.insolvent||0;bridgeUsed=!!s.bridgeUsed;softMonths=s.softMonths||0;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
+  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;insolvent=s.insolvent||0;bridgeUsed=!!s.bridgeUsed;softMonths=s.softMonths||0;board=s.board&&typeof s.board.conf==='number'?{...freshBoard(),...s.board}:peak>=1e6?freshBoard():null;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();staleOn=atRisk()&&shippable();s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh()}
