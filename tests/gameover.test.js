@@ -102,3 +102,51 @@ test('runway readout in the hud', () => {
   a.g('cash=-500');a.frames(32);assert.equal(a.el('cRunway').textContent,'0.0 months');
   a.g('payroll=0');a.frames(32);assert.equal(a.el('cRunway').hidden,true);
 });
+
+const setAl=(a,al)=>a.g(`NODE_IX.t_al={id:'t_al',al:${JSON.stringify(al)}};owned={start:1,t_al:ALIGN_SCALE};paying=100;ads=1;cash=1e6`);
+const brink='subs={"49:0":10};paying=10;out[4]=10;cash=-1e5';
+const bridge=a=>a.g("LOANS.find(l=>l.id==='bridge')");
+test('bridge is offered once and repays like a loan', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(brink);
+  assert.equal(a.g('bridgeOffer()'),false);
+  a.months(1.05);
+  assert.equal(a.g('insolvent'),1);assert.equal(a.g('bridgeOffer()'),true);
+  assert.match(a.el('ev-text').textContent,/45%/);
+  assert.equal(a.el('ev-act').hidden,false);assert.equal(a.el('ev-act').textContent,'Take it');
+  const c=a.g('cash'),s=a.g('bridgeSize()');assert.ok(s>=5000&&s%500===0);
+  assert.equal(a.g('takeBridge()'),true);
+  assert.equal(a.g('cash'),c+s);
+  const b=bridge(a);assert.equal(b.apr,.45);assert.equal(b.name,'Emergency bridge');
+  assert.equal(b.bal,s);assert.ok(Math.abs(b.pay-a.g(`pmt(${s},.45,12)`))<1e-6);
+  assert.equal(a.g('takeBridge()'),false);assert.equal(a.g('bridgeOffer()'),false);
+});
+test('the warning button runs takeBridge and closes the dialog', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g(brink);a.months(1.05);
+  const c=a.g('cash');a.g('useEvAct()');
+  assert.equal(a.g('bridgeUsed'),true);assert.ok(a.g('cash')>c);assert.equal(a.el('ev').open,false);
+});
+test('the action button hides again for later dialogs', () => {
+  const a=load({dialogs:true});
+  a.g("showEv('bad','Warning','A','a',{label:'Go',run(){}})");a.g("showEv('good','Good news','B','b')");
+  assert.equal(a.el('ev-act').hidden,false);a.el('ev').close();
+  assert.equal(a.el('ev-title').textContent,'B');assert.equal(a.el('ev-act').hidden,true);
+});
+test('prepay for a company that treats users well', () => {
+  const a=load({dialogs:true});quiet(a.g);setAl(a,[.5,0]);a.g(brink);a.months(1.05);
+  assert.match(a.el('ev-text').textContent,/customers offered to prepay a year/);
+  assert.doesNotMatch(a.el('ev-text').textContent,/45%/);
+  assert.equal(a.g('takeBridge()'),true);
+  const b=bridge(a);assert.equal(b.apr,0);assert.equal(b.name,'Customer prepayments');
+});
+test('bridge never shows as a card and borrow refuses it', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g('cash=1000;borrow("bridge")');
+  assert.equal(a.g('cash'),1000);assert.equal(bridge(a).bal,0);
+  assert.equal(a.g('takeBridge()'),false);
+});
+test('bridgeUsed and an active prepay bridge round-trip', () => {
+  const a=load({dialogs:true});quiet(a.g);setAl(a,[.5,0]);a.g(brink);a.months(1.05);a.g('takeBridge()');a.g('save()');
+  const save=JSON.parse(a.store.get('funnel-drop-save-v1'));
+  const b=load({save,dialogs:true});
+  assert.equal(b.g('bridgeUsed'),true);
+  const x=bridge(b);assert.equal(x.apr,0);assert.equal(x.name,'Customer prepayments');assert.ok(x.bal>0);
+});

@@ -75,6 +75,7 @@ h1 em{font-style:normal;color:var(--paid)}
 #over-reveal:empty{display:none}
 #ev p{font-size:14px;line-height:1.45;margin:8px 0 14px}
 #ev .buy{width:100%;justify-content:center}
+#ev-act{margin-bottom:8px}#ev-act[hidden]{display:none}
 #sum-stats,#over-stats{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;margin:12px 0 14px;font:13px var(--mono);font-variant-numeric:tabular-nums}
 #sum-stats dt,#over-stats dt{color:var(--muted)}
 #sum-stats dd,#over-stats dd{margin:0;text-align:right}
@@ -249,7 +250,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 }
 </style>
 
-<dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><form method="dialog"><button class="buy">Continue</button></form></dialog>
+<dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><button class="buy" id="ev-act" type="button" hidden></button><form method="dialog"><button class="buy">Continue</button></form></dialog>
 <dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
 <dialog id="over" aria-labelledby="over-title"><small>Game over</small><b id="over-title"></b><ol id="over-story"></ol><dl id="over-stats"></dl><div id="over-reveal"></div><div class="sumbtns"><button class="campbtn" id="over-new">New game</button></div></dialog>
 <dialog id="tree" aria-labelledby="tree-title"><div class="tr-top"><b id="tree-title">Roadmap</b><div class="tr-stats"><div class="stat" id="tr-pts-s"><span>Points</span><b><span id="tr-pts">2 / 4</span> <small id="tr-inc">+0.5 a month</small></b></div><div class="stat"><span>Cash</span><b id="tr-cash">$1,500</b></div></div><button class="campbtn" id="tr-respec">Respec</button><form method="dialog"><button class="buy" id="tr-close">Close</button></form></div>
@@ -544,7 +545,7 @@ function hud(){
   $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;{const t=performance.now();if(t-rmT>250||t<rmT){rmT=t;rmN=!atRisk()?0:readyNow()}}{const sc=Math.round((staleMult()-1)*100);$('rm-meta').textContent=`${rmN?`${rmN} ready to buy now. `:''}+${rpIncome().toFixed(1)} points a month, up to ${Math.floor(rpCap()+1e-9)} stored. ${sc?'Ship something to stop falling behind.':rmN?'':'Each item costs roadmap points and cash.'}`;$('cStale').textContent=sc?`+${sc}%`:'–';$('cStale').className=sc?'warn':'';$('cStale').previousElementSibling.hidden=$('cStale').hidden=!sc}$('csm-cov').textContent=csmCovers();
   $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),gate('eng',ENG.at,heads('eng'),'Engineer'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
-  $('h-fin').hidden=!LOANS.map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
+  $('h-fin').hidden=!LOANS.filter(l=>!l.hidden).map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=netFlow(),rw=runway(),rc=rw==null?null:Math.max(0,rw);{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rc==null;if(rc!=null){e.textContent=`${rc<3?rc.toFixed(1):Math.round(rc)} months`;e.className=rc<6?'warn':''}}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
    showCount('csm');showCount('mm');showCount('eng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpIncome().toFixed(1)} roadmap points a month in total`;$('e-hire').disabled=!atRisk()||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=!atRisk()||cash<10*ENG.salary;{const t=staff.length;$('team-n').textContent=t?`· ${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:''}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=!atRisk()||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=!atRisk()||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
    {const g=csmGap();setBtn($('t-cover'),g?`Cover all <b>+${g}</b>`:'Cover all');$('t-cover').disabled=!atRisk()||!g||cash<g*CSM.salary;$('t-hire10').disabled=!atRisk()||cash<10*CSM.salary;$('m-hire10').disabled=!atRisk()||cash<10*MM.salary}
@@ -994,22 +995,24 @@ const r500=v=>Math.floor(v/500)*500;
 const LOANS=[
   {id:'card',at:25e3,name:'Business credit card',apr:.24,months:12,limit:()=>3000,ok:()=>true,why:''},
   {id:'online',at:5e4,name:'Online lender',apr:.30,months:12,limit:()=>r500(MRR()*3),ok:()=>MRR()>=500,why:'Needs $500 MRR. Lends up to 3× MRR.'},
-  {id:'bank',at:5e5,name:'Bank term loan',apr:.10,months:24,limit:()=>Math.min(500000,r500(MRR()*6)),ok:()=>MRR()>=5000,why:'Needs $5,000 MRR. Lends up to 6× MRR.'}
+  {id:'bank',at:5e5,name:'Bank term loan',apr:.10,months:24,limit:()=>Math.min(500000,r500(MRR()*6)),ok:()=>MRR()>=5000,why:'Needs $5,000 MRR. Lends up to 6× MRR.'},
+  // The lifeline (takeBridge): no card, and borrow refuses it. name and apr are set when taken.
+  {id:'bridge',hidden:true,name:'Emergency bridge',apr:.45,months:12,limit:()=>0,ok:()=>false,why:''}
 ];
 LOANS.forEach(l=>{l.bal=0;l.pay=0});
-const pmt=(P,apr,n)=>{const r=apr/12;return P*r/(1-Math.pow(1+r,-n))};
+const pmt=(P,apr,n)=>{const r=apr/12;return r?P*r/(1-Math.pow(1+r,-n)):P/n};
 const loanPay=()=>LOANS.reduce((t,l)=>t+(l.bal>0?l.pay:0),0);
-$('loans').innerHTML=LOANS.map(l=>`<div class="upg" id="c-${l.id}" style="--c:var(--muted);cursor:default"><b>${l.name}</b><span class="cost" id="l-fig-${l.id}"></span><small><span>${Math.round(l.apr*100)}% APR · repaid monthly over ${l.months} months.</span> <span id="l-st-${l.id}"></span></small>
+$('loans').innerHTML=LOANS.filter(l=>!l.hidden).map(l=>`<div class="upg" id="c-${l.id}" style="--c:var(--muted);cursor:default"><b>${l.name}</b><span class="cost" id="l-fig-${l.id}"></span><small><span>${Math.round(l.apr*100)}% APR · repaid monthly over ${l.months} months.</span> <span id="l-st-${l.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="l-take-${l.id}">Borrow</button><button class="campbtn" id="l-off-${l.id}">Pay off</button></span></div>`).join('');
-function updLoans(){let debt=0;for(const l of LOANS){debt+=l.bal;const lim=l.limit();
+function updLoans(){let debt=0;for(const l of LOANS){debt+=l.bal;if(l.hidden)continue;const lim=l.limit();
   if(l.bal>0){const left=Math.max(1,Math.ceil(Math.log(1/(1-l.bal*(l.apr/12)/l.pay))/Math.log(1+l.apr/12)||1));
     $('l-fig-'+l.id).textContent=fmt(l.bal);$('l-st-'+l.id).textContent=`${l.late?'Behind on repayments, late fees adding up. ':''}Owe ${fmt(l.bal)}. ${fmt(l.pay)} a month, about ${left} months left.`;}
   else if(l.ok()&&lim>0){$('l-fig-'+l.id).textContent=fmt(lim);$('l-st-'+l.id).textContent=`Borrow ${fmt(lim)}: ${fmt(pmt(lim,l.apr,l.months))} a month, ${fmt(pmt(lim,l.apr,l.months)*l.months-lim)} interest in total.`}
   else{$('l-fig-'+l.id).textContent='—';$('l-st-'+l.id).textContent=l.why}
   $('l-take-'+l.id).disabled=!atRisk()||l.bal>0||!l.ok()||lim<=0;$('l-off-'+l.id).disabled=!(l.bal>0)||cash<l.bal}
   $('cDebt').textContent=fmt(debt)}
-function borrow(id){const l=LOANS.find(x=>x.id===id),lim=l.limit();if(!atRisk()||l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)}
-LOANS.forEach(l=>{
+function borrow(id){const l=LOANS.find(x=>x.id===id),lim=l.limit();if(!atRisk()||l.hidden||l.bal>0||!l.ok()||lim<=0)return;l.bal=lim;l.pay=pmt(lim,l.apr,l.months);cash+=lim;say(`Borrowed ${fmt(lim)} from your ${l.name.toLowerCase()}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`)}
+LOANS.filter(l=>!l.hidden).forEach(l=>{
   $('l-take-'+l.id).addEventListener('click',()=>borrow(l.id));
   $('l-off-'+l.id).addEventListener('click',()=>{if(!(l.bal>0)||cash<l.bal)return;spendCash(l.bal);l.bal=0;say(`${l.name} paid off early. No more repayments.`)})});
 // Rolled once a game month. Sizes scale with the company so events still matter late on.
@@ -1041,7 +1044,10 @@ const EVENTS=[
 // Saved as soon as it fires, so reloading can't dodge a bad one. Timers shift on resume so bursts and cooldowns don't run out during the pause.
 let pausedAt=0;
 const evQueue=[];
-function showEv(k,kind,name,t,act){if($('ev').open){evQueue.push([k,kind,name,t,act]);return}sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
+let evAct=null;
+function useEvAct(){const a=evAct;evAct=null;if(a)a.run();$('ev').close()}
+$('ev-act').addEventListener('click',useEvAct);
+function showEv(k,kind,name,t,act){if($('ev').open){evQueue.push([k,kind,name,t,act]);return}evAct=act||null;$('ev-act').hidden=!act;if(act)$('ev-act').textContent=act.label;sfx(kind==='Milestone'?'fanfare':k);say(`<b class="${k}">${name}.</b> ${t}`);$('ev').className=k;$('ev-kind').textContent=kind;$('ev-title').textContent=name;$('ev-text').textContent=t;save();pausedAt=performance.now();$('ev').showModal()}
 // Rubber band: -1 is struggling, 1 is flying. Good news runs from 10% when flying to 70% when struggling.
 function health(){return Math.max(-1,Math.min(1,growth*10+(netFlow()>0?.5:-.5)))}
 // Alignment exposure: each axis sums al × count over owned nodes (not the start), over ALIGN_SCALE, clamped to -1..1. Hidden from the player.
@@ -1079,13 +1085,24 @@ const insolventNow=()=>(cash<0||LOANS.some(l=>l.bal>0&&l.late))&&(out[4]>0||LOAN
 const softLocked=()=>cash<adCost(CHANNELS[0])&&!balls.length&&!queue.length&&paying===0&&ads>0&&organicRate()===0;
 function rollRisk(){
   if(insolventNow()){insolvent++;
-    if(insolvent===1)warn('runway','You can’t pay your bills','Your cash is below zero or a loan repayment is overdue. Let staff go, pay down a loan, raise your price or borrow. If this lasts 3 months, the company is finished.');
+    if(insolvent===1){const base='Your cash is below zero or a loan repayment is overdue. Let staff go, pay down a loan, raise your price or borrow. If this lasts 3 months, the company is finished.';
+      if(bridgeOffer()){const s=fmt(bridgeSize()),pre=bridgeKind()==='prepay';warn('runway','You can’t pay your bills',`${base} ${pre?'Some of your customers offered to prepay a year to keep you going.':`A lender will advance you ${s} at ${Math.round(BRIDGE_APR*100)}% APR.`} You can take this once. ${pre?`It is ${s}, repaid monthly over 12 months at no interest.`:'It is repaid monthly over 12 months.'}`,{label:'Take it',run:takeBridge})}
+      else warn('runway','You can’t pay your bills',base)}
     else if(insolvent>=INSOLVENT_MONTHS)return endGame('runway',ENDINGS.runway,`You couldn’t pay your bills for ${INSOLVENT_MONTHS} months in a row, and the company closed.`)}
   else insolvent=0;
   if(softLocked()){softMonths++;
     if(softMonths===1)warn('runway','You’re out of cash and customers','You have no cash for an ad, no paying customers and no free traffic. If nothing changes in 2 months, the company is finished.');
     else if(softMonths>=SOFTLOCK_MONTHS)return endGame('runway',ENDINGS.runway,'You had no cash for ads, no customers and no free traffic, so nothing more could come in.')}
   else softMonths=0}
+// The lifeline: one bridge at the brink. A company with enough of what customers like gets prepayments at no interest, otherwise an expensive bridge.
+const BRIDGE_MONTHS=3,BRIDGE_MIN=5000,BRIDGE_APR=.45;let bridgeUsed=false;
+const bridgeOffer=()=>atRisk()&&!bridgeUsed&&insolvent>0;
+const bridgeKind=()=>companyAl()[0]>=.3?'prepay':'bridge';
+const bridgeSize=()=>r500(Math.max(BRIDGE_MIN*Math.pow(mkt(),AD_PRICE_P),BRIDGE_MONTHS*Math.max(0,-netFlow())));
+function takeBridge(){if(!bridgeOffer())return false;const l=LOANS.find(x=>x.id==='bridge'),n=bridgeSize(),pre=bridgeKind()==='prepay';
+  bridgeUsed=true;l.name=pre?'Customer prepayments':'Emergency bridge';l.apr=pre?0:BRIDGE_APR;l.bal=n;l.pay=pmt(n,l.apr,l.months);cash+=n;
+  say(`${pre?'Customers prepaid':'You took an emergency bridge of'} ${fmt(n)}. Repayments of ${fmt(l.pay)} come out of cash every month for ${l.months} months.`);
+  if(typeof boardHit==='function')boardHit('Took emergency funding',-15);return true}
 function endGame(kind,title,text){if(!atRisk())return;evQueue.length=0;const story=warnLog.filter(w=>w.cause===kind).slice(-3);warnLog.push({cause:kind,month,text});story.push({cause:kind,month,text});over={kind,month,story,snap:ipoSummary('At the end')};save();sfx('bad');say(`<b class="bad">${esc(title)}.</b> ${esc(text)}`);openOver()}
 // Year-on-year MRR growth against the oldest ledger entry (13 months back at most). Null until there is one with MRR.
 function yoy(){const e=ledger.at(-13);return e&&e.mrr>0?MRR()/e.mrr-1:null}
@@ -1119,8 +1136,8 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
-  channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late})=>({bal,pay,late}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+  channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({bal,pay,late,apr,name})=>({bal,pay,late,apr,name}))}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
 function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;for(let i=0;i<(n||0);i++)out.push({role:id,hired:gameMonths()-12*y-RAMP_MONTHS,pay:baseSalary(id)*RAISE**y,skill:1+SKILL*y})};
@@ -1135,7 +1152,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
   if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}for(let i=0;i<milesHit();i++)rp+=RP_MILE[i]||0}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
-  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;insolvent=s.insolvent||0;softMonths=s.softMonths||0;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
+  ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;over=s.over||null;insolvent=s.insolvent||0;bridgeUsed=!!s.bridgeUsed;softMonths=s.softMonths||0;warnLog=Array.isArray(s.warnLog)?s.warnLog:[];mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();staleOn=atRisk()&&shippable();s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh()}
