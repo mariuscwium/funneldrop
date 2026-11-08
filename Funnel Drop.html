@@ -79,12 +79,16 @@ h1 em{font-style:normal;color:var(--paid)}
 .toast.out{opacity:0;transform:translateX(8px)}
 @keyframes toast-in{from{opacity:0;transform:translateX(12px)}}
 @media (prefers-reduced-motion:reduce){.toast{animation:none;transition:none}}
-#ev,#sum,#over,#info{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
+#ev,#sum,#over,#info,#welcome{width:min(380px,calc(100vw - 32px));box-sizing:border-box;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:18px}
 #sum,#over{width:min(420px,calc(100vw - 32px))}
-#ev::backdrop,#sum::backdrop,#over::backdrop,#info::backdrop{background:var(--scrim)}
-#ev small,#sum>small,#over>small,#info>small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-#ev b,#sum-title,#over-title,#info-title{display:block;font-size:20px;margin-top:2px}
+#ev::backdrop,#sum::backdrop,#over::backdrop,#info::backdrop,#welcome::backdrop{background:var(--scrim)}
+#ev small,#sum>small,#over>small,#info>small,#welcome>small{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+#ev b,#sum-title,#over-title,#info-title,#welcome-title{display:block;font-size:20px;margin-top:2px}
 #sum-title{color:var(--paid)}
+#welcome{width:min(440px,calc(100vw - 32px))}
+#welcome-body p{margin:10px 0 0;font-size:14px;line-height:1.45}
+#welcome form{margin-top:16px}
+#welcome form .buy{width:100%;justify-content:center}
 #info-body p{margin:10px 0 0;font-size:14px;line-height:1.45}
 #info form{margin-top:14px}
 .ib{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:5px;padding:0;border:1px solid var(--line);border-radius:50%;background:none;color:var(--muted);font:600 10px/1 var(--display);font-style:normal;letter-spacing:0;text-transform:none;cursor:pointer;vertical-align:middle;flex:none}
@@ -297,6 +301,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 </style>
 
 <div id="toasts" role="status" aria-live="polite"></div>
+<dialog id="welcome" aria-labelledby="welcome-title"><small>A product management simulator</small><b id="welcome-title">Welcome to Funnel Drop</b><div id="welcome-body"><p>You run a young SaaS company. Visitors fall through five boards, one for each pirate metric: Acquisition, Activation, Retention, Referral and Revenue. Where they land decides who signs up, sticks around, tells friends and pays.</p><p>Spend on ads, post, publish content, ship roadmap work and hire a team to grow monthly recurring revenue and valuation. Reach $1B and hold the IPO targets to go public. Run out of cash, lose the board’s confidence or get shut down, and the run is over.</p><p>One game month is 10 seconds, and the clock starts when you press Start. Pause stops it any time, and the i next to any number explains it.</p></div><form method="dialog"><button class="buy">Start</button></form></dialog>
 <dialog id="info" aria-labelledby="info-title"><small>About</small><b id="info-title"></b><div id="info-body"></div><form method="dialog"><button class="buy">Got it</button></form></dialog>
 <dialog id="ev" aria-labelledby="ev-title"><small id="ev-kind"></small><b id="ev-title"></b><p id="ev-text"></p><button class="buy" id="ev-act" type="button" hidden></button><form method="dialog"><button class="buy" id="ev-ok">Continue</button></form></dialog>
 <dialog id="sum" aria-labelledby="sum-title"><small>Filed for IPO</small><b id="sum-title">You're going public</b><div id="sum-reveal" class="reveal"></div><dl id="sum-stats"></dl><div class="sumbtns"><button class="campbtn" id="sum-new">New game</button><form method="dialog"><button class="buy">Keep watching</button></form></div></dialog>
@@ -654,17 +659,19 @@ function binom(n,p){if(n<=0||p<=0)return 0;if(p>=1)return n;
   let u=0,v=0;while(!u)u=Math.random();v=Math.random();
   const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
   return Math.max(0,Math.min(n,Math.round(n*p+Math.sqrt(n*p*(1-p))*z)))}
+// The post and SEO cards, which change with time (cooldown, freshness). Runs every frame, paused or not, and at startup.
+function chanHud(now){{$('op-meta').textContent=`${fmtN(followers)} followers · about ${fmtN(followers*FOLLOW_CTR*(1+mmEff()))} clicks a post; now and then one takes off.`;const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=!atRisk()||left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
+   $('seo-meta').textContent=seoLvl?(([lo,hi])=>`${lo}–${hi} free visitors a month, falling. This month: ${Math.round(seoBase()*seoRoll)}.`)(seoRange()):(([lo,hi])=>`Start a blog for ${lo}–${hi} free visitors a month from search, for as long as you keep publishing.`)(seoRange(1,1));
+   $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=!atRisk()||cash<seoCost()||seoFresh>=.99}
+   const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=!atRisk()||cash<SEO[seoLvl][1]}}}
 function loop(now){
-  if($('ev').open||$('sum').open||$('over').open||over||$('tree').open||$('info').open){last=now;draw();requestAnimationFrame(loop);return}
-  if(paused||$('teamd').open){last=now;draw();hud();requestAnimationFrame(loop);return} // paused by the player: buying still works, so the screen keeps up
+  if($('ev').open||$('sum').open||$('over').open||over||$('tree').open||$('info').open||$('welcome').open){last=now;draw();requestAnimationFrame(loop);return}
+  if(paused||$('teamd').open){last=now;draw();hud();chanHud(now);requestAnimationFrame(loop);return} // paused by the player: buying still works, so the screen keeps up
   const dt=Math.min(.05,(now-last)/1000);adaptCap(now-last);last=now;if(!ipoFiled)playMs+=dt*1000;
   while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
   if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+mmEff()),dt/MONTH));
   runBudgets(dt);if(heads('intern')&&now>=postReady)post('intern');followers*=(1-FOLLOW_DECAY)**(dt/MONTH);organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;spawn(enter(0))}
-  {$('op-meta').textContent=`${fmtN(followers)} followers · about ${fmtN(followers*FOLLOW_CTR*(1+mmEff()))} clicks a post; now and then one takes off.`;const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=!atRisk()||left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
-   $('seo-meta').textContent=seoLvl?(([lo,hi])=>`${lo}–${hi} free visitors a month, falling. This month: ${Math.round(seoBase()*seoRoll)}.`)(seoRange()):(([lo,hi])=>`Start a blog for ${lo}–${hi} free visitors a month from search, for as long as you keep publishing.`)(seoRange(1,1));
-   $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=!atRisk()||cash<seoCost()||seoFresh>=.99}
-   const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=!atRisk()||cash<SEO[seoLvl][1]}}
+  chanHud(now);
   for(let i=0;i<3;i++)physics(dt/3);
   rp=Math.max(rp,Math.min(rpCap(),rp+rpIncome()*dt/MONTH));
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*cts()*dt/MONTH)}
@@ -1233,7 +1240,7 @@ $('over').addEventListener('cancel',e=>e.preventDefault());
 // Timers shift by any pause so bursts and cooldowns don't run out meanwhile. A dialog closing during the player's own pause shifts nothing:
 // resuming shifts by the whole pause.
 const shiftTimers=d=>{for(const q of queue)q.t+=d;postReady+=d;nextCut+=d};
-for(const id of ['ev','sum','over','tree','teamd','info'])$(id).addEventListener('close',()=>{if(!paused)shiftTimers(performance.now()-pausedAt)});
+for(const id of ['ev','sum','over','tree','teamd','info','welcome'])$(id).addEventListener('close',()=>{if(!paused)shiftTimers(performance.now()-pausedAt)});
 // The team screen pauses the game like the roadmap, but hud keeps running (loop) since hiring changes the numbers. Toasts move inside it while
 // it's open, as a modal dialog would cover them.
 function openTeam(){pausedAt=performance.now();$('teamd').append($('toasts'));$('teamd').showModal()}
@@ -1389,7 +1396,9 @@ function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
 function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;for(let i=0;i<(n||0);i++)out.push({role:id,hired:gameMonths()-12*y-RAMP_MONTHS,pay:baseSalary(id)*RAISE**y,skill:1+SKILL*y})};
   add('csm',s.csm);add('mm',s.mm);(s.roles||[]).forEach((n,i)=>ROLES[i]&&add(ROLES[i].id,n));return out}
-function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;
+// freshGame: no save was found, so this is a new run and the welcome opens before the clock starts.
+let freshGame=true;
+function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)return;freshGame=false;
   ({hist=[],month=0,eventT=0,seoFresh=1,seoRoll=1,custRefs=0,ledger=[],monthOut=0,monthRev=0,price=PRICE0,cash,ads,spend,free,paying,churned,peak,growth,histT,seoLvl,organicAcc}=s);
   // Older saves hold monthly (or thinned) chart points, which don't fit the 10-day axis, so their charts start afresh.
   hist=s.histDays===10?hist.slice(-HIST_N):[];
@@ -1467,7 +1476,7 @@ function openInfo(k){const x=INFO[k];if(!x)return;$('info-title').textContent=x[
 document.addEventListener('click',e=>{const b=e.target.closest?.('.ib');if(!b)return;e.preventDefault();e.stopPropagation();openInfo(b.dataset.info)},true);
 placeInfo();
 load();histTick=histNow();drawCharts();msLvl=milesHit();$('price').value=price;applyPrice();setInterval(save,5000);addEventListener('pagehide',()=>{flushEv();save()});
-resize();window.addEventListener('resize',resize);hud();gateReady=true;if(ipoFiled)openSum();if(over)openOver();requestAnimationFrame(loop);
+resize();window.addEventListener('resize',resize);hud();chanHud(performance.now());gateReady=true;if(ipoFiled)openSum();if(over)openOver();if(freshGame){pausedAt=performance.now();$('welcome').showModal()}requestAnimationFrame(loop);
 </script>
 
 </body></html>
