@@ -433,7 +433,7 @@ const SEO=[['Start a blog',2000,150],['SEO foundations',5000,300],['Content libr
 const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
 // Search traffic swings month to month: each month rolls a multiplier between 1−SEO_VAR and 1+SEO_VAR. Game simplification.
 const SEO_VAR=.4,rollSeo=()=>{seoRoll=1-SEO_VAR+2*SEO_VAR*Math.random()};
-const POST_CD=15000;
+const POST_CD=10000; // one game month
 // Followers. A post reaches them: about FOLLOW_CTR click through (more with marketing managers), and POST_VIRAL of posts take off at 12-24 times that.
 // Each post adds FOLLOW_GROW of your followers (FOLLOW_VIRAL times that when it takes off), and FOLLOW_DECAY drift away each month, so followers
 // grow slowly if you post more often than about every 2.5 months and shrink if you post less. Invented numbers, tuned so 400 followers click
