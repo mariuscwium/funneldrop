@@ -10,7 +10,7 @@ test('endGame pauses the game and blocks buying', () => {
   const m=a.g('month'),c=a.g('cash');a.months(1.05);
   assert.equal(a.g('month'),m);assert.equal(a.g('cash'),c);
   const n=a.g('staff.length');
-  a.g('buyAd("social");hire("csm");buyNode("acq1");borrow("card")');
+  a.g('setBudget("social",100);hire("csm");buyNode("acq1");borrow("card")');
   assert.equal(a.g('cash'),c);assert.equal(a.g('staff.length'),n);
 });
 test('endGame keeps the cause\'s last three warnings and adds the ending', () => {

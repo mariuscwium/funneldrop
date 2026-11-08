@@ -147,6 +147,9 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 .upg:disabled{cursor:not-allowed}
 .upg:disabled .cost{color:var(--muted)}
 #price{grid-column:1/3;width:100%;margin:6px 0 2px;accent-color:var(--rev)}
+.bud{display:flex;align-items:center;gap:8px;margin-top:4px}
+.bud input{flex:1;min-width:0;margin:0;accent-color:var(--ad)}
+.bud span{font:500 11px var(--mono);color:var(--fg);white-space:nowrap}
 .upg.done{opacity:.6}
 .upg:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .main{display:flex;flex-direction:column;gap:12px}
@@ -292,7 +295,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
     </div>
     <div class="channels" id="channels"></div>
   </div>
-  <p class="msg intro" id="msg">Each ad sends visitors. Every ad on a channel reaches 8% fewer people than the last; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month), and about 22% of that goes on hosting and support. You can change the price. A month passes every 10 seconds.</p>
+  <p class="msg intro" id="msg">Set a daily ad budget for each channel to send visitors. The more you spend, the fewer new people each dollar reaches; reach recovers slowly over time, or a new campaign resets it. They fall through the five pirate metrics in order: Acquisition, Activation, Retention, Referral, Revenue. Paying customers pay <b>$49 a month</b> to start, until they cancel (6% a month), and about 22% of that goes on hosting and support. You can change the price. A month passes every 10 seconds.</p>
   <div class="main"><div class="boardcol" id="boardcol">
   <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Roadmap</h2><div class="upgrades" id="upglist"><button class="upg" id="rm-open" style="--c:var(--act)"><b>Open roadmap</b><span class="cost" id="rm-pts">0 points</span><small id="rm-meta">Product work you can ship. Each item costs roadmap points and cash.</small></button></div></div><div class="upgrades" id="upgrades"><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Roadmap items quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div><h2 id="h-team">Team <span id="team-n"></span></h2><div class="upgrades" id="team"></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
@@ -322,7 +325,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
   <div class="fnl" id="fnl"></div>
   <h2>Unit economics</h2>
   <div class="econ">
-    <span>Ads bought</span><span id="eAds">0</span>
+    <span>Daily ad budget</span><span id="eAds">$0</span>
     <span>Total ad spend</span><span id="eSpend">$0</span>
     <span>Cost per paying customer</span><span id="eCac">–</span>
     <span>Months to earn it back</span><span id="ePay">–</span>
@@ -410,6 +413,12 @@ const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
 // Search traffic swings month to month: each month rolls a multiplier between 1−SEO_VAR and 1+SEO_VAR. Game simplification.
 const SEO_VAR=.4,rollSeo=()=>{seoRoll=1-SEO_VAR+2*SEO_VAR*Math.random()};
 const POST_CD=15000;
+// Followers. A post reaches them: about FOLLOW_CTR click through (more with marketing managers), and POST_VIRAL of posts take off at 12-24 times that.
+// Each post adds FOLLOW_GROW of your followers (FOLLOW_VIRAL times that when it takes off), and FOLLOW_DECAY drift away each month, so followers
+// grow slowly if you post more often than about every 2.5 months and shrink if you post less. Invented numbers, tuned so 400 followers click
+// about as often as posts used to.
+const FOLLOW0=400,FOLLOW_CTR=.015,FOLLOW_GROW=.005,FOLLOW_VIRAL=8,FOLLOW_DECAY=.002;let POST_VIRAL=.04,followers=FOLLOW0;
+const fmtN=v=>Math.round(v).toLocaleString('en');
 // Marketing managers have diminishing returns: their combined effect grows like a power of team strength. One full hire counts about 1. Game simplification.
 // Diminishing returns: m full hires do the work of dimEff(K,P,m), about m at first and growing like m^P.
 const dimEff=(K,P,m)=>m>0?K*((1+m/K)**P-1)/P:0;
@@ -418,10 +427,10 @@ const MM_K=5,MM_P=.35,mmEff=()=>dimEff(MM_K,MM_P,strength('mm'));
 function seoBase(l=seoLvl,f=seoFresh){return l?SEO[l-1][2]*f*(1+.5*mmEff())*(1+FX.seo):0}
 function seoRange(l,f){const b=seoBase(l,f);return [Math.round(b*(1-SEO_VAR)),Math.round(b*(1+SEO_VAR))]}
 function organicRate(){return seoBase()*seoRoll+mmEff()*MM.visitors}
-function post(){const now=performance.now();if(!atRisk()||now<postReady)return;postReady=now+POST_CD;const m=1+mmEff();
-  const viral=Math.random()<.04,n=Math.round((viral?80+Math.random()*70:3+Math.random()*7)*m);
+function post(){const now=performance.now();if(!atRisk()||now<postReady)return;postReady=now+POST_CD;const m=1+mmEff(),had=followers;
+  const viral=Math.random()<POST_VIRAL,n=Math.round(followers*FOLLOW_CTR*(viral?12+Math.random()*12:.5+Math.random())*m),gain=followers*FOLLOW_GROW*(viral?FOLLOW_VIRAL:1);followers+=gain;
   const t=now;for(let i=0;i<n;i++)queue.push({t:t+i*22});
-  say(viral?`Your post took off: ${n} visitors are on their way.`:`Posted. ${n} people clicked through.`)}
+  say(viral?`Your post took off: ${n} visitors are on their way, and ${fmtN(gain)} people followed you.`:`Posted to ${fmtN(had)} followers. ${n} clicked through and ${fmtN(gain)} followed you.`)}
 function buySeo(){if(!atRisk()||seoLvl>=3||cash<SEO[seoLvl][1])return;spendCash(SEO[seoLvl][1]);const [name]=SEO[seoLvl];seoLvl++;seoFresh=1;const [lo,hi]=seoRange();say(`${name} done. ${lo} to ${hi} free visitors a month will now arrive from search, varying month to month, until the content goes stale.`)}
 function publish(){if(!atRisk()||!seoLvl||cash<seoCost()||seoFresh>=.99)return;spendCash(seoCost());spend+=seoCost();seoFresh=1;const [lo,hi]=seoRange();say(`Fresh content is live. Search traffic is back to ${lo} to ${hi} free visitors a month.`)}
 const CHANNELS=[
@@ -431,27 +440,37 @@ const CHANNELS=[
   {id:'linkedin',name:'LinkedIn ads',cost:300,base:100,camp:1500,unlock:8000,aim:4,pull:.5,lift:1.6,note:'About 60% more pay',pitch:'Professionals with a budget are about 60% likelier to pay'},
   {id:'podcast',name:'Podcast sponsorships',cost:1500,base:500,camp:5000,unlock:20000,note:'Biggest audience',pitch:'Reaches far more people at once than any ad'}
 ];
-CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0});
+CHANNELS.forEach(c=>{c.reach=c.base;c.open=!c.unlock;c.ads=0;c.budget=0;c.vacc=0});
 // Acquisition gets dearer at scale, as CAC does. Above $100k peak valuation, ad and campaign prices grow faster than reach, so each visitor costs more. Game simplification.
 // c.reach stays in base units (the reach bar); visitors per ad are c.reach × reachK().
 const MKT0=1e5,AD_PRICE_P=.6,AD_REACH_P=.1,mkt=()=>Math.max(1,peak/MKT0),r10=v=>Math.round(v/10)*10;
 const adCost=c=>r10(c.cost*mkt()**AD_PRICE_P*(1+FX.adCost)),campCost=c=>r10(c.camp*mkt()**AD_PRICE_P*(1+FX.adCost)),reachK=()=>mkt()**AD_REACH_P*(1+FX.adReach),perAd=c=>Math.max(1,Math.round(c.reach*reachK()));
 const RECOVER=.10;
 function runAd(c,t=performance.now()){const v=perAd(c);c.reach*=DECAY;for(let i=0;i<v;i++)queue.push({t:t+i*22,src:c.id});return v}
-function buyAd(id){const c=CHANNELS.find(x=>x.id===id);
-  const k=adCost(c);if(!atRisk()||!c.open||cash<k)return;spendCash(k);spend+=k;ads++;c.ads++;runAd(c);
-  if(ads===1)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
-  if(c.ads===12)say(`Each ${c.name.toLowerCase()} ad reaches 8% fewer people than the last. Give the channel time to recover, or pay for a new campaign.`);
-}
-function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);const k=campCost(c);if(!atRisk()||!c.open||cash<k||c.reach>=c.base-.5)return;spendCash(k);spend+=k;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to ${perAd(c)} visitors per ad.`)}
-function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience of ${perAd(c)} visitors per ad, at ${fmt(adCost(c))} an ad.`);renderCh()}
+// Daily ad budgets, as ad platforms run. Spending one ad's price (adCost) brings perAd visitors and multiplies reach by DECAY, exactly as one
+// bought ad did, but continuously: u ads' worth brings c.reach·reachK·(1−DECAY^u)/(1−DECAY), which adds up exactly however it is split.
+// Visitors spawn straight away (like organic traffic), not through queue, so they don't wait behind bursts.
+const DAY=MONTH/30,BUDGET_MAX_ADS=30,BUDGET_MIN=.01,BUDGET_STEPS=1000;let adsBroke=false;
+// The slider: position 0 is off, 1..BUDGET_STEPS run exponentially from BUDGET_MIN to BUDGET_MAX_ADS ads' worth a day, so small budgets get fine control.
+const budgetAt=(c,p)=>p<=0?0:adCost(c)*BUDGET_MIN*(BUDGET_MAX_ADS/BUDGET_MIN)**((p-1)/(BUDGET_STEPS-1));
+const budgetPos=(c,b)=>b<=0?0:Math.max(1,Math.min(BUDGET_STEPS,1+Math.round(Math.log(b/(adCost(c)*BUDGET_MIN))/Math.log(BUDGET_MAX_ADS/BUDGET_MIN)*(BUDGET_STEPS-1))));
+function setBudget(id,b){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||!c||!c.open)return;c.budget=Math.max(0,+b||0)}
+function adSpend(c,d){const u=d/adCost(c),was=ads;spendCash(d);spend+=d;ads+=u;c.ads+=u;c.vacc+=c.reach*reachK()*(1-DECAY**u)/(1-DECAY);c.reach*=DECAY**u;
+  let n=0;while(c.vacc>=1-1e-9){c.vacc--;n++;spawn(enter(0,0,undefined,c.id))}
+  if(was<=0&&ads>0)say('Most visitors bounce. Only the narrow slot in Acquisition leads to a sign-up.');
+  if(c.ads>=12&&c.ads-u<12)say(`Each extra dollar on ${c.name.toLowerCase()} reaches fewer new people. Lower the budget and let reach recover, or pay for a new campaign.`);
+  return n}
+function runBudgets(dt){if(!atRisk())return;for(const c of CHANNELS)if(c.open&&c.budget>0){const d=Math.min(c.budget*dt/DAY,Math.max(0,cash));
+  if(d>0){adSpend(c,d);adsBroke=false}else if(!adsBroke){adsBroke=true;say('<b class="bad">Ads paused.</b> You’re out of cash. They restart by themselves when cash comes in.')}}}
+const per100=c=>Math.round(perAd(c)*100/adCost(c));
+function newCampaign(id){const c=CHANNELS.find(x=>x.id===id);const k=campCost(c);if(!atRisk()||!c.open||cash<k||c.reach>=c.base-.5)return;spendCash(k);spend+=k;c.reach=c.base;say(`A new ${c.name.toLowerCase()} campaign is live. Reach is back to full.`)}
+function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||c.open||cash<c.unlock)return;spendCash(c.unlock);c.open=true;say(`${c.name} unlocked: a fresh audience, about ${per100(c)} visitors per $100. Set a daily budget to start.`);renderCh()}
 function visibleCh(){const out=[];for(const c of CHANNELS){out.push(c);if(!c.open)break}return out}
 function renderCh(){
-  $('channels').innerHTML=`<div class="chan organic"><div class="nm"><b>Organic social post</b><small id="op-meta">Free. Usually a handful of visitors; now and then a post takes off.</small></div><button class="adbtn" data-post="1" id="op-btn">Post <b>Free</b></button></div>
-  <div class="chan"><div class="nm"><b>SEO &amp; content</b><small id="seo-meta"></small><i class="reach" id="seo-reach"><i id="seo-bar"></i></i></div><button class="adbtn" data-fresh="1" id="seo-pub"></button><button class="campbtn" data-seo="1" id="seo-btn"></button></div>`+visibleCh().map(c=>c.open?`<div class="chan"><div class="nm"><b>${c.name}</b><small id="cr-${c.id}"></small><i class="reach"><i id="cb-${c.id}"></i></i></div>
-    <button class="adbtn" data-ad="${c.id}" id="ca-${c.id}">Buy ad <b>${fmt(adCost(c))}</b></button>
+  $('channels').innerHTML=`<div class="chan organic"><div class="nm"><b>Organic social post</b><small id="op-meta"></small></div><button class="adbtn" data-post="1" id="op-btn">Post <b>Free</b></button></div>
+  <div class="chan"><div class="nm"><b>SEO &amp; content</b><small id="seo-meta"></small><i class="reach" id="seo-reach"><i id="seo-bar"></i></i></div><button class="adbtn" data-fresh="1" id="seo-pub"></button><button class="campbtn" data-seo="1" id="seo-btn"></button></div>`+visibleCh().map(c=>c.open?`<div class="chan"><div class="nm"><b>${c.name}</b><small id="cr-${c.id}"></small><i class="reach"><i id="cb-${c.id}"></i></i><label class="bud"><input type="range" min="0" max="${BUDGET_STEPS}" step="1" value="${budgetPos(c,c.budget)}" data-bud="${c.id}" id="cs-${c.id}" aria-label="${c.name}: daily budget"><span id="cv-${c.id}"></span></label></div>
     <button class="campbtn" data-camp="${c.id}" id="cc-${c.id}">New campaign <b>${fmt(campCost(c))}</b></button></div>`
-   :`<div class="chan locked"><div class="nm"><b>${c.name}</b><small id="cl-${c.id}">${c.pitch}: ${perAd(c)} visitors per ad, at ${fmt(adCost(c))} an ad.</small></div><button class="campbtn" data-unlock="${c.id}" id="cu-${c.id}">Unlock <b>${fmt(c.unlock)}</b></button></div>`).join('');
+   :`<div class="chan locked"><div class="nm"><b>${c.name}</b><small id="cl-${c.id}">${c.pitch}: about ${per100(c)} visitors per $100.</small></div><button class="campbtn" data-unlock="${c.id}" id="cu-${c.id}">Unlock <b>${fmt(c.unlock)}</b></button></div>`).join('');
 }
 // Messages are toasts, top right: newest first, at most TOAST_MAX, a repeat replaces its earlier copy. They stay longer for longer text,
 // wait while hovered and close on click. The first one also hides the phone intro in #msg.
@@ -570,15 +589,15 @@ let gateReady=false;
 function gate(id,at,held,name){const el=$('c-'+id),vis=peak>=at||held>0;if(el.hidden===vis){el.hidden=!vis;if(vis&&gateReady)say(`<b>${name}</b> is now available.`)}return vis}
 function hud(){
   $('vCash').textContent=fmt(cash);$('vCash').className=cash<0?'warn':'';$('vMrr').textContent=fmt(MRR());$('vPaying').textContent=paying;$('vDays').textContent=Math.floor((month+eventT/MONTH)*30).toLocaleString('en');
-  for(const c of visibleCh()){const ac=adCost(c),r=perAd(c);if(c.open){const cc=campCost(c);$('cr-'+c.id).textContent=`${r} visitors per ad · ${fmt(ac/r)} each${c.note?' · '+c.note:''}`;$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
-      setBtn($('ca-'+c.id),`Buy ad <b>${fmt(ac)}</b>`);setBtn($('cc-'+c.id),`New campaign <b>${fmt(cc)}</b>`);$('ca-'+c.id).disabled=!atRisk()||cash<ac;$('cc-'+c.id).disabled=!atRisk()||cash<cc||c.reach>=c.base-.5}
-    else{$('cl-'+c.id).textContent=`${c.pitch}: ${r} visitors per ad, at ${fmt(ac)} an ad.`;$('cu-'+c.id).disabled=!atRisk()||cash<c.unlock}}
+  for(const c of visibleCh()){const ac=adCost(c),r=perAd(c);if(c.open){const cc=campCost(c);$('cr-'+c.id).textContent=`${fmt(ac/r)} a visitor now${c.note?' · '+c.note:''}`;{const sl=$('cs-'+c.id),b=c.budget;if(document.activeElement!==sl)sl.value=budgetPos(c,b);sl.disabled=!atRisk();$('cv-'+c.id).textContent=b>0?`${fmt(b)}/day · ~${Math.round(b/ac*c.reach*reachK())} visitors a day`:'Off'}$('cb-'+c.id).style.width=(c.reach/c.base*100)+'%';
+      setBtn($('cc-'+c.id),`New campaign <b>${fmt(cc)}</b>`);$('cc-'+c.id).disabled=!atRisk()||cash<cc||c.reach>=c.base-.5}
+    else{$('cl-'+c.id).textContent=`${c.pitch}: about ${per100(c)} visitors per $100.`;$('cu-'+c.id).disabled=!atRisk()||cash<c.unlock}}
   {const top=Math.max(1,...STAGES.map(s=>s[2]()));STAGES.forEach(([,,v,b],i)=>{const n=v();$('fb'+i).style.width=n?Math.max(2,Math.sqrt(n/top)*100)+'%':'0';$('fv'+i).textContent=n.toLocaleString('en');if(b==='nrr'){const r=NRR12();$('fy'+i).textContent=r==null?'–':Math.round(r*100)+'%'}else if(b!==undefined)$('fy'+i).textContent=pct(out[b],into[b])})}
   const mrr=MRR(),mult=revMult(),val=mrr*12*mult;peak=Math.max(peak,val);
   $('vVal').textContent=fmt(val);$('cVal').textContent=fmt(val);$('cArr').textContent=fmt(mrr*12);$('cMult').textContent=mult.toFixed(1)+'×';$('cPeak').textContent=fmt(peak);{const r=NRR12();$('cNrr').textContent=(r==null?'–':Math.round(r*100)+'%')+' / 109%'}checkMilestone();
   $('cGrowth').textContent=mrrHist.length>=31&&mrrHist[0]>0?(growth>=0?'+':'')+(growth*100).toFixed(1)+'%':'–';$('cGrowth').className=growth<0?'warn':'';
   $('rm-pts').textContent=`${Math.floor(rp+1e-9)} point${Math.floor(rp+1e-9)===1?'':'s'}`;{const t=performance.now();if(t-rmT>250||t<rmT){rmT=t;rmN=!atRisk()?0:readyNow()}}{const sc=Math.round((staleMult()-1)*100);$('rm-meta').textContent=`${rmN?`${rmN} ready to buy now. `:''}+${rpRate()}, up to ${Math.floor(rpCap()+1e-9)} stored. ${sc?'Ship something to stop falling behind.':rmN?'':'Each item costs roadmap points and cash.'}`;$('cStale').textContent=sc?`+${sc}%`:'–';$('cStale').className=sc?'warn':'';$('cStale').previousElementSibling.hidden=$('cStale').hidden=!sc}$('csm-cov').textContent=csmCovers();
-  $('eAds').textContent=ads;$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
+  $('eAds').textContent=fmt(CHANNELS.reduce((t,c)=>t+(c.open?c.budget:0),0))+'/day';$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   $('h-team').hidden=![gate('csm',CSM.at,heads('csm'),'Customer success manager'),gate('mm',MM.at,heads('mm'),'Marketing manager'),gate('eng',ENG.at,heads('eng'),'Engineer'),...ROLES.map(r=>gate(r.id,r.at,heads(r.id),r.name))].some(Boolean);
   $('h-fin').hidden=!LOANS.filter(l=>!l.hidden).map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=netFlow(),rw=runway(),rc=rw==null?null:Math.max(0,rw);{const e=$('cInsol');e.previousElementSibling.hidden=e.hidden=insolvent<=0||!atRisk();if(insolvent>0){const n=Math.max(0,INSOLVENT_MONTHS-insolvent);e.textContent=`closes in ${n} month${n===1?'':'s'}`;e.className='warn'}}{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rc==null;if(rc!=null){e.textContent=`${rc<3?rc.toFixed(1):Math.round(rc)} months`;e.className=rc<6?'warn':''}}{const e=$('cCase'),l=$('cCaseL');l.hidden=e.hidden=!lawCase;if(lawCase){l.textContent=lawCase.axis?'Audit':'Investigation';const n=Math.max(0,lawCase.due-month);e.textContent=`ruling in ${n} month${n===1?'':'s'}`}}{const e=$('cBoard');e.previousElementSibling.hidden=e.hidden=!board;if(board)boardHud(e)}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
@@ -604,8 +623,8 @@ function loop(now){
   const dt=Math.min(.05,(now-last)/1000);adaptCap(now-last);last=now;if(!ipoFiled)playMs+=dt*1000;
   while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
   if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+mmEff()),dt/MONTH));
-  organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;spawn(enter(0))}
-  {const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=!atRisk()||left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
+  runBudgets(dt);followers*=(1-FOLLOW_DECAY)**(dt/MONTH);organicAcc+=organicRate()/MONTH*dt;while(organicAcc>=1){organicAcc--;spawn(enter(0))}
+  {$('op-meta').textContent=`${fmtN(followers)} followers · about ${fmtN(followers*FOLLOW_CTR*(1+mmEff()))} clicks a post; now and then one takes off.`;const left=Math.max(0,postReady-now);const b=$('op-btn');b.disabled=!atRisk()||left>0;setBtn(b,left>0?`Post <b>in ${Math.ceil(left/1000)}s</b>`:'Post <b>Free</b>');
    $('seo-meta').textContent=seoLvl?(([lo,hi])=>`${lo}–${hi} free visitors a month, falling. This month: ${Math.round(seoBase()*seoRoll)}.`)(seoRange()):(([lo,hi])=>`Start a blog for ${lo}–${hi} free visitors a month from search, for as long as you keep publishing.`)(seoRange(1,1));
    $('seo-reach').hidden=$('seo-pub').hidden=!seoLvl;if(seoLvl){$('seo-bar').style.width=seoFresh*100+'%';const pb=$('seo-pub');setBtn(pb,`Publish <b>${fmt(seoCost())}</b>`);pb.disabled=!atRisk()||cash<seoCost()||seoFresh>=.99}
    const sb=$('seo-btn');if(seoLvl>=3){setBtn(sb,'Maxed');sb.disabled=true}else{setBtn(sb,`${SEO[seoLvl][0]} <b>${fmt(SEO[seoLvl][1])}</b>`);sb.disabled=!atRisk()||cash<SEO[seoLvl][1]}}
@@ -627,8 +646,9 @@ function loop(now){
     if(lost){paying-=lost;churned+=lost;sfx('thud');addFloat({x:180,y:4*BH+WALLTOP-20,t:'−'+lost+' churned',c:C.warn,life:1});if(churned===lost)say('A paying customer cancelled. Some of them leave every month, so revenue leaks unless new customers keep arriving.')}}
   draw();hud();requestAnimationFrame(loop);
 }
+$('channels').addEventListener('input',e=>{const id=e.target.dataset.bud;if(!id)return;const c=CHANNELS.find(x=>x.id===id);setBudget(id,budgetAt(c,+e.target.value))});
 $('channels').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
-  if(b.dataset.ad)buyAd(b.dataset.ad);else if(b.dataset.camp)newCampaign(b.dataset.camp);else if(b.dataset.unlock)unlockCh(b.dataset.unlock);else if(b.dataset.post)post();else if(b.dataset.seo)buySeo();else if(b.dataset.fresh)publish()});
+  if(b.dataset.camp)newCampaign(b.dataset.camp);else if(b.dataset.unlock)unlockCh(b.dataset.unlock);else if(b.dataset.post)post();else if(b.dataset.seo)buySeo();else if(b.dataset.fresh)publish()});
 renderCh();
 const CENTERS=[[180],[91,269],[82,278],[180],[180],[180]];
 const slots=(b,w)=>CENTERS[b].map(c=>[c-w/2,c+w/2]);
@@ -708,10 +728,10 @@ const NODES=[
   nd('acq_pseo','Programmatic SEO','Generate a page from a template for every search term in your niche. Search traffic +35%.',0,3,-.75,['acq_blog','acq_lp'],[-.3,-.5],{seo:.35},'acq_seo'),
   nd('acq_free','Free tools','A calculator anyone can use without an account, linked from search. Sign-up rate +2 points, search traffic +10%.',0,3,-.25,['acq_lp'],[.5,-.4],{r0:.02,seo:.1},'acq_seo'),
   nd('acq_reviews','Paid reviews','Pay for five-star reviews on software comparison sites. Sign-up rate +3.5 points.',0,3,.25,['acq_lp'],[-.9,-.6],{r0:.035},'acq_seo'),
-  nd('acq_ads2','Creative library','A bank of tested ads, rotated before they tire. Visitors per ad +12%.',0,3,.75,['acq_paid','acq_lp'],[0,.05],{adReach:.12}),
+  nd('acq_ads2','Creative library','A bank of tested ads, rotated before they tire. Ad visitors per dollar +12%.',0,3,.75,['acq_paid','acq_lp'],[0,.05],{adReach:.12}),
   nd('acq_brand','Brand campaign','Sponsor the podcasts and conferences your buyers follow. Ad prices −12%.',0,4,-.6,['acq_pseo','acq_free','acq_reviews'],[.03,.06],{adCost:-.12}),
   nd('acq_priv','Privacy-first analytics','Drop third-party trackers and say so next to the sign-up form. Sign-up rate +3 points, chance of a lucky break +2 points.',0,4,0,['acq_ads2','acq_free'],[.7,.3],{r0:.03,evGood:.02},'acq_track'),
-  nd('acq_pixel','Retargeting pixels','Follow visitors around the web with ads after they leave. Visitors per ad +18%.',0,4,.6,['acq_ads2'],[-.6,-.1],{adReach:.18},'acq_track'),
+  nd('acq_pixel','Retargeting pixels','Follow visitors around the web with ads after they leave. Ad visitors per dollar +18%.',0,4,.6,['acq_ads2'],[-.6,-.1],{adReach:.18},'acq_track'),
   nd('acq_cat','Category report','Name the problem you solve and publish a yearly report on it. Search traffic +20%, sign-up rate +2 points.',0,5,-.5,['acq_brand'],[.05,.08],{seo:.2,r0:.02}),
   nd('acq_growth','Growth team','A small team that ships a funnel experiment every week. Sign-up rate +3 points, roadmap points +5%.',0,5,.5,['acq_priv','acq_pixel'],[-.03,-.12],{r0:.03,rp:.05}),
   nd('acq_rep','Sign-up experiments','Another round of tests on the sign-up flow. Sign-up rate +1 point each time.',0,6,0,['acq_cat','acq_growth'],[0,0],{r0:.01},null,true),
@@ -1103,7 +1123,9 @@ const EVENT_AL_K=2;
 function pickEvent(good){const can=EVENTS.filter(e=>!e.when||e.when()),sided=can.filter(e=>!!e.good===good),ok=sided.length?sided:can,[g,l]=companyAl(),
     w=ok.map(e=>e.al?Math.max(.2,1+EVENT_AL_K*(g*e.al[0]+l*e.al[1])):1);let r=Math.random()*w.reduce((a,b)=>a+b,0);
   for(let i=0;i<ok.length;i++){r-=w[i];if(r<0)return ok[i]}return ok[ok.length-1]}
-function randomEvent(){const e=pickEvent(Math.random()<.4-.3*health()+FX.evGood),t=e.run();if(e.warn)warn('shut',e.name,t);else showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
+// The first SAFE_MONTHS game months bring only good news, so a new company isn't knocked out before it gets going.
+const SAFE_MONTHS=24;
+function randomEvent(){const e=pickEvent(month<SAFE_MONTHS||Math.random()<.4-.3*health()+FX.evGood),t=e.run();if(e.warn)warn('shut',e.name,t);else showEv(e.good?'good':'bad',e.good?'Good news':'Bad news',e.name,t)}
 // Based on peak valuation, so a dip can't repeat one and msLvl needs no saving. Crossing several at once shows the highest.
 // A 4th entry replaces the usual "Next up" line.
 const MILES=[[1e5,'$100k','First traction'],[1e6,'$1M','Seven figures'],[1e7,'$10M','Scale-up'],[1e8,'$100M','Centaur'],[1e9,'$1B','Unicorn','Next goal: an IPO. See IPO readiness under Company.']];let msLvl=0;
@@ -1254,8 +1276,8 @@ function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matc
 placeBuy();wide.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
-function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,lawCase,lawStrikes,evSeen,board,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
-  channels:CHANNELS.map(({reach,open,ads})=>({reach,open,ads})),loans:LOANS.map(({id,bal,pay,late,apr,name})=>id==='bridge'?{bal,pay,late,apr,name}:{bal,pay,late})}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
+function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,followers,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,lawCase,lawStrikes,evSeen,board,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),
+  channels:CHANNELS.map(({reach,open,ads,budget})=>({reach,open,ads,budget})),loans:LOANS.map(({id,bal,pay,late,apr,name})=>id==='bridge'?{bal,pay,late,apr,name}:{bal,pay,late})}));saveFailed=false}catch{if(!saveFailed){saveFailed=true;say('<b>Your progress could not be saved.</b> It will be lost if you reload.')}}}
 // Saves from before individual staff hold a head count per role and one tenure per role. Convert them fully ramped, keeping their years.
 // A role with 0 years converts with hired = now − 6. If the next annual review comes within 6 months it sees under a year and skips the raise the old per-role tenure would have given. Accepted: it only affects old saves once.
 function oldStaff(s){const t=s.tenure||{},out=[],add=(id,n)=>{const y=t[id]||0;for(let i=0;i<(n||0);i++)out.push({role:id,hired:gameMonths()-12*y-RAMP_MONTHS,pay:baseSalary(id)*RAISE**y,skill:1+SKILL*y})};
@@ -1266,7 +1288,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   hist=s.histDays===10?hist.slice(-HIST_N):[];
   subs={};for(const [k,n] of Object.entries(s.subs??(paying?{[price]:paying}:{}))){const [p,pl]=unkey(k);addSub(p,pl,n)}
   flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
-  into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);owned={...s.owned,start:1};paid={...s.paid};rp=s.rp??RP_START;stale=s.stale||0;respecUsed=!!s.respecUsed;alHist=Array.isArray(s.alHist)?s.alHist:[];
+  into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);owned={...s.owned,start:1};paid={...s.paid};rp=s.rp??RP_START;stale=s.stale||0;respecUsed=!!s.respecUsed;alHist=Array.isArray(s.alHist)?s.alHist:[];followers=s.followers??FOLLOW0;
   // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
   if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}for(let i=0;i<milesHit();i++)rp+=RP_MILE[i]||0}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));

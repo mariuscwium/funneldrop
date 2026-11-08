@@ -96,3 +96,12 @@ test('no alignment words in warnings, endings, rulings or the end screen', () =>
   for(const s of texts)assert.ok(!WORDS.test(s),s);
   for(const s of a.g('Object.values(ENDINGS)'))assert.ok(!WORDS.test(s),s);
 });
+
+test('no bad news in the first two years', () => {
+  const a=load({seed:3});
+  a.g("subs={'49:0':100};paying=100;ads=1;cash=1e6;__k=[];showEv=(k,kind)=>__k.push(kind)");
+  a.g('month=0;for(let i=0;i<300;i++)randomEvent();month=SAFE_MONTHS-1;for(let i=0;i<300;i++)randomEvent()');
+  assert.equal(a.g("__k.filter(k=>k!=='Good news').length"),0);
+  a.g('__k=[];month=SAFE_MONTHS;for(let i=0;i<300;i++)randomEvent()');
+  assert.ok(a.g("__k.filter(k=>k!=='Good news').length")>0);
+});

@@ -19,7 +19,7 @@ if(mode==='early'){
   const report={};
   for(let m=1;m<=12;m++){
     for(let s=0;s<10;s++){ // ten decision points per game month
-      t.g(`{const c=CHANNELS.find(x=>x.id==='social')||CHANNELS[0];if(cash>=c.cost)buyAd(c.id);if(performance.now()>=postReady)post()}`);
+      t.g(`{const c=CHANNELS.find(x=>x.id==='social')||CHANNELS[0];setBudget(c.id,Math.max(0,cash)/3);if(performance.now()>=postReady)post()}`);
       t.frames(1000);
     }
     if(m===6||m===12)report[m]={mrr:Math.round(t.g('MRR()')),cash:Math.round(t.g('cash'))};
@@ -43,7 +43,7 @@ t.g(`var botEv={good:0,bad:0},botBad={},botCases=[];{const se=showEv;showEv=(k,k
 t.g(`{const rc=ruleCase;ruleCase=()=>{const c=botCases.at(-1);if(c&&c.out==null){const b=caseBand(companyAl()[lawCase.axis]);c.out=b==='shut'&&!lawStrikes[lawCase.axis]?'order':b}return rc()}}`);
 t.g(`var botBought={},botAds=0,botNodes=0,botBudget=0;
 // From $1M peak, roadmap items come out of a budget of BOT_RD of revenue, kept for up to BOT_KEEP (24) months; before that, the cash rules below alone.
-const BOT_RD=.15,BOT_KEEP=24;
+const BOT_RD=.15,BOT_KEEP=24,BOT_ADS_DAY=8/3;
 // Build policies: the funnel areas a policy prefers (keystones count when either side is preferred). retention also prefers any node that cuts churn.
 const BOT_AREAS={growth:[0,3],retention:[1,2],enterprise:[4,5]};
 const botMine=(v,n)=>{const a=BOT_AREAS[v];if(!a)return false;return (Array.isArray(n.area)?n.area.some(x=>a.includes(x)):a.includes(n.area))||(v==='retention'&&(n.fx.churn||0)<0)};
@@ -82,12 +82,14 @@ function botStep(v){
   // From $1M the unspent roadmap budget is kept back instead.
   const save=late?Math.min(botBudget,Math.max(0,cash-reserve())):next<=6*MRR()*(1-cts())?next:0,spare=()=>cash-reserve()-save;
   if(seoLvl&&seoFresh<.5&&spare()>seoCost())publish();
-  // Ads on every open channel down to half reach, then a new campaign: one per decision while 3-month margin is above 10%,
-  // or in nomargin with no margin check and up to 3 renewals per channel per decision, while spare cash lasts.
-  const runAds=()=>{const m=margin3(),camps=v==='nomargin'?3:1;if(v!=='nomargin'&&m!=null&&m<=.1)return;
-    for(const c of CHANNELS){if(!c.open)continue;let camp=0;
-      for(;;){if(c.reach>=c.base/2){if(spare()<adCost(c))break;buyAd(c.id);botAds++}
-        else if(camp<camps&&spare()>=campCost(c)){newCampaign(c.id);camp++}else break}}};
+  // Daily budgets on every open channel while 3-month margin is above 10% (nomargin: always): BOT_ADS_DAY ads' worth a day, at most
+  // the spare cash split over the channels for the 3 days to the next decision, and a new campaign whenever reach is below half.
+  // This matches the old policy of buying ads down to half reach and renewing the campaign each decision.
+  const runAds=()=>{const m=margin3(),ok=v==='nomargin'||m==null||m>.1,open=CHANNELS.filter(c=>c.open);
+    for(const c of open){if(!ok){setBudget(c.id,0);continue}
+      if(c.reach<c.base/2&&spare()>=campCost(c))newCampaign(c.id);
+      setBudget(c.id,Math.max(0,Math.min(BOT_ADS_DAY*adCost(c),spare()/(3*open.length))))}
+    botAds=Math.round(ads)};
   if(v==='nomargin')runAds(); // ads before any hiring
   // Engineers while points are short (botShort) and net cash flow after the hire still covers the next node's cash within 6 months.
   if(peak>=ENG.at&&botShort()){const ok=n=>net()-n*ENG.salary>nodeK/6&&spare()>=n*ENG.salary;
