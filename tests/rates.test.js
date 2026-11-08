@@ -44,3 +44,23 @@ test('slots stay clear of walls, each other and the Downgrade slots at the table
       for(let i=1;i<z.length;i++)assert.ok(z[i][0]>z[i-1][1],`board ${b} overlap`);
       if(b===5){const d=JSON.parse(g('JSON.stringify(DOWN_ZONES)'));assert.ok(z[0][0]>d[0][1]&&z[0][1]<d[1][0],'down overlap')}}}
 });
+// The table rate at width x, extended along its last segment past the end (independent of the game's rateAt).
+const tableAt=(w,x)=>{if(x<=w[0][0])return w[0][1]*x/w[0][0];for(let i=1;i<w.length;i++)if(x<=w[i][0])return w[i-1][1]+(w[i][1]-w[i-1][1])*(x-w[i-1][0])/(w[i][0]-w[i-1][0]);
+  const a=w.at(-2),c=w.at(-1);return c[1]+(c[1]-a[1])*(x-c[0])/(c[0]-a[0])};
+test('rateOf follows the clamped slot: max bonus, 3 full-strength hires per role, best price', () => {
+  const {g}=load();
+  g('peak=1e9;price=4;for(const r of ROLES)for(let i=0;i<3;i++)hire(r.id);staff.forEach(e=>e.hired=-99);restaff()');
+  for(let b=0;b<6;b++){g(`bonus[${b}]=5;zone(${b})`);
+    const z=g(`BOARDS[${b}].zones[0]`),wd=z[1]-z[0],w=JSON.parse(g(`JSON.stringify(RATES[${b}].w)`)),r=g(`rateOf(RATES[${b}])`);
+    assert.ok(wd<=g(`maxW(${b})`)+1e-9,`board ${b} width ${wd}`);
+    assert.ok(r<=tableAt(w,wd)+1e-9,`board ${b}: ${r} vs table ${tableAt(w,wd)} at ${wd}px`);
+    assert.ok(r<1,`board ${b}: ${r}`)}
+});
+test('rateOf is unchanged at base team and inside the table it reads the table', () => {
+  const {g}=load();
+  g('price=PRICE0');
+  for(let b=0;b<6;b++)assert.ok(Math.abs(g(`rateOf(RATES[${b}])`)-g(`RATES[${b}].base`))<1e-12,`board ${b}`);
+  g('peak=1e9;hire("pe");staff.forEach(e=>e.hired=-99);restaff();zone(2)');
+  const z=g('BOARDS[2].zones[0]'),w=JSON.parse(g('JSON.stringify(RATES[2].w)'));
+  assert.ok(Math.abs(g('rateOf(RATES[2])')-tableAt(w,z[1]-z[0]))<1e-12);
+});

@@ -57,3 +57,22 @@ test('engineers and stale survive save and load', () => {
   const b=load({save:JSON.parse(a.store.get('funnel-drop-save-v1'))});
   assert.equal(b.g('heads("eng")'),1);assert.equal(b.g('stale'),9);
 });
+
+test('points alone or cash alone is not shippable: stale holds and the penalty is off', () => {
+  for(const [rp,cash] of [[100,0],[0,1e12]]){
+    const {g,months,el}=fresh();
+    g('rp=100;cash=1e12;stale=20;monthOut=0');months(1);assert.ok(g('staleMult()')>1,'on while shippable');
+    const s=g('stale');
+    for(let i=0;i<3;i++){g(`rp=${rp};cash=${cash}`);months(1)}
+    assert.equal(g('stale'),s,`rp ${rp} cash ${cash}`);assert.equal(g('staleMult()'),1,`rp ${rp} cash ${cash}`);
+    near(g('paidChurn()'),g('CHURN0*priceChurn(price)'),1e-12);
+    g('hud()');assert.ok(!String(el('rm-meta').textContent).includes('Ship something'),String(el('rm-meta').textContent));
+  }
+});
+
+test('the penalty is off after filing', () => {
+  const {g,months}=fresh();
+  g('rp=100;cash=1e12;stale=20');months(1);assert.ok(g('staleMult()')>1);
+  g('ipoFiled=true');assert.equal(g('staleMult()'),1);
+  const s=g('stale');g('rp=100;cash=1e12');months(1);assert.equal(g('stale'),s);assert.equal(g('staleMult()'),1);
+});

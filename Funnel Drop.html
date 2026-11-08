@@ -434,7 +434,7 @@ function adaptCap(ms){if(ms>100||!document.hasFocus())return;frameSum+=ms;if(++f
 const addFloat=f=>{if(floats.length<40)floats.push(f)};
 function spawn(o){if(balls.length<ballCap){balls.push(o);return}
   const zs=BOARDS[o.b].zones,ds=o.b===5?DOWN_ZONES:[],inZone=x=>zs.some(([a,c])=>x>=a&&x<c)||ds.some(([a,c])=>x>=a&&x<c);
-  const t=trackOf(o.b),r=Math.random(),up=rateOf(t)*(aimed(o.src,o.b)?.lift||1),pick=z=>{const [a,c]=z[Math.random()*z.length|0];o.x=(a+c)/2};
+  const t=trackOf(o.b),r=Math.random(),up=Math.min(RATE_MAX,rateOf(t)*(aimed(o.src,o.b)?.lift||1)),pick=z=>{const [a,c]=z[Math.random()*z.length|0];o.x=(a+c)/2};
   if(r<up)pick(zs);else if(ds.length&&r<up+DOWN_RATE)pick(ds);else do o.x=Math.random()*W;while(inZone(o.x));
   land(o)}
 // Flat and capped so customers can't compound: friends never refer, and this adds at most 10 referrals a month.
@@ -572,7 +572,7 @@ function loop(now){
   rp=Math.max(rp,Math.min(rpCap(),rp+rpIncome()*dt/MONTH));
   {const inc=MRR()/MONTH*dt;cash+=inc;monthRev+=inc;spendCash(MRR()*cts()*dt/MONTH)}
   {const k=1-Math.pow(1-RECOVER,dt/MONTH);for(const c of CHANNELS)if(c.open)c.reach+=(c.base-c.reach)*k;}
-  eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;alHist.push(companyAl().map(v=>Math.round(v*100)/100));ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();if(!ipoFiled&&shippable())stale++;rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}
+  eventT+=dt;if(histNow()!==histTick){histTick=histNow();recordHist()}if(eventT>=MONTH){eventT-=MONTH;month++;alHist.push(companyAl().map(v=>Math.round(v*100)/100));ledger.push({rev:monthRev,out:monthOut,mrr:MRR(),nrr:flow.start>0?Math.max(0,(flow.start+flow.exp-flow.con-flow.lost*flow.start/(flow.start+flow.new))/flow.start):null});if(ledger.length>13)ledger.shift();flow={start:MRR(),exp:0,con:0,lost:0,new:0};monthRev=monthOut=0;refitRamping();staleOn=!ipoFiled&&shippable();if(staleOn)stale++;rollSeo();expCheck();if(!ipoFiled){ipoHold=ipoChecks().every(c=>c.ok)?ipoHold+1:0;if(month%12===0)annualReview();else if((ads||paying)&&Math.random()<EVENT_CHANCE)randomEvent()}}
   histT+=dt;if(histT>=1){histT-=1;mrrHist.push(MRR());if(mrrHist.length>31)mrrHist.shift();
     growth=mrrHist.length>=31&&mrrHist[0]>0?Math.pow(mrrHist[30]/mrrHist[0],1/3)-1:0;}
   {const tc=teamCost()/MONTH*dt;if(!tc||cash>=tc)spendCash(tc);else{spendCash(Math.max(0,cash));if(now<nextCut);else if(nextCut=now+MONTH*1000,staff.length){const e=newest();fire(e.role);say(`Payroll bounced, so you had to let ${aRole({name:roleName(e.role)})} go.${e.role==='csm'?' Their customers lose the extra attention.':''}`)}}}
@@ -615,11 +615,19 @@ function widthFor(b,r){const w=RATES[b].w;if(r<=w[0][1])return w[0][0];
 // Bonuses count in full up to RATE_KNEE of the headroom to the cap, then close in on the cap exponentially, so a late node always adds something.
 const RATE_KNEE=.7;
 const cur=t=>{const h=rateCap(t.board)-t.base,b=Math.max(0,bonus[t.board]),k=RATE_KNEE*h,s=h-k;return b<=k?t.base+b:rateCap(t.board)-s*Math.exp(-(b-k)/s)};
-const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*strength(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
+const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*strength(r.id):0)};
 // Landing rate is close to linear in slot width on every board, so team and price scale the tuned width.
-// Widest slot that keeps clear of the walls (4px), of its neighbour, and on Expansion of the Downgrade slots (2px).
-const maxW=b=>{const cs=CENTERS[b];let m=Math.min(340,2*Math.min(...cs.map(c=>Math.min(c,W-c)-4)));if(cs.length>1)m=Math.min(m,cs[1]-cs[0]-4);if(b===5)m=Math.min(m,2*(W/2-DOWN_ZONES[0][1]-2));return m};
-function zone(b){const B=BOARDS[b],from=shown(B);B.zones=slots(b,Math.min(maxW(b),widthFor(b,cur(RATES[b]))*teamMult(b)*(b===4?priceConv():1)));
+// Widest slot that keeps clear of the walls (4px), of its neighbour, and on Expansion of the Downgrade slots (2px). Constant per board, so cached.
+const MAXW=[],maxW=b=>MAXW[b]??=(()=>{const cs=CENTERS[b];let m=Math.min(340,2*Math.min(...cs.map(c=>Math.min(c,W-c)-4)));if(cs.length>1)m=Math.min(m,cs[1]-cs[0]-4);if(b===5)m=Math.min(m,2*(W/2-DOWN_ZONES[0][1]-2));return m})();
+// The slot width physics uses: roadmap rate to width, scaled by team and price, clamped to maxW.
+const slotW=b=>Math.min(maxW(b),widthFor(b,cur(RATES[b]))*teamMult(b)*(b===4?priceConv():1));
+// Landing rate at width x, read off the board's table: in proportion below its first point, its last segment extended beyond its end.
+function rateAt(b,x){const w=RATES[b].w;if(x<=w[0][0])return w[0][1]*x/w[0][0];
+  for(let i=1;i<w.length;i++)if(x<=w[i][0])return w[i-1][1]+(w[i][1]-w[i-1][1])*(x-w[i-1][0])/(w[i][0]-w[i-1][0]);
+  const [a,c]=w.slice(-2);return c[1]+(c[1]-a[1])*(x-c[0])/(c[0]-a[0])}
+// The rate a board actually lands, from the width physics actually uses, so the odds path (spawn, expCheck) matches animated balls. Never above RATE_MAX.
+const RATE_MAX=.95,rateOf=t=>Math.min(RATE_MAX,rateAt(t.board,slotW(t.board)));
+function zone(b){const B=BOARDS[b],from=shown(B);B.zones=slots(b,slotW(b));
   if(gateReady&&from[0][1]-from[0][0]!==B.zones[0][1]-B.zones[0][0])B.anim={from,t0:performance.now()}}
 // Display only: the drawn slot springs from its old width with a slight overshoot. Physics reads B.zones, which changes at once.
 const SPRING=550,easeBack=p=>1+2.7*(p-1)**3+1.7*(p-1)**2;
@@ -783,7 +791,7 @@ function buyNode(id){const n=NODE_IX[id];if(!n||ipoFiled||nodeState(id)!=='avail
 const ord=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
 // One respec a run: refunds every point paid (may top the cap), clears the tree back to the start node and so frees fork locks.
 const respecCost=()=>Math.max(5000,3*MRR());
-function respec(){if(respecUsed||ipoFiled||cash<respecCost())return false;
+function respec(){if(respecUsed||ipoFiled||cash<respecCost()||Object.keys(owned).every(k=>k==='start'))return false;
   let back=0;for(const id in paid)back+=paid[id];
   spendCash(respecCost());rp+=back;owned={start:1};paid={};respecUsed=true;stale=0;refx();applyPrice();return true}
 const OLD_SEEDS={acq:'acq1',act:'act1',ret:'ret1',ref:'ref1',rev:'rev1',churn:'churn1',exp:'exp1'};
@@ -793,9 +801,10 @@ const MM={salary:6000,visitors:400,at:5e5};
 const RP_FOUNDER=.5,ENG={salary:7000,at:2e4},RP_ENG=.5,ENG_K=5,ENG_P=.5,RP_PD=.15,RP_CAP_MONTHS=3,RP_CAP_MIN=6,RP_MILE=[2,3,5,8,12];
 const engEff=()=>dimEff(ENG_K,ENG_P,strength('eng'));
 const rpIncome=()=>(RP_FOUNDER+RP_ENG*engEff()+RP_PD*(strength('pd')+strength('pe')))*(1+FX.rp),rpCap=()=>Math.max(RP_CAP_MIN,RP_CAP_MONTHS*rpIncome());
-// Falling behind: months in a row with something shippable you haven't shipped. Raises paid churn after a grace period.
-const STALE_GRACE=6,STALE_STEP=.02,STALE_MAX=.3;let stale=0;
-const staleMult=()=>1+Math.min(STALE_MAX,Math.max(0,stale-STALE_GRACE)*STALE_STEP);
+// Falling behind: month rollovers since the last ship that found something shippable. Raises paid churn after a grace period,
+// but only while the latest rollover found something shippable (staleOn, cached so churn code needn't call shippable()) and never after filing.
+const STALE_GRACE=6,STALE_STEP=.02,STALE_MAX=.3;let stale=0,staleOn=false;
+const staleMult=()=>staleOn&&!ipoFiled?1+Math.min(STALE_MAX,Math.max(0,stale-STALE_GRACE)*STALE_STEP):1;
 const markShipped=()=>{stale=0};
 const shippable=()=>NODES.some(n=>nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=nodeCash(n));
 const readyNow=()=>NODES.filter(n=>nodeState(n.id)==='available'&&rp>=nodePts(n)&&cash>=nodeCash(n)).length;
@@ -1096,10 +1105,10 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
   into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);owned={...s.owned,start:1};paid={...s.paid};rp=s.rp??RP_START;stale=s.stale||0;respecUsed=!!s.respecUsed;alHist=Array.isArray(s.alHist)?s.alHist:[];
   // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
-  if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}}
+  if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}for(let i=0;i<milesHit();i++)rp+=RP_MILE[i]||0}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
-  staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();s.balls.forEach(spawn);
+  staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();staleOn=!ipoFiled&&shippable();s.balls.forEach(spawn);
   const now=performance.now();postReady=now+s.postLeft;(Array.isArray(s.queued)?s.queued:Array(s.queued).fill(0)).forEach((src,i)=>queue.push({t:now+i*22,src:src||undefined}));
   renderCh()}
 function showMute(){$('mute').textContent=muted?'Unmute':'Mute';$('mute').setAttribute('aria-pressed',muted)}showMute();

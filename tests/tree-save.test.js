@@ -68,3 +68,15 @@ test('respec needs cash and is blocked after filing', () => {
   a.g('cash=10');assert.equal(a.g('respec()'),false);
   a.g('cash=1e6;ipoFiled=true');assert.equal(a.g('respec()'),false);assert.equal(a.g('owned.acq1'),1);
 });
+
+test('old save conversion grants the points of milestones already passed', () => {
+  const s=oldSave({acq:1});s.peak=2e6;
+  const a=load({save:s});
+  assert.equal(a.g('rp'),a.g('RP_START')+a.g('RP_MILE[0]+RP_MILE[1]'));
+  a.g('save()');const b=load({save:saved(a)});assert.equal(b.g('rp'),a.g('rp'),'only once');
+});
+
+test('respec with nothing owned does nothing and keeps the respec', () => {
+  const a=load();a.g('cash=1e6');const c=a.g('cash'),r=a.g('rp');
+  assert.equal(a.g('respec()'),false);assert.equal(a.g('respecUsed'),false);assert.equal(a.g('cash'),c);assert.equal(a.g('rp'),r);
+});

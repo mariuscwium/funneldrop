@@ -117,7 +117,8 @@ test('zone(5) widens with tier and am', () => {
   g('peak=1e6;rp=9;cash=1e6;buyNode("exp1")');near(w(),56);
   g('month=0;eventT=0;hire("am");month=10;zone(5)');
   near(w(),56*(1+0.15*g('strength("am")')));
-  near(g('rateOf(trackOf(5))'),.16*(1+0.15*g('strength("am")')));
+  // The rate is read off the Expansion table at that width (56px .16, 67px .20).
+  near(g('rateOf(trackOf(5))'),.16+.04*(w()-56)/11);
 });
 
 test('am role', () => {
