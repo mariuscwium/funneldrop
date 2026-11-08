@@ -126,3 +126,25 @@ test('a repeatable ships again with a natural message', () => {
   const m=b.g('__m.join("|")');
   assert.match(m,/shipped:/);assert.match(m,/shipped for the 2nd time:/);assert.match(m,/shipped for the 3rd time:/);
 });
+
+// Owns every node, taking at each fork the option that pushes axis ax furthest in direction sign (or, with plainOnly, no fork options at all).
+function build(b,ax,sign,plainOnly){const own={start:1};for(const n of N)if(n.ring&&!n.fork)own[n.id]=1;
+  if(!plainOnly)for(const o of Object.values(forks()))own[o.reduce((x,y)=>sign*y.al[ax]>sign*x.al[ax]?y:x).id]=1;
+  b.g(`peak=2e6;owned=${JSON.stringify(own)};refx()`);return b.g('companyAl()')}
+
+test('fork choices set the company’s character in a full build', () => {
+  const b=load();
+  for(const ax of [0,1]){
+    assert.ok(build(b,ax,-1)[ax]<=-.15,`axis ${ax} lowest: ${build(b,ax,-1)[ax]}`);
+    assert.ok(build(b,ax,1)[ax]>=.15,`axis ${ax} highest: ${build(b,ax,1)[ax]}`);
+  }
+  const p=build(b,0,1,true);assert.ok(Math.abs(p[0])<.15&&Math.abs(p[1])<.15,`plain nodes only: ${p}`);
+  for(const n of N)if(n.ring&&!n.fork)assert.ok(Math.abs(n.al[0])<=.2&&Math.abs(n.al[1])<=.2,`${n.id} plain node al ${n.al}`);
+});
+
+test('a shallow growth-hacker path crosses the bad-event gate', () => {
+  const b=load();
+  b.g(`owned={start:1,acq1:1,acq_lp:1,acq_reviews:1,ref1:1,ref_contacts:1,act1:1,act_nag:1};refx()`);
+  assert.ok(b.g('companyAl()[0]')<=-.15,String(b.g('companyAl()[0]')));
+  b.g('paying=100');assert.ok(b.g('EVENTS.some(e=>e.name==="Regulator fine"&&e.when())'));
+});

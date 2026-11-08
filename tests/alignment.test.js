@@ -3,16 +3,21 @@ const assert=require('node:assert/strict');
 const fs=require('fs'),path=require('path');
 const {load}=require('./harness.js');
 const WORDS=/\b(good|evil|lawful|chaotic|alignment|ethic\w*)\b|dark pattern/i;
-// Gives the company a fake owned node with the given alignment.
-const setAl=(a,al)=>a.g(`NODE_IX.t_al={id:'t_al',al:${JSON.stringify(al)}};owned={start:1,t_al:1};paying=100;ads=1;cash=1e6`);
+// Gives the company a fake owned node, ALIGN_SCALE times, so companyAl() equals the given alignment.
+const setAl=(a,al)=>a.g(`NODE_IX.t_al={id:'t_al',al:${JSON.stringify(al)}};owned={start:1,t_al:ALIGN_SCALE};paying=100;ads=1;cash=1e6`);
 const tally=(a,good)=>{const c={};for(let i=0;i<2000;i++){const n=a.g(`pickEvent(${good}).name`);c[n]=(c[n]||0)+1}return c};
 
-test('companyAl is the count-weighted mean, ignoring start', () => {
+test('companyAl is summed exposure over ALIGN_SCALE, clamped, ignoring start', () => {
   const a=load();
   assert.equal(a.g('JSON.stringify(companyAl())'),'[0,0]');
+  const K=a.g('ALIGN_SCALE');
   a.g("NODE_IX.p={id:'p',al:[1,0]};NODE_IX.q={id:'q',al:[0,-1]};owned={start:1,p:2,q:1}");
   const [g,l]=a.g('companyAl()');
-  assert.ok(Math.abs(g-2/3)<1e-9&&Math.abs(l+1/3)<1e-9);
+  assert.ok(Math.abs(g-2/K)<1e-9&&Math.abs(l+1/K)<1e-9,`${g} ${l}`);
+  a.g("owned={start:1,p:99,q:99}");
+  assert.equal(a.g('JSON.stringify(companyAl())'),'[1,-1]');
+  a.g("NODE_IX.z={id:'z',al:[0,0]};owned={start:1,p:2,q:1,z:50}");
+  assert.ok(Math.abs(a.g('companyAl()[0]')-2/K)<1e-9,'neutral nodes do not dilute');
 });
 
 test('exposure makes Regulator fine more likely, and none means it never fires', () => {
@@ -41,7 +46,7 @@ test('new bad events need exposure', () => {
 
 test('alHist gains one entry a month and round-trips', () => {
   const a=load();
-  a.g("NODE_IX.p={id:'p',al:[.333333,-.5]};owned={start:1,p:1}");
+  a.g("NODE_IX.p={id:'p',al:[.333333,-.5]};owned={start:1,p:ALIGN_SCALE}");
   a.months(3);
   assert.ok(a.g('alHist.length')>=3);
   assert.equal(a.g('JSON.stringify(alHist[0])'),'[0.33,-0.5]');
