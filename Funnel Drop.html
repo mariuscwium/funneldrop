@@ -285,7 +285,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 <div class="tr-main"><div class="tr-canvas"><svg id="tr-svg" tabindex="-1" role="group" aria-label="Roadmap: product work linked outward from the founding idea. Drag to move, scroll or pinch to zoom."><defs><pattern id="tr-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8"/></pattern></defs><g id="tr-view"><g id="tr-bg"></g><g id="tr-edges"></g><g id="tr-nodes"></g><g id="tr-fx"></g></g></svg><div class="tr-zoom"><button class="campbtn" id="tr-zin" aria-label="Zoom in">+</button><button class="campbtn" id="tr-zout" aria-label="Zoom out">&minus;</button><button class="campbtn" id="tr-fit" aria-label="Fit to view">Fit</button></div></div><aside class="tr-detail empty" id="tr-detail" aria-live="polite"></aside></div></dialog>
 <div class="wrap">
   <div class="top" id="top">
-    <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns"><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="theme"></button><button class="campbtn" id="reset">New game</button></span></div>
+    <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns"><button class="campbtn" id="pause" aria-pressed="false">Pause</button><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="theme"></button><button class="campbtn" id="reset">New game</button></span></div>
     <div class="hud">
       <div class="stat"><span>Cash</span><b id="vCash">$1,500</b></div>
       <div class="stat"><span>MRR</span><b id="vMrr">$0</b></div>
@@ -625,6 +625,7 @@ function binom(n,p){if(n<=0||p<=0)return 0;if(p>=1)return n;
   return Math.max(0,Math.min(n,Math.round(n*p+Math.sqrt(n*p*(1-p))*z)))}
 function loop(now){
   if($('ev').open||$('sum').open||$('over').open||over||$('tree').open){last=now;draw();requestAnimationFrame(loop);return}
+  if(paused){last=now;draw();hud();requestAnimationFrame(loop);return} // paused by the player: buying still works, so the screen keeps up
   const dt=Math.min(.05,(now-last)/1000);adaptCap(now-last);last=now;if(!ipoFiled)playMs+=dt*1000;
   while(queue.length&&queue[0].t<=now){const q=queue.shift();spawn(enter(0,0,undefined,q.src))}
   if(seoLvl)seoFresh=Math.max(SEO_FLOOR,seoFresh*Math.pow(1-SEO_DECAY/(1+mmEff()),dt/MONTH));
@@ -1154,7 +1155,15 @@ const milesHit=()=>MILES.filter(m=>peak>=m[0]).length;
 function checkMilestone(){const n=milesHit();$('cNext').textContent=MILES[n]?MILES[n][1]:'All reached';if(n<=msLvl||!atRisk()||$('ev').open)return;for(let i=msLvl;i<n;i++)mileMonth[i]??=Math.floor(gameMonths());let pts=0;for(let i=msLvl;i<n;i++)pts+=RP_MILE[i]||0;const hadBoard=!!board,k=n-msLvl,fx=[()=>{rp+=pts}];msLvl=n;const m=MILES[n-1],nx=MILES[n];let bd='';if(!board&&n>=2){fx.push(()=>{board??=freshBoard()});bd=' Your investors now sit on a board, and it expects steady growth and a roadmap that ships.'}else if(hadBoard)fx.push(()=>{for(let i=0;i<k;i++)boardHit('Milestone',10)});
   showEv('good','Milestone',m[2],`Your company is now valued at ${m[1]} or more. ${m[3]||`Next up: ${nx[1]}.`}${pts?` Your team banks ${pts} roadmap points.`:''}${bd}`,undefined,fx)}
 $('over').addEventListener('cancel',e=>e.preventDefault());
-for(const id of ['ev','sum','over','tree'])$(id).addEventListener('close',()=>{const d=performance.now()-pausedAt;for(const q of queue)q.t+=d;postReady+=d;nextCut+=d});
+// Timers shift by any pause so bursts and cooldowns don't run out meanwhile. A dialog closing during the player's own pause shifts nothing:
+// resuming shifts by the whole pause.
+const shiftTimers=d=>{for(const q of queue)q.t+=d;postReady+=d;nextCut+=d};
+for(const id of ['ev','sum','over','tree'])$(id).addEventListener('close',()=>{if(!paused)shiftTimers(performance.now()-pausedAt)});
+// The player's pause: the clock, money, churn and ad spend stop, but buying still works. Not saved; an ended run can't pause.
+let paused=false,pauseStart=0;
+function showPause(){$('pause').textContent=paused?'Resume':'Pause';$('pause').setAttribute('aria-pressed',paused)}
+function togglePause(){if(over)return;if(paused){paused=false;shiftTimers(performance.now()-pauseStart)}else{paused=true;pauseStart=performance.now()}showPause()}
+$('pause').addEventListener('click',togglePause);
 $('ev').addEventListener('close',()=>{runFx();if(evQueue.length&&atRisk())showEv(...evQueue.shift(),true)});
 // IPO readiness. Targets are game simplifications. Every criterion must hold at IPO.hold month rollovers in a row before filing.
 const IPO={arr:1e8,nrr:1.10,r40:40,growth:.30,hold:3};let ipoHold=0,ipoFiled=false,ipoSnap=null,playMs=0;
