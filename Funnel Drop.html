@@ -147,9 +147,9 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 .upg:disabled{cursor:not-allowed}
 .upg:disabled .cost{color:var(--muted)}
 #price{grid-column:1/3;width:100%;margin:6px 0 2px;accent-color:var(--rev)}
-.bud{display:flex;align-items:center;gap:8px;margin-top:4px}
-.bud input{flex:1;min-width:0;margin:0;accent-color:var(--ad)}
-.bud span{font:500 11px var(--mono);color:var(--fg);white-space:nowrap}
+.bud{grid-column:1/-1;display:flex;flex-direction:column;gap:2px;margin:2px 4px 0 0}
+.bud input{width:100%;margin:0;accent-color:var(--ad)}
+.bud span{font:500 11px var(--mono);color:var(--fg)}
 .upg.done{opacity:.6}
 .upg:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .main{display:flex;flex-direction:column;gap:12px}
@@ -472,8 +472,9 @@ function unlockCh(id){const c=CHANNELS.find(x=>x.id===id);if(!atRisk()||c.open||
 function visibleCh(){const out=[];for(const c of CHANNELS){out.push(c);if(!c.open)break}return out}
 function renderCh(){
   $('channels').innerHTML=`<div class="chan organic"><div class="nm"><b>Organic social post</b><small id="op-meta"></small></div><button class="adbtn" data-post="1" id="op-btn">Post <b>Free</b></button></div>
-  <div class="chan"><div class="nm"><b>SEO &amp; content</b><small id="seo-meta"></small><i class="reach" id="seo-reach"><i id="seo-bar"></i></i></div><button class="adbtn" data-fresh="1" id="seo-pub"></button><button class="campbtn" data-seo="1" id="seo-btn"></button></div>`+visibleCh().map(c=>c.open?`<div class="chan"><div class="nm"><b>${c.name}</b><small id="cr-${c.id}"></small><i class="reach"><i id="cb-${c.id}"></i></i><label class="bud"><input type="range" min="0" max="${BUDGET_STEPS}" step="1" value="${budgetPos(c,c.budget)}" data-bud="${c.id}" id="cs-${c.id}" aria-label="${c.name}: daily budget"><span id="cv-${c.id}"></span></label></div>
-    <button class="campbtn" data-camp="${c.id}" id="cc-${c.id}">New campaign <b>${fmt(campCost(c))}</b></button></div>`
+  <div class="chan"><div class="nm"><b>SEO &amp; content</b><small id="seo-meta"></small><i class="reach" id="seo-reach"><i id="seo-bar"></i></i></div><button class="adbtn" data-fresh="1" id="seo-pub"></button><button class="campbtn" data-seo="1" id="seo-btn"></button></div>`+visibleCh().map(c=>c.open?`<div class="chan"><div class="nm"><b>${c.name}</b><small id="cr-${c.id}"></small><i class="reach"><i id="cb-${c.id}"></i></i></div>
+    <button class="campbtn" data-camp="${c.id}" id="cc-${c.id}">New campaign <b>${fmt(campCost(c))}</b></button>
+    <label class="bud"><span id="cv-${c.id}"></span><input type="range" min="0" max="${BUDGET_STEPS}" step="1" value="${budgetPos(c,c.budget)}" data-bud="${c.id}" id="cs-${c.id}" aria-label="${c.name}: daily budget"></label></div>`
    :`<div class="chan locked"><div class="nm"><b>${c.name}</b><small id="cl-${c.id}">${c.pitch}: about ${per100(c)} visitors per $100.</small></div><button class="campbtn" data-unlock="${c.id}" id="cu-${c.id}">Unlock <b>${fmt(c.unlock)}</b></button></div>`).join('');
 }
 // Messages are toasts, top right: newest first, at most TOAST_MAX, a repeat replaces its earlier copy. They stay longer for longer text,
