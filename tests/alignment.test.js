@@ -75,7 +75,7 @@ test('no alignment words in warnings, endings, rulings or the end screen', () =>
   a.g("__t=[];{const w=warn,e=endGame,s=showEv;warn=(c,t,x,act)=>{__t.push(t,x,act&&act.label);w(c,t,x,act)};endGame=(k,t,x)=>{__t.push(t,x);e(k,t,x)};showEv=(k,kind,n,t,act,again)=>{__t.push(n,t);s(k,kind,n,t,act,again)}}");
   const clear=()=>{a.g('over=null;ipoFiled=false;warnLog=[];evQueue.length=0;if($("ev").open)$("ev").close();if($("over").open)$("over").close()');};
   // insolvency, with both bridge offers, and the end
-  for(const al of [[0,0],[.5,0]]){setAl(a,al);a.g('subs={"49:0":10};paying=10;out[4]=10;cash=-1e6;insolvent=0;bridgeUsed=false');
+  for(const al of [[0,0],[.5,0]]){setAl(a,al);a.g('peak=RISK_AT;msLvl=1;subs={"49:0":10};paying=10;out[4]=10;cash=-1e6;insolvent=0;bridgeUsed=false');
     for(let i=0;i<a.g('INSOLVENT_MONTHS');i++){a.g('rollRisk()');clear()}}
   clear();
   // soft-lock

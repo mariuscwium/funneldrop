@@ -45,7 +45,7 @@ test('reloading into the ending banks no milestone', () => {
 });
 
 const run=(a,n)=>{for(let i=0;i<n;i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close()}};
-const broke='subs={"49:0":10};paying=10;out[4]=10;cash=-1e6';
+const broke='peak=RISK_AT;msLvl=1;subs={"49:0":10};paying=10;out[4]=10;cash=-1e6';
 test('INSOLVENT_MONTHS insolvent rollovers in a row end the run', () => {
   const a=load({dialogs:true});quiet(a.g);a.g(broke);
   for(let i=0;i<=a.g('INSOLVENT_MONTHS')&&!a.g('over');i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close()}
@@ -57,11 +57,18 @@ test('a solvent month resets the count', () => {
   assert.equal(a.g('insolvent'),0);assert.equal(a.g('over'),null);
 });
 test('no insolvency before the first customer or loan', () => {
-  const a=load({dialogs:true});quiet(a.g);a.g('cash=-100;out[4]=0');a.months(4.05);
+  const a=load({dialogs:true});quiet(a.g);a.g('peak=RISK_AT;msLvl=1;cash=-100;out[4]=0');a.months(4.05);
   assert.equal(a.g('over'),null);assert.equal(a.g('insolvent'),0);
 });
+test('no insolvency or bridge below RISK_AT peak valuation', () => {
+  const a=load({dialogs:true});quiet(a.g);a.g('subs={"49:0":10};paying=10;out[4]=10;cash=-1e4;LOANS[0].bal=1000;LOANS[0].pay=100;LOANS[0].late=1');
+  assert.ok(a.g('peak')<a.g('RISK_AT'));
+  for(let i=0;i<a.g('INSOLVENT_MONTHS')+2;i++){a.months(1.05);if(a.el('ev').open)a.el('ev').close();a.g('cash=-1e4')}
+  assert.equal(a.g('over'),null);assert.equal(a.g('insolvent'),0);assert.equal(a.g('bridgeOffer()'),false);assert.ok(a.g('cash')<0,'stays overdrawn');
+  a.g('peak=RISK_AT;msLvl=1');a.months(1.05);assert.equal(a.g('insolvent'),1);
+});
 test('a late loan counts as insolvent', () => {
-  const a=load({dialogs:true});quiet(a.g);a.g('LOANS[0].bal=1000;LOANS[0].pay=100;LOANS[0].late=1;cash=0;out[4]=1');a.months(1.05);
+  const a=load({dialogs:true});quiet(a.g);a.g('peak=RISK_AT;msLvl=1;LOANS[0].bal=1000;LOANS[0].pay=100;LOANS[0].late=1;cash=0;out[4]=1');a.months(1.05);
   assert.ok(a.g('insolvent')>=1);
 });
 const lock='cash=0;ads=3;paying=0;subs={};balls.length=0;queue.length=0';
@@ -104,7 +111,7 @@ test('runway readout in the hud', () => {
 });
 
 const setAl=(a,al)=>a.g(`NODE_IX.t_al={id:'t_al',al:${JSON.stringify(al)}};owned={start:1,t_al:ALIGN_SCALE};paying=100;ads=1;cash=1e6`);
-const brink='subs={"49:0":10};paying=10;out[4]=10;cash=-1e5';
+const brink='peak=RISK_AT;msLvl=1;subs={"49:0":10};paying=10;out[4]=10;cash=-1e5';
 const bridge=a=>a.g("LOANS.find(l=>l.id==='bridge')");
 test('bridge is offered once and repays like a loan', () => {
   const a=load({dialogs:true});quiet(a.g);a.g(brink);

@@ -1089,7 +1089,9 @@ const INSOLVENT_MONTHS=6,SOFTLOCK_MONTHS=2;
 let insolvent=0,softMonths=0;
 const netFlow=()=>MRR()*(1-cts())-teamCost()-loanPay();
 const runway=()=>{const n=netFlow();return n<0?cash/-n:null};
-const insolventNow=()=>(cash<0||LOANS.some(l=>l.bal>0&&l.late))&&(out[4]>0||LOANS.some(l=>l.bal>0));
+// Before RISK_AT peak valuation ($100k, First traction) an overdrawn company just stays overdrawn: no count, no bridge.
+const RISK_AT=1e5;
+const insolventNow=()=>peak>=RISK_AT&&(cash<0||LOANS.some(l=>l.bal>0&&l.late))&&(out[4]>0||LOANS.some(l=>l.bal>0));
 // A free post can always bring visitors while the run is on (cooldown or not), so it rules out the soft-lock.
 function canPost(){return atRisk()}
 const softLocked=()=>!canPost()&&cash<adCost(CHANNELS[0])&&!balls.length&&!queue.length&&paying===0&&ads>0&&organicRate()===0;
@@ -1143,7 +1145,7 @@ const boardFix=l=>({'Nothing shipped':'ship something from the roadmap','Shrinki
 function boardHud(e){const b=board,c=Math.round(b.conf),d=Math.round(b.last),w=b.why.map(r=>`${r[0]} ${r[1]>0?'+':''}${Math.round(r[1])}`).join(', ');
   e.className=b.conf<BOARD_WARN?'warn':'';e.textContent=`${c} / 100${d?` (${d>0?'+':''}${d}${w?': '+w:''})`:''}${b.ult!=null?` Ultimatum: ${Math.max(0,b.ult-month)} months`:''}`}
 // The lifeline: one bridge at the brink. A company with enough of what customers like gets prepayments at no interest, otherwise an expensive bridge.
-const BRIDGE_MONTHS=3,BRIDGE_MIN=1000,BRIDGE_APR=.45;let bridgeUsed=false;
+const BRIDGE_MONTHS=3,BRIDGE_MIN=5000,BRIDGE_APR=.45;let bridgeUsed=false;
 const bridgeOffer=()=>atRisk()&&!bridgeUsed&&insolvent>0;
 const bridgeKind=()=>companyAl()[0]>=.3?'prepay':'bridge';
 // Enough to clear the overdraft and cover BRIDGE_MONTHS of burn, rounded up to $500.
