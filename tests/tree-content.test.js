@@ -59,11 +59,11 @@ test('each wedge has exactly one repeatable, at its outermost ring', () => {
   assert.ok(N.filter(n=>n.rep).every(n=>!key(n)));
 });
 
-test('costs follow the ring: points [0..6], cash by ring, Expansion 25x', () => {
-  const CASH=[0,2e3,5e3,12.5e3,3e4,7.5e4,1.8e5];
+test('costs follow the ring: points [0..6], cash by ring, 2.5x for anything touching Expansion', () => {
+  const CASH=[0,2e3,4e3,8e3,14e3,2e4,2.5e4];
   for(const n of N){if(n.ring===0)continue;
     assert.equal(n.pts,key(n)?6:n.rep?4:n.ring,n.id);
-    assert.equal(n.cash,CASH[n.ring]*(n.area===5?25:1),n.id)}
+    const exp=key(n)?n.area.includes(5):n.area===5;assert.equal(n.cash,CASH[n.ring]*(exp?2.5:1),n.id)}
 });
 
 test('alignment cells each hold 4+ nodes; 10+ effect keys used', () => {

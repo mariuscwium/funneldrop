@@ -27,6 +27,13 @@ test('old save with every tier 3 converts', () => {
   near(a.g('churn'),b.g('churn'));
 });
 
+test('a respec after conversion refunds the seeds and the converted points', () => {
+  const a=load({save:oldSave(ALL3)});
+  for(const id of SEEDS)assert.equal(a.g(`paid.${id}`),a.g(`nodeOf("${id}").pts`),id);
+  const rp=a.g('rp');a.g('cash=1e6');assert.equal(a.g('respec()'),true);
+  assert.equal(a.g('rp'),rp+SEEDS.length);
+});
+
 test('old save with a missing exp and low tiers', () => {
   const a=load({save:oldSave({acq:1,act:2,ret:0,ref:0,rev:0,churn:0})});
   assert.equal(a.g('owned.acq1'),1);assert.equal(a.g('owned.act1'),1);assert.equal(a.g('owned.ret1'),undefined);

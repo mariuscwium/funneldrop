@@ -15,14 +15,14 @@ test('engineers add RP_ENG*engEff, with diminishing returns', () => {
   g('staff=[];restaff();rp=0');
   const base=g('rpIncome()');near(base,g('RP_FOUNDER'));
   g('for(let i=0;i<1;i++)hire("eng");staff.forEach(e=>e.hired=-99);restaff()');
-  const one=g('rpIncome()')-base;near(one,g('RP_ENG*engEff()'));assert.ok(one>.9&&one<=1);
+  const one=g('rpIncome()')-base;near(one,g('RP_ENG*engEff()'));const k=g('RP_ENG');assert.ok(one>.9*k&&one<=k);
   g('staff=[];for(let i=0;i<10;i++)hire("eng");staff.forEach(e=>e.hired=-99);restaff()');
   const ten=g('rpIncome()')-base;assert.ok(ten>one&&ten<10*one,`${ten}`);
 });
 
 test('rp stops at the cap and an overshoot is kept', () => {
   const {g,months}=fresh();
-  g('rp=0');months(10);near(g('rp'),g('rpCap()'),1e-6);near(g('rp'),4,1e-6);
+  g('rp=0');months(14);near(g('rp'),g('rpCap()'),1e-6);near(g('rp'),6,1e-6);
   g('rp=rpCap()+5');const v=g('rp');months(1);assert.equal(g('rp'),v);
 });
 

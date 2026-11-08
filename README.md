@@ -40,13 +40,14 @@ node --test 'tests/*.test.js'
 `tests/bot.js` is a balance script, not a test. It plays a greedy policy and prints a line every 12 game months:
 
 ```sh
-node tests/bot.js                 # 600 game months, full greedy policy, 50 ms frames
+node tests/bot.js                 # 600 game months, full greedy policy (cheapest roadmap item), 50 ms frames
+node tests/bot.js 600 growth      # prefers Acquisition and Referral items; also retention, enterprise
 node tests/bot.js 600 idle        # stops buying after $10M peak; must never file for the IPO
 node tests/bot.js 600 nomargin    # ads first, no margin check
 node tests/bot.js early           # months 6 and 12 of a social-ads-only start
 ```
 
-Arguments are `[months=600] [variant] [step=50]`, where step is the frame length in ms. A full run takes 40 s to 3 min of CPU.
+Arguments are `[months=600] [policy] [step=50]`, where step is the frame length in ms. A full run takes 40 s to 3 min of CPU.
 
 `sim/` holds the Node scripts used to tune the slot widths:
 

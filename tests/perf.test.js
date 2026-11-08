@@ -2,7 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {load}=require('./harness.js');
 // CPU time (user+system) of fn in ms, best of 5. Wall-clock flakes when test files run in parallel.
-const cpuMs=fn=>{let best=Infinity;for(let i=0;i<5;i++){const c=process.cpuUsage();fn();const d=process.cpuUsage(c);best=Math.min(best,(d.user+d.system)/1000)}return best};
+const cpuMs=(fn,n=5)=>{let best=Infinity;for(let i=0;i<n;i++){const c=process.cpuUsage();fn();const d=process.cpuUsage(c);best=Math.min(best,(d.user+d.system)/1000)}return best};
 
 test('binom mean', () => {
   const {g}=load();
@@ -59,12 +59,21 @@ test('customer referral rate', () => {
 });
 
 test('2,000 staff and 170k customers frame', () => {
-  const {g,frames}=load();
-  g('randomEvent=()=>{};peak=2e9;month=20;eventT=0;subs={"49:0":120000,"49:1":40000,"49:2":10000};paying=170000;seoLvl=3');
-  g('staff=[];for(let i=0;i<2000;i++)staff.push({role:i<1200?"csm":i<1900?"mm":ROLES[i%5].id,hired:i%30,pay:6000,skill:1});restaff();BOARDS.forEach((_,b)=>zone(b))');
-  frames(1600); // warm up the JIT and fill the ball cap
-  const ms=cpuMs(()=>frames(160));
-  assert.ok(ms<50,'took '+ms+' ms');
+  // Two games with the same customers and the same 700 marketing managers (so the same visitors), one with 1,300 more staff.
+  // Each frame reads strength() on every landing, so without the staff cache the bigger team's frames cost about 1.6× as much (measured); with it, 1.0-1.3×.
+  // The ball cap is pinned at 640, where it sat when this test measured, because adaptCap grows a full cap while frames keep up.
+  const mk=all=>{const a=load();
+    a.g('randomEvent=()=>{};annualReview=()=>{};cash=1e12;peak=2e9;month=20;eventT=0;subs={"49:0":120000,"49:1":40000,"49:2":10000};paying=170000;seoLvl=3');
+    a.g(`staff=[];for(let i=0;i<2000;i++)if(${all}||(i>=1200&&i<1900))staff.push({role:i<1200?"csm":i<1900?"mm":ROLES[i%5].id,hired:i%30,pay:6000,skill:1});restaff();BOARDS.forEach((_,b)=>zone(b))`);
+    a.g('ballCap=640;adaptCap=()=>{}');a.frames(1600); // warm up the JIT and fill the ball cap
+    assert.ok(a.g('balls.length')>=600,'ball cap filled: '+a.g('balls.length'));return a};
+  const big=mk(true),small=mk(false);
+  // Interleaved best of 9, so load from the other test files running in parallel hits both alike. Alone a sample takes about 25 ms;
+  // under the parallel suite up to about 65 ms, so the absolute limit only catches gross regressions and the ratio does the real work.
+  let b=Infinity,s=Infinity;for(let i=0;i<9;i++){b=Math.min(b,cpuMs(()=>big.frames(160),1));s=Math.min(s,cpuMs(()=>small.frames(160),1))}
+  assert.equal(big.g('staff.length'),2000);
+  assert.ok(b<1.4*s,`2,000 staff took ${b} ms against ${s} ms for 700`);
+  assert.ok(b<100,'took '+b+' ms');
 });
 
 test('month rollover with Expansion open at 170k customers', () => {

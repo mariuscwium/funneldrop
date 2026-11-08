@@ -91,7 +91,7 @@ test('odds path uses track and downgrade rates', () => {
 
 test('expansion seed costs its own price', () => {
   const {g}=load();
-  assert.equal(g('nodeOf("exp1").cash'),5e4);assert.equal(g('nodeOf("acq1").cash'),2000);
+  assert.equal(g('nodeOf("exp1").cash'),5e3);assert.equal(g('nodeOf("acq1").cash'),2000);
   g('peak=1e6;rp=9;cash=nodeCash(nodeOf("exp1"))-1');
   assert.equal(g('buyNode("exp1")'),false);
   g('cash+=10001');assert.equal(g('buyNode("exp1")'),true);

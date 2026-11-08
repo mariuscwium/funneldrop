@@ -377,7 +377,9 @@ const SEO_DECAY=.15,SEO_FLOOR=.1,seoCost=()=>SEO[seoLvl-1][1]*.15;
 const SEO_VAR=.4,rollSeo=()=>{seoRoll=1-SEO_VAR+2*SEO_VAR*Math.random()};
 const POST_CD=15000;
 // Marketing managers have diminishing returns: their combined effect grows like a power of team strength. One full hire counts about 1. Game simplification.
-const MM_K=5,MM_P=.35,mmEff=()=>{const m=strength('mm');return m>0?MM_K*((1+m/MM_K)**MM_P-1)/MM_P:0};
+// Diminishing returns: m full hires do the work of dimEff(K,P,m), about m at first and growing like m^P.
+const dimEff=(K,P,m)=>m>0?K*((1+m/K)**P-1)/P:0;
+const MM_K=5,MM_P=.35,mmEff=()=>dimEff(MM_K,MM_P,strength('mm'));
 // seoBase is the average search traffic a month; seoRange is what it can be this month.
 function seoBase(l=seoLvl,f=seoFresh){return l?SEO[l-1][2]*f*(1+.5*mmEff())*(1+FX.seo):0}
 function seoRange(l,f){const b=seoBase(l,f);return [Math.round(b*(1-SEO_VAR)),Math.round(b*(1+SEO_VAR))]}
@@ -610,7 +612,9 @@ const bonus=Array(6).fill(0);
 function widthFor(b,r){const w=RATES[b].w;if(r<=w[0][1])return w[0][0];
   for(let i=1;i<w.length;i++)if(r<=w[i][1])return w[i-1][0]+(w[i][0]-w[i-1][0])*(r-w[i-1][1])/(w[i][1]-w[i-1][1]);
   return w.at(-1)[0]}
-const cur=t=>Math.min(rateCap(t.board),t.base+bonus[t.board]);
+// Bonuses count in full up to RATE_KNEE of the headroom to the cap, then close in on the cap exponentially, so a late node always adds something.
+const RATE_KNEE=.7;
+const cur=t=>{const h=rateCap(t.board)-t.base,b=Math.max(0,bonus[t.board]),k=RATE_KNEE*h,s=h-k;return b<=k?t.base+b:rateCap(t.board)-s*Math.exp(-(b-k)/s)};
 const teamMult=b=>{const r=ROLES.find(r=>r.board===b);return 1+(r?ROLE_LIFT*strength(r.id):0)},rateOf=t=>cur(t)*teamMult(t.board)*(t.board===4?priceConv():1);
 // Landing rate is close to linear in slot width on every board, so team and price scale the tuned width.
 // Widest slot that keeps clear of the walls (4px), of its neighbour, and on Expansion of the Downgrade slots (2px).
@@ -634,9 +638,10 @@ $('price').addEventListener('input',e=>setPrice(+e.target.value));
 // fx holds the node's effects (see FX_KEYS); a repeatable (rep) can be bought again for a point more each time.
 const RP_START=2;
 const mkNode=(id,name,desc,area,ring,slot,links,pts,cash,al,fx,fork=null,rep=false)=>({id,name,desc,area,ring,slot,links,fork,pts,cash,al,fx,rep});
-// Costs from the ring: points equal the ring (keystones 6, repeatables from 4), cash by ring, 25× in the Expansion wedge. The seeds keep their own.
-const NODE_CASH=[0,2e3,5e3,12.5e3,3e4,7.5e4,1.8e5];
-const nd=(id,name,desc,area,ring,slot,links,al,fx,fork=null,rep=false)=>mkNode(id,name,desc,area,ring,slot,links,Array.isArray(area)?6:rep?4:ring,NODE_CASH[ring]*(area===5?25:1),al,fx,fork,rep);
+// Costs from the ring: points equal the ring (keystones 6, repeatables from 4), cash by ring, EXP_CASH times that for anything touching
+// Expansion (enterprise features take more work to sell and support). The seeds keep their own.
+const NODE_CASH=[0,2e3,4e3,8e3,14e3,2e4,2.5e4],EXP_CASH=2.5;
+const nd=(id,name,desc,area,ring,slot,links,al,fx,fork=null,rep=false)=>mkNode(id,name,desc,area,ring,slot,links,Array.isArray(area)?6:rep?4:ring,NODE_CASH[ring]*((Array.isArray(area)?area.includes(5):area===5)?EXP_CASH:1),al,fx,fork,rep);
 const NODES=[
   mkNode('start','Founding idea','Where the product starts.',null,0,0,[],0,0,[0,0],{}),
   // Ring 1 seeds: the old tier 1 upgrades, fork-free so old saves map onto them.
@@ -646,7 +651,7 @@ const NODES=[
   mkNode('churn1','Cancellation save offers','Offer a discount or a pause before someone cancels. Paid churn 21.7% lower.',2,1,.5,['start'],1,2000,[-.07,0],{churn:-.2167}),
   mkNode('ref1','Share button','One click to send the product to a colleague. Referral +10 points.',3,1,0,['start'],1,2000,[0,-.05],{r3:.10}),
   mkNode('rev1','Pricing page','A clear page with plans and prices. Paid conversion +10 points.',4,1,0,['start'],1,2000,[.03,.05],{r4:.10}),
-  mkNode('exp1','Usage-based pricing','Customers who use more move up a plan. Upgrade rate +4 points.',5,1,0,['start'],1,5e4,[0,0],{r5:.04}),
+  mkNode('exp1','Usage-based pricing','Customers who use more move up a plan. Upgrade rate +4 points.',5,1,0,['start'],1,5000,[0,0],{r5:.04}),
   // Acquisition. Forks: which channel to bet on, how to win search, and how to track visitors.
   nd('acq_lp','Landing page tests','A/B test headlines, screenshots and the sign-up form. Sign-up rate +2 points.',0,2,0,['acq1'],[0,.05],{r0:.02}),
   nd('acq_blog','Content marketing','Publish guides that answer what your buyers search for. Search traffic +25%.',0,2,-.6,['acq1'],[.4,.4],{seo:.25},'acq_ch'),
@@ -716,7 +721,7 @@ const NODES=[
   nd('rev_wall','Mid-task usage limits','Free accounts hit a limit mid-task and must pay to save their work. Paid conversion +8 points.',4,4,0,['rev_decoy','rev_checkout'],[-.8,-.4],{r4:.08},'rev_push'),
   nd('rev_tax','Tax and invoicing','Sales tax, VAT and invoices handled for every country. Cost to serve −5%.',4,4,.6,['rev_checkout'],[.03,.1],{cts:-.05}),
   nd('rev_local','Local pricing','Prices in local currency, adjusted for purchasing power. Price sensitivity −15%, paid conversion +2 points.',4,5,-.5,['rev_sales','rev_wall'],[.08,.07],{priceTol:.15,r4:.02}),
-  nd('rev_fees','Checkout fees','A setup fee and a support fee appear on the last step of checkout. Cost to serve −8%, paid conversion +2 points.',4,5,.5,['rev_wall','rev_tax'],[-.17,-.07],{cts:-.08,r4:.02}),
+  nd('rev_fees','Card surcharge','Pass card processing fees on to customers as a surcharge that first appears on the last step of checkout. Cost to serve −12%, paid churn +2%.',4,5,.5,['rev_wall','rev_tax'],[-.17,-.07],{cts:-.12,churn:.02}),
   nd('rev_rep','Pricing experiments','Test a new price point on a slice of visitors. Paid conversion +2 points each time.',4,6,0,['rev_local','rev_fees'],[0,0],{r4:.02},null,true),
   // Expansion (closed until $1M). Forks: how accounts move up, what enterprise features cost, and how contracts work.
   nd('exp_seats','Per-seat pricing','Each new teammate adds a seat to the bill. Upgrade rate +3 points.',5,2,0,['exp1'],[0,.07],{r5:.03}),
@@ -727,7 +732,7 @@ const NODES=[
   nd('exp_addons','Paid add-ons','Sell extra storage, AI credits and priority support separately. Upgrade rate +4 points.',5,3,.25,['exp_seats','exp_auto'],[-.03,-.05],{r5:.04}),
   nd('exp_qbr','Business reviews','Each quarter, walk big customers through the value they got. Paid churn −4%, upgrade rate +2 points.',5,3,.75,['exp_addons','exp_auto'],[.07,.08],{churn:-.04,r5:.02}),
   nd('exp_multi','Multi-year contracts','Three-year terms with the price locked. Paid churn −10%, price sensitivity −10%.',5,4,-.6,['exp_admin','exp_sso'],[.1,.7],{churn:-.1,priceTol:.1},'exp_deal'),
-  nd('exp_overage','Overage billing','Usage past the plan limit is billed at three times the rate. Upgrade rate +5 points, cost to serve −4%.',5,4,0,['exp_sso','exp_addons'],[-.6,-.2],{r5:.05,cts:-.04},'exp_deal'),
+  nd('exp_overage','Overage billing','Usage past the plan limit is billed at three times the rate, so heavy users move up a plan to avoid it. Upgrade rate +6 points, paid churn +4% from bill shock.',5,4,0,['exp_sso','exp_addons'],[-.6,-.2],{r5:.06,churn:.04},'exp_deal'),
   nd('exp_land','Land and expand','Start with one team, then sell to the departments around it. Upgrade rate +4 points, friends per referral +10%.',5,4,.6,['exp_qbr','exp_addons'],[.03,-.05],{r5:.04,refSize:.1}),
   nd('exp_trust','Trust centre','Publish your security documents, uptime and subprocessors. Chance of a lucky break +4 points, upgrade rate +2 points.',5,5,-.5,['exp_multi','exp_overage'],[.06,.1],{evGood:.04,r5:.02}),
   nd('exp_bundle','Product bundles','Launch a second product and sell it with the first at a discount. Upgrade rate +5 points.',5,5,.5,['exp_overage','exp_land'],[0,-.12],{r5:.05}),
@@ -748,11 +753,12 @@ linkNodes();
 const nodeOf=id=>NODE_IX[id];
 let owned={start:1},rp=RP_START,paid={},respecUsed=false,alHist=[]; // paid: points spent per node id, so a respec can refund them
 // Rebuild FX from owned, then everything derived from it. On buy, respec and load. Hot paths read FX, never owned.
-// Relative effects stack by adding, so each multiplier (1+FX.k) is floored at FX_FLOOR, and price sensitivity can only fall, by at most 80%.
+// Relative effects multiply, so "paid churn −8%" always takes 8% off what is left and a late cut still counts. Each multiplier (1+FX.k) is
+// floored at FX_FLOOR. Price sensitivity adds and can only fall, by at most 80%.
 const FX_MULT=['churn','cts','csm','adCost','adReach','refSize','custRef','seo','rp'],FX_FLOOR=.1;
 function refx(){for(const k of FX_KEYS)FX[k]=0;
-  for(const id in owned){const n=NODE_IX[id];if(!n)continue;for(const k in n.fx)FX[k]+=n.fx[k]*owned[id]}
-  for(const k of FX_MULT)FX[k]=Math.max(FX_FLOOR-1,FX[k]);FX.priceTol=Math.max(0,Math.min(.8,FX.priceTol));
+  for(const id in owned){const n=NODE_IX[id];if(!n)continue;for(const k in n.fx)FX[k]+=(FX_MULT.includes(k)?Math.log1p(n.fx[k]):n.fx[k])*owned[id]}
+  for(const k of FX_MULT)FX[k]=Math.max(FX_FLOOR-1,Math.expm1(FX[k]));FX.priceTol=Math.max(0,Math.min(.8,FX.priceTol));
   for(let b=0;b<NB;b++)bonus[b]=FX['r'+b];churn=CHURN0*(1+FX.churn);for(let b=0;b<NB;b++)zone(b)}
 const inArea=(n,a)=>Array.isArray(n.area)?n.area.includes(a):n.area===a;
 // A repeatable you own stays available. Expansion is closed until the board opens; the losing side of a fork is locked.
@@ -784,8 +790,8 @@ const OLD_SEEDS={acq:'acq1',act:'act1',ret:'ret1',ref:'ref1',rev:'rev1',churn:'c
 const CSM={salary:6000,covers:150,mult:.75,at:5e5},csmCovers=()=>Math.round(CSM.covers*(1+FX.csm));let warnedNeg=0;
 const MM={salary:6000,visitors:400,at:5e5};
 // Roadmap points. Founders give a trickle, engineers (diminishing returns like mmEff) and the product roles more. Invented numbers.
-const RP_FOUNDER=.5,ENG={salary:7000,at:2e4},RP_ENG=1,ENG_K=5,ENG_P=.5,RP_PD=.5,RP_CAP_MONTHS=3,RP_CAP_MIN=4,RP_MILE=[2,3,5,8,12];
-const engEff=()=>{const m=strength('eng');return m>0?ENG_K*((1+m/ENG_K)**ENG_P-1)/ENG_P:0};
+const RP_FOUNDER=.5,ENG={salary:7000,at:2e4},RP_ENG=.5,ENG_K=5,ENG_P=.5,RP_PD=.15,RP_CAP_MONTHS=3,RP_CAP_MIN=6,RP_MILE=[2,3,5,8,12];
+const engEff=()=>dimEff(ENG_K,ENG_P,strength('eng'));
 const rpIncome=()=>(RP_FOUNDER+RP_ENG*engEff()+RP_PD*(strength('pd')+strength('pe')))*(1+FX.rp),rpCap=()=>Math.max(RP_CAP_MIN,RP_CAP_MONTHS*rpIncome());
 // Falling behind: months in a row with something shippable you haven't shipped. Raises paid churn after a grace period.
 const STALE_GRACE=6,STALE_STEP=.02,STALE_MAX=.3;let stale=0;
@@ -949,9 +955,9 @@ function annualReview(){if(!staff.length)return;
   showEv(lost.length?'bad':'good',`Year ${month/12} review`,lost.length?'Staff headhunted':'Team stayed',lost.length?`${raise} You lost ${lost.join(', ')} to other companies, and their experience went with them.`:raise)}
 $('team').innerHTML=`<div class="upg" id="c-csm" style="--c:var(--rev);cursor:default"><b>Customer success manager<span class="hc" id="hc-csm"></span></b><span class="cost" id="s-csm"></span><small>Cuts monthly churn by a quarter for up to <span id="csm-cov">${CSM.covers}</span> paying customers each. Paid every month from cash. <span id="t-csm-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="t-hire">Hire</button><button class="campbtn" id="t-hire10">+10</button><button class="campbtn" id="t-cover">Cover all</button><button class="campbtn" id="t-fire">Let go</button></span></div>
-<div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager<span class="hc" id="hc-mm"></span></b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: the first adds about ${Math.round(MM.visitors*MM_K*((1+1/MM_K)**MM_P-1)/MM_P/10)*10} free visitors a month once ramped up, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. Each extra one adds less: 10 do the work of about 7, 100 of about 27. <span id="m-meta"></span></small>
+<div class="upg" id="c-mm" style="--c:var(--acq);cursor:default"><b>Marketing manager<span class="hc" id="hc-mm"></span></b><span class="cost" id="s-mm"></span><small>Publishes content and runs social: the first adds about ${Math.round(MM.visitors*dimEff(MM_K,MM_P,1)/10)*10} free visitors a month once ramped up, SEO traffic +50%, content that stays fresh longer, and organic posts that reach twice as many people. Each extra one adds less: 10 do the work of about ${Math.round(dimEff(MM_K,MM_P,10))}, 100 of about ${Math.round(dimEff(MM_K,MM_P,100))}. <span id="m-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="m-hire">Hire</button><button class="campbtn" id="m-hire10">+10</button><button class="campbtn" id="m-fire">Let go</button></span></div>
-<div class="upg" id="c-eng" style="--c:var(--act);cursor:default"><b>Engineer<span class="hc" id="hc-eng"></span></b><span class="cost" id="s-eng"></span><small>Builds the roadmap: about ${RP_ENG} point a month once ramped up, on top of the founders' ${RP_FOUNDER}. Each extra one adds less: 10 do the work of about 7. <span id="e-meta"></span></small>
+<div class="upg" id="c-eng" style="--c:var(--act);cursor:default"><b>Engineer<span class="hc" id="hc-eng"></span></b><span class="cost" id="s-eng"></span><small>Builds the roadmap: about ${RP_ENG} point a month once ramped up, on top of the founders' ${RP_FOUNDER}. Each extra one adds less: 10 do the work of about ${Math.round(dimEff(ENG_K,ENG_P,10))}, 100 of about ${Math.round(dimEff(ENG_K,ENG_P,100))}. <span id="e-meta"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="e-hire">Hire</button><button class="campbtn" id="e-hire10">+10</button><button class="campbtn" id="e-fire">Let go</button></span></div>`+ROLES.map(r=>`<div class="upg" id="c-${r.id}" style="--c:var(--${BOARDS[r.board].col});cursor:default"><b>${r.name}<span class="hc" id="hc-${r.id}"></span></b><span class="cost" id="s-${r.id}"></span><small>${r.blurb}: +${ROLE_LIFT*100}% ${r.label} each once ramped up, up to ${ROLE_MAX}. <span id="r-meta-${r.id}"></span></small>
   <span style="grid-column:1/3;display:flex;gap:6px;margin-top:4px"><button class="campbtn" id="r-hire-${r.id}">Hire</button><button class="campbtn" id="r-fire-${r.id}">Let go</button></span></div>`).join('');
 ROLES.forEach(r=>{
@@ -1090,7 +1096,7 @@ function load(){let s;try{s=JSON.parse(localStorage.getItem(SAVE))}catch{}if(!s)
   flow=s.flow?{start:0,exp:0,con:0,lost:0,new:0,...s.flow}:{start:MRR(),exp:0,con:0,lost:0,new:0};
   into.fill(0);out.fill(0);s.into.forEach((v,i)=>into[i]=v);s.out.forEach((v,i)=>out[i]=v);mrrHist.push(...s.mrrHist);owned={...s.owned,start:1};paid={...s.paid};rp=s.rp??RP_START;stale=s.stale||0;respecUsed=!!s.respecUsed;alHist=Array.isArray(s.alHist)?s.alHist:[];
   // Saves from before the tech tree hold upgrade tiers in lvl. Each tier 1+ owns its seed node, and tiers 2 and 3 come back as points. Runs once: the save then has owned.
-  if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1)owned[OLD_SEEDS[k]]=1;if(l>=2)rp+=2;if(l>=3)rp+=3}}
+  if(s.lvl&&!s.owned){rp=RP_START;for(const k in OLD_SEEDS){const l=s.lvl[k]||0;if(l>=1){owned[OLD_SEEDS[k]]=1;paid[OLD_SEEDS[k]]=NODE_IX[OLD_SEEDS[k]].pts}if(l>=2)rp+=2;if(l>=3)rp+=3}}
   CHANNELS.forEach((c,i)=>Object.assign(c,s.channels[i]));LOANS.forEach((l,i)=>Object.assign(l,s.loans[i]));
   ipoHold=s.ipoHold||0;ipoFiled=!!s.ipoFiled;ipoSnap=s.ipoSnap||null;mileMonth=Array.isArray(s.mileMonth)?s.mileMonth:[];playMs=s.playMs||0;
   staff=Array.isArray(s.staff)?s.staff:oldStaff(s);restaff();refx();s.balls.forEach(spawn);

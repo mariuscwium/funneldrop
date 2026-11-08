@@ -83,7 +83,7 @@ test('cash price scales with company size', () => {
   g('peak=1e5');assert.equal(g('nodeCash(nodeOf("acq1"))'),2000);
   g('peak=0');assert.equal(g('nodeCash(nodeOf("acq1"))'),2000);
   g('peak=1e7');near(g('nodeCash(nodeOf("acq1"))'),2000*100**.6,1e-6);
-  near(g('nodeCash(nodeOf("exp1"))'),5e4*100**.6,1e-6);
+  near(g('nodeCash(nodeOf("exp1"))'),5e3*100**.6,1e-6);
   g('rp=9;cash=2000*100**.6-1');assert.equal(g('buyNode("acq1")'),false);
   g('cash+=1');assert.equal(g('buyNode("acq1")'),true);near(g('cash'),0,1e-6);
 });
@@ -99,9 +99,10 @@ test('effects sum and reach the game', () => {
   const {g,months}=tree();
   g('rp=99;cash=1e9');
   for(const id of ['ch','ch','serve'])assert.equal(g(`buyNode("${id}")`),true,id);
-  near(g('FX.churn'),-.2);near(g('FX.cts'),-.1);
-  near(g('churn'),.06*.8);
-  near(g('paidChurn(PRICE0)'),.048);
+  // Relative effects multiply: two 10% cuts leave .9 × .9.
+  near(g('FX.churn'),-.19);near(g('FX.cts'),-.1);
+  near(g('churn'),.06*.81);
+  near(g('paidChurn(PRICE0)'),.0486);
   // Cost to serve through FX: a month of 100 customers at $49 keeps 1 − 0.22 × 0.9 of revenue.
   g('churn=0;subs={};paying=0;addSub(49,0,100);paying=100;cash=0');
   months(1);
@@ -125,7 +126,7 @@ test('seed nodes match tier 1 of every old track', () => {
   g('peak=1e6;rp=99;cash=1e9');
   for(const [id,[b,r]] of Object.entries(want)){
     const n=JSON.parse(g(`JSON.stringify(nodeOf("${id}"))`));
-    assert.equal(n.ring,1);assert.equal(n.fork,null);assert.equal(n.pts,1);assert.equal(n.cash,id==='exp1'?5e4:2000);assert.equal(n.area,b);
+    assert.equal(n.ring,1);assert.equal(n.fork,null);assert.equal(n.pts,1);assert.equal(n.cash,id==='exp1'?5e3:2000);assert.equal(n.area,b);
     assert.equal(g(`buyNode("${id}")`),true);near(g(`rateOf(trackOf(${b}))`),r,1e-9)}
   assert.equal(g('nodeOf("churn1").area'),2,'churn seed sits in the Retention wedge');
 });
