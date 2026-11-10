@@ -2,6 +2,8 @@
 
 A product management simulator. Visitors fall through five Plinko-style boards, one for each pirate metric: Acquisition, Activation, Retention, Referral and Revenue. You spend cash to grow recurring revenue and valuation, and watch where your users actually go. A sixth board, Expansion, is shown locked until your company is worth $1M.
 
+Play it at [mariuscwium.github.io/funneldrop](https://mariuscwium.github.io/funneldrop/). Made by [Marius Wium](https://www.linkedin.com/in/mariuswium/).
+
 ## Play
 
 Download `Funnel Drop.html` and open it in a browser. There's nothing to install or build.
