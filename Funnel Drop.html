@@ -5,7 +5,7 @@
 <script>let theme=null;try{theme=localStorage.getItem('funnel-drop-theme')}catch{}
 const darkOS=matchMedia('(prefers-color-scheme:dark)'),setTheme=()=>{document.documentElement.dataset.theme=theme||(darkOS.matches?'dark':'light')};setTheme()</script>
 <style>
-/* Layout: sticky money strip + ad button. Phone: money strip, boards, bottom tabs with sheets (see the phone block). Desktop: boards directly under the header, then sticky columns: one shared panel from 860px, actions and stats from 1200px, play, upgrades and stats from 1600px. Light and dark themes: colours are tokens on :root, overridden under [data-theme=dark]. */
+/* Layout: sticky money strip + ad button. Phone: money strip, boards, bottom tabs with sheets (see the phone block). Desktop: boards directly under the header, then sticky columns: one shared panel beside the boards from 860px; from 1200px the boards sit between actions and stats, and from 1600px between play+upgrades and stats. Light and dark themes: colours are tokens on :root, overridden under [data-theme=dark]. */
 :root{
   --bg:#eef1f7; --panel:#ffffff; --line:#d3d9e6; --fg:#1b2033; --muted:#646c86; --rail:#e3e8f2; --board:#fbfcfe; --peg:#b4bbcf;
   --ad:#f0b020; --acq:#1aa3d4; --act:#7a5ad8; --ret:#14a39a; --ref:#e8508f; --rev:#1ea862; --paid:#1ea862; --fail:#c9cfdd; --warn:#c2412f; --exp:#b58616;
@@ -200,11 +200,17 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
 @media (min-width:1200px){
   .wrap{max-width:1320px}
   .side{position:static;max-height:none;overflow:visible;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}
-  .actions,.stats{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px;padding-inline:12px;margin-inline:-12px}
+  .actions,.stats,.boardcol{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px;padding-inline:12px;margin-inline:-12px}
+  /* Funnel in the middle: .side dissolves so its panels sit either side of the boards. */
+  .main{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+  .side{display:contents}
+  canvas{width:clamp(280px,24vw,400px)}
+  .actions{order:1}.boardcol{order:2}.stats{order:3}
 }
 @media (min-width:1600px){
   .wrap{max-width:1720px}
-  .side{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .main{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto minmax(0,1fr)}
+  .play{order:1}#upgrades{order:2}.boardcol{order:3}.stats{order:4}
   .actions{display:contents}
   .play{display:flex}
   .play,#upgrades{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px;padding-inline:12px;margin-inline:-12px}
