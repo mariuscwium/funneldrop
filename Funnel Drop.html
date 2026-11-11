@@ -5,7 +5,7 @@
 <script>let theme=null;try{theme=localStorage.getItem('funnel-drop-theme')}catch{}
 const darkOS=matchMedia('(prefers-color-scheme:dark)'),setTheme=()=>{document.documentElement.dataset.theme=theme||(darkOS.matches?'dark':'light')};setTheme()</script>
 <style>
-/* Layout: sticky money strip + ad button. Phone: boards then panels stacked. Desktop: boards directly under the header, then sticky columns: one shared panel from 860px, actions and stats from 1200px, play, upgrades and stats from 1600px. Light and dark themes: colours are tokens on :root, overridden under [data-theme=dark]. */
+/* Layout: sticky money strip + ad button. Phone: money strip, boards, bottom tabs with sheets (see the phone block). Desktop: boards directly under the header, then sticky columns: one shared panel from 860px, actions and stats from 1200px, play, upgrades and stats from 1600px. Light and dark themes: colours are tokens on :root, overridden under [data-theme=dark]. */
 :root{
   --bg:#eef1f7; --panel:#ffffff; --line:#d3d9e6; --fg:#1b2033; --muted:#646c86; --rail:#e3e8f2; --board:#fbfcfe; --peg:#b4bbcf;
   --ad:#f0b020; --acq:#1aa3d4; --act:#7a5ad8; --ret:#14a39a; --ref:#e8508f; --rev:#1ea862; --paid:#1ea862; --fail:#c9cfdd; --warn:#c2412f; --exp:#b58616;
@@ -209,6 +209,50 @@ h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute
   .play{display:flex}
   .play,#upgrades{position:sticky;top:calc(env(safe-area-inset-top,0px) + 86px);max-height:calc(100vh - 100px);overflow-y:auto;padding-bottom:12px;padding-inline:12px;margin-inline:-12px}
 }
+/* Phone (under 860px): a one-row money strip, the boards fitted to the screen, and Ads, Build and Stats opening as sheets from a bottom bar over a game that keeps running. placeBuy moves the panels into the sheet. */
+#tabs,#sheet,#more,#menu{display:none}
+@media (max-width:859px){
+  :root{--strip:60px;--tabs:56px}
+  html,body{height:100dvh;overflow:hidden}
+  body{padding-bottom:0}
+  .wrap{gap:0;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+  .top{flex-direction:row;align-items:center;gap:6px;height:var(--strip);padding-block:8px;box-sizing:border-box}
+  .brand{order:2;flex:none}.brand>div:first-child{display:none}
+  .hud{order:1;flex:1;min-width:0;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .top .hud .ib{display:none}
+  .top .campbtn{min-height:44px;justify-content:center}
+  #more{display:flex;min-width:44px;font-size:18px}
+  #menu:not([hidden]){display:flex;flex-direction:column;gap:6px;position:fixed;top:calc(env(safe-area-inset-top,0px) + var(--strip));right:max(16px,env(safe-area-inset-right,0px));z-index:6;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 24px var(--shadow)}
+  #menu .campbtn{min-height:44px;justify-content:center}
+  .msg.intro{display:none}
+  .main{flex:1;min-height:0;display:flex;justify-content:center;padding-bottom:var(--tabs)}
+  .boardcol{padding-top:8px}
+  .boardcol h2{display:none}
+  canvas{flex:none;width:auto;max-width:100%;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--strip) - var(--tabs) - 16px)}
+  #toasts{top:calc(env(safe-area-inset-top,0px) + var(--strip) + 8px)}
+  #tabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:7;padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);background:var(--panel);border-top:1px solid var(--line)}
+  #tabs button{flex:1;position:relative;min-height:var(--tabs);background:none;border:0;color:var(--muted);font:700 12px var(--display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+  #tabs button[aria-expanded=true]{color:var(--act);box-shadow:inset 0 3px var(--act)}
+  #tabs button:focus-visible{outline:2px solid var(--fg);outline-offset:-4px}
+  .tb{position:absolute;top:8px;left:calc(50% + 18px);padding:0 6px;border-radius:999px;background:var(--act);color:#fff;font:600 11px/1.5 var(--mono)}
+  #sheet:not([hidden]){display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:calc(var(--tabs) + env(safe-area-inset-bottom,0px));max-height:62dvh;z-index:6;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;box-shadow:0 -8px 24px var(--shadow)}
+  .sh-grip{flex:none;height:28px;padding:0;border:0;background:none;cursor:pointer;position:relative}
+  .sh-grip::after{content:"";position:absolute;left:50%;top:12px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line)}
+  .shp{overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px;padding:0 max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+  .boardcol{flex-direction:row;justify-content:center;align-items:flex-start;gap:8px;padding-inline:max(16px,env(safe-area-inset-left,0px))}
+  .boardcol .fnl{flex:1;min-width:0;padding:6px 8px;font-size:11px;gap:8px}
+  .boardcol .fr{grid-template-columns:minmax(0,1fr);gap:2px}
+  .boardcol .fy{text-align:left}
+  .boardcol .fnl small{display:none}
+  .hud2{order:-1;flex:none;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ib{position:relative}.ib::after{content:"";position:absolute;inset:-12px}
+}
+/* Too short to fit all six boards at a readable width (small phones, landscape): full width and scroll. */
+@media (max-width:859px) and (max-height:679px){
+  .main{overflow-y:auto;justify-content:flex-start}
+  .boardcol{width:100%;align-items:stretch;padding-inline:max(16px,env(safe-area-inset-left,0px));box-sizing:border-box}
+  canvas{width:min(100%,360px);height:auto;margin-inline:auto}
+}
 /* Roadmap modal: full screen. Header, then the constellation (SVG, pan and zoom) with the detail panel beside it from 860px, as a bottom sheet below. */
 #tree,#teamd{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;box-sizing:border-box;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);border:0;background:var(--bg);color:var(--fg);font-family:var(--display);overflow:hidden}
 #tree[open],#teamd[open]{display:flex;flex-direction:column}
@@ -311,15 +355,18 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
 <dialog id="tree" aria-labelledby="tree-title"><div class="tr-top"><b id="tree-title">Roadmap</b><div class="tr-stats"><div class="stat" id="tr-pts-s"><span>Points</span><b><span id="tr-pts">2 / 4</span> <small id="tr-inc">+0.5 a month</small></b></div><div class="stat"><span>Cash</span><b id="tr-cash">$1,500</b></div></div><button class="campbtn" id="tr-respec">Respec</button><form method="dialog"><button class="buy" id="tr-close">Close</button></form></div>
 <div class="tr-main"><div class="tr-canvas"><svg id="tr-svg" tabindex="-1" role="group" aria-label="Roadmap: product work linked outward from the founding idea. Drag to move, scroll or pinch to zoom."><defs><pattern id="tr-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8"/></pattern></defs><g id="tr-view"><g id="tr-bg"></g><g id="tr-edges"></g><g id="tr-nodes"></g><g id="tr-fx"></g></g></svg><div class="tr-zoom"><button class="campbtn" id="tr-zin" aria-label="Zoom in">+</button><button class="campbtn" id="tr-zout" aria-label="Zoom out">&minus;</button><button class="campbtn" id="tr-fit" aria-label="Fit to view">Fit</button></div></div><aside class="tr-detail empty" id="tr-detail" aria-live="polite"></aside></div></dialog>
 <dialog id="teamd" aria-labelledby="team-title"><div class="tr-top"><b id="team-title">Team</b><div class="tr-stats tm-stats"><div class="stat"><span>People</span><b id="tm-n">0</b></div><div class="stat"><span>Payroll</span><b id="tm-pay">$0/mo</b></div><div class="stat"><span>MRR</span><b id="tm-mrr">$0</b></div><div class="stat"><span>Cash</span><b id="tm-cash">$1,500</b></div></div><form method="dialog"><button class="buy" id="tm-close">Close</button></form></div><div class="tm-main"><div class="upgrades" id="team"></div></div></dialog>
+<div id="menu" hidden></div>
+<nav id="tabs" aria-label="Game panels"><button type="button" id="tab-ads" aria-expanded="false" aria-controls="sheet">Ads<span class="tb" id="tb-ads" hidden></span></button><button type="button" id="tab-build" aria-expanded="false" aria-controls="sheet">Build<span class="tb" id="tb-build" hidden></span></button><button type="button" id="tab-stats" aria-expanded="false" aria-controls="sheet">Stats</button></nav>
+<section id="sheet" hidden><button type="button" class="sh-grip" id="sh-x" aria-label="Close panel"></button><div class="shp" id="sh-ads" hidden></div><div class="shp" id="sh-build" hidden></div><div class="shp" id="sh-stats" hidden></div></section>
 <div class="wrap">
   <div class="top" id="top">
-    <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns"><button class="campbtn" id="pause" aria-pressed="false">Pause</button><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="theme"></button><button class="campbtn" id="reset">New game</button></span></div>
-    <div class="hud">
+    <div class="brand"><div><h1>Funnel <em>Drop</em></h1><p class="sub">A product management simulator</p></div><span class="brandbtns" id="brandbtns"><button class="campbtn" id="pause" aria-pressed="false">Pause</button><button class="campbtn" id="mute" aria-pressed="false">Mute</button><button class="campbtn" id="theme"></button><button class="campbtn" id="reset">New game</button><button class="campbtn" id="more" aria-label="More" aria-expanded="false" aria-controls="menu">⋯</button></span></div>
+    <div class="hud" id="hud">
       <div class="stat"><span>Cash</span><b id="vCash">$1,500</b></div>
       <div class="stat"><span>MRR</span><b id="vMrr">$0</b></div>
-      <div class="stat"><span>Paying</span><b id="vPaying">0</b></div>
-      <div class="stat val"><span>Valuation</span><b id="vVal">$0</b></div>
-      <div class="stat"><span>Days</span><b id="vDays">0</b></div>
+      <div class="stat" id="st-paying"><span>Paying</span><b id="vPaying">0</b></div>
+      <div class="stat val" id="st-val"><span>Valuation</span><b id="vVal">$0</b></div>
+      <div class="stat" id="st-days"><span>Days</span><b id="vDays">0</b></div>
     </div>
     <div class="channels" id="channels"></div>
   </div>
@@ -328,7 +375,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
   <div class="actions" id="actions"><div class="play" id="play"><h2 id="h-act">Actions</h2><h2>Roadmap</h2><div class="upgrades" id="upglist"><button class="upg" id="rm-open" style="--c:var(--act)"><b>Open roadmap<span class="rm-badge" id="rm-badge" hidden></span></b><span class="cost" id="rm-pts">0 points</span><small id="rm-meta">Product work you can ship. Each item costs roadmap points and cash.</small></button></div></div><div class="upgrades" id="upgrades"><h2>Pricing</h2><div class="upg" style="--c:var(--rev);cursor:default"><b><label for="price">Monthly price</label></b><span class="cost" id="p-val">$49</span><small>New customers pay this and keep it. Higher prices earn more per customer, but fewer users pay, and both cheap and expensive plans lose more customers. Roadmap items quote rates at $49. <span id="p-meta"></span></small><input id="price" type="range" min="4" max="199" step="5" value="49"></div><h2 id="h-team">Team</h2><div class="upgrades"><button class="upg" id="team-open" style="--c:var(--rev)"><b>Manage team<span class="rm-badge team-badge" id="team-badge" hidden></span></b><span class="cost" id="team-n">No one yet</span><small id="team-meta">Hire customer success, marketing, engineering and more.</small></button></div><h2 id="h-fin">Financing</h2><div class="upgrades" id="loans"></div></div></div>
   <h2>Funnel</h2>
   <canvas id="cv" aria-label="Six stacked boards: one per pirate metric (acquisition, activation, retention, referral and revenue), then expansion, locked until a $1M valuation."></canvas>
-  </div><div class="side" id="side"><div class="stats">
+  </div><div class="side" id="side"><div class="stats" id="stats"><div class="hud hud2" id="hud2" hidden></div>
   <h2>Last 24 months</h2>
   <div class="charts" id="charts"></div>
   <h2>Company</h2>
@@ -349,7 +396,7 @@ p.tr-hint{color:var(--muted);font-size:13px;margin:0}
   </div>
   <h2 id="h-ipo" hidden>IPO readiness</h2>
   <div class="econ ipo" id="ipo" hidden></div>
-  <h2>Pirate metrics</h2>
+  <h2 id="h-fnl">Pirate metrics</h2>
   <div class="fnl" id="fnl"></div>
   <h2>Unit economics</h2>
   <div class="econ">
@@ -645,6 +692,7 @@ function hud(){
   $('eAds').textContent=fmt(CHANNELS.reduce((t,c)=>t+(c.open?c.budget:0),0))+'/day';$('eSpend').textContent=fmt(spend);$('eFree').textContent=free;$('eChurn').textContent=churned;
   {const vis=teamRoles().filter(([id,at,name])=>gate(id,at,heads(id),name)).map(r=>r[0]);$('h-team').hidden=!vis.length;teamNew=atRisk()?vis.filter(id=>!teamSeen[id]):[];
   $('team-badge').hidden=!teamNew.length;$('team-badge').textContent=`${teamNew.length} new`;$('team-open').classList.toggle('ready',teamNew.length>0)}
+  tabBadge('build',rmN+teamNew.length);tabBadge('ads',adsBroke?'!':'');
   $('h-fin').hidden=!LOANS.filter(l=>!l.hidden).map(l=>gate(l.id,l.at,l.bal,l.name)).some(Boolean);
   {const lp=loanPay(),net=netFlow(),rw=runway(),rc=rw==null?null:Math.max(0,rw);{const e=$('cInsol');e.previousElementSibling.hidden=e.hidden=insolvent<=0||!atRisk();if(insolvent>0){const n=Math.max(0,INSOLVENT_MONTHS-insolvent);e.textContent=`closes in ${n} month${n===1?'':'s'}`;e.className='warn'}}{const e=$('cRunway');e.previousElementSibling.hidden=e.hidden=rc==null;if(rc!=null){e.textContent=`${rc<3?rc.toFixed(1):Math.round(rc)} months`;e.className=rc<6?'warn':''}}{const e=$('cCase'),l=$('cCaseL');l.hidden=e.hidden=!lawCase;if(lawCase){l.textContent=lawCase.axis?'Audit':'Investigation';const n=Math.max(0,lawCase.due-month);e.textContent=`ruling in ${n} month${n===1?'':'s'}`}}{const e=$('cBoard');e.previousElementSibling.hidden=e.hidden=!board;if(board)boardHud(e)}$('eServe').textContent=fmt(MRR()*cts());$('eTeam').textContent=fmt(teamCost());$('eLoan').textContent=fmt(lp);updLoans();$('eNet').textContent=(net>=0?'+':'')+fmt(net);$('eNet').className=net<0?'warn':'';
    showCount('csm');showCount('mm');showCount('eng');showCount('intern',1);showCount('jeng');$('s-intern').textContent=fmt(JUNIORS.intern.salary)+'/mo';$('s-jeng').textContent=fmt(JUNIORS.jeng.salary)+'/mo';$('i-meta').innerHTML=supHtml('intern');$('j-meta').innerHTML=heads('jeng')?`${teamLine('jeng')} · ${supHtml('jeng')}`:'None hired yet';$('i-hire').disabled=!atRisk()||cash<JUNIORS.intern.salary||heads('intern')>=1;$('i-fire').disabled=!heads('intern');$('j-hire').disabled=!atRisk()||cash<JUNIORS.jeng.salary;$('j-hire10').disabled=!atRisk()||cash<10*JUNIORS.jeng.salary;$('j-fire').disabled=!heads('jeng');$('s-eng').textContent=fmt(ENG.salary)+'/mo';$('e-meta').textContent=`${teamLine('eng')} · ${rpRate().replace('point','roadmap point')} in total`;$('e-hire').disabled=!atRisk()||cash<ENG.salary;$('e-fire').disabled=!heads('eng');$('e-hire10').disabled=!atRisk()||cash<10*ENG.salary;{const t=staff.length,r=Object.values(team).reduce((n,x)=>n+x.r,0);$('team-n').textContent=t?`${t.toLocaleString('en-US')} ${t===1?'person':'people'}`:'No one yet';$('team-meta').textContent=t?`Payroll ${fmt(teamCost())} a month${r?` · ${r} ramping up`:''}.`:'Hire customer success, marketing, engineering and more.';$('tm-n').textContent=t.toLocaleString('en-US');$('tm-pay').textContent=fmt(teamCost())+'/mo';$('tm-mrr').textContent=fmt(MRR());$('tm-cash').textContent=fmt(cash)}$('t-csm-meta').textContent=`${teamLine('csm')} · covering ${Math.min(paying,heads('csm')*csmCovers())} of ${paying} paying customers`;$('t-hire').disabled=!atRisk()||cash<CSM.salary;$('s-csm').textContent=fmt(CSM.salary)+'/mo';$('s-mm').textContent=fmt(MM.salary)+'/mo';$('m-meta').textContent=`${teamLine('mm')} · ${Math.round(organicRate())} free visitors a month in total`;$('m-hire').disabled=!atRisk()||cash<MM.salary;$('m-fire').disabled=!heads('mm');$('t-fire').disabled=!heads('csm');
@@ -1392,9 +1440,23 @@ function revealHtml(){const h=alHist.length?alHist:[companyAl()],xy=([u,p])=>[10
     (led.length?`<h4>What it led to</h4><ul>${led.map(([n,c])=>`<li>${esc(n)}${c>1?` ×${c}`:''}</li>`).join('')}</ul>`:'')}
 function fileIPO(){if(!atRisk()||ipoHold<IPO.hold)return;ipoFiled=true;ipoSnap=ipoSummary();save();sfx('fanfare');say('<b class="good">You filed for an IPO.</b> Buying is closed. The boards keep running, and the summary is in IPO readiness.');openSum()}
 $('ipo-file').addEventListener('click',fileIPO);$('ipo-sum').addEventListener('click',openSum);
-const wide=matchMedia('(min-width:860px)');
-function placeBuy(){const a=$('actions'),b=$('channels'),m=$('msg');if(wide.matches){$('side').prepend(a);$('h-act').after(b);$('play').append(m)}else{$('top').append(b);$('boardcol').prepend(a);$('top').after(m)}}
-placeBuy();wide.addEventListener('change',placeBuy);
+const wide=matchMedia('(min-width:860px)'),fit=matchMedia('(max-width:859px) and (min-height:680px)');
+// Phone sheets. One open at a time, over a game that keeps running; only a dialog pauses it.
+const TABS=['ads','build','stats'];let tab=null;
+function showTab(t){tab=t;$('sheet').hidden=!t;TABS.forEach(n=>{$('tab-'+n).setAttribute('aria-expanded',n===t);$('sh-'+n).hidden=n!==t});if(t){$('sh-'+t).scrollTop=0;showMenu(false)}}
+function showMenu(on){$('menu').hidden=!on;$('more').setAttribute('aria-expanded',on)}
+function tabBadge(n,v){const b=$('tb-'+n),t=String(v||'');b.hidden=!t;if(b.textContent!==t)b.textContent=t}
+TABS.forEach(n=>$('tab-'+n).addEventListener('click',()=>showTab(tab===n?null:n)));
+$('sh-x').addEventListener('click',()=>showTab(null));
+$('more').addEventListener('click',()=>{const on=$('menu').hidden;if(on)showTab(null);showMenu(on)});
+$('sheet').addEventListener('click',e=>{if(e.target.closest('#rm-open,#team-open'))showTab(null)});
+$('menu').addEventListener('click',e=>{if(e.target.closest('button'))showMenu(false)});
+document.addEventListener('click',e=>{if(!tab&&$('menu').hidden)return;if(e.target.closest('#sheet,#tabs,#menu,#more,dialog,#toasts'))return;showTab(null);showMenu(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(tab||!$('menu').hidden)){showTab(null);showMenu(false)}});
+function placeBuy(){const beside=fit.matches;beside?$('boardcol').append($('fnl')):$('h-fnl').after($('fnl'));$('h-fnl').hidden=beside;const a=$('actions'),b=$('channels'),m=$('msg'),st=$('stats'),bb=$('brandbtns'),h=$('hud'),pay=$('st-paying'),days=$('st-days');
+  if(wide.matches){$('side').prepend(a);$('side').append(st);$('h-act').after(b);$('play').append(m);bb.insertBefore($('mute'),$('more'));bb.insertBefore($('theme'),$('more'));bb.insertBefore($('reset'),$('more'));h.insertBefore(pay,$('st-val'));h.append(days);$('hud2').hidden=true;showTab(null);showMenu(false)}
+  else{$('sh-build').append(a);$('sh-ads').append(b);$('sh-stats').append(st);$('top').after(m);$('menu').append($('mute'),$('theme'),$('reset'));$('hud2').hidden=false;$('hud2').append(pay,days)}}
+placeBuy();wide.addEventListener('change',placeBuy);fit.addEventListener('change',placeBuy);
 // Bump the key if the saved shape changes. Zones, bonus and churn are rebuilt from owned in load() (refx).
 const SAVE='funnel-drop-save-v1';let saving=true,saveFailed=false;
 function save(){if(!saving)return;try{localStorage.setItem(SAVE,JSON.stringify({hist,histDays:10,month,staff,eventT,seoFresh,seoRoll,subs,custRefs,ledger,flow,monthOut,monthRev,price,cash,ads,spend,into,out,free,paying,churned,peak,growth,mrrHist,histT,seoLvl,organicAcc,owned,paid,rp,stale,respecUsed,alHist,followers,ipoHold,ipoFiled,ipoSnap,mileMonth,playMs,over,warnLog,insolvent,softMonths,bridgeUsed,lawCase,lawStrikes,evSeen,board,teamSeen,balls,queued:queue.map(q=>q.src||0),postLeft:Math.max(0,postReady-performance.now()),

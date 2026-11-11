@@ -1,0 +1,57 @@
+<!doctype html><meta charset=utf8><style>
+body{margin:0;background:#d9deea;font:13px 'Chakra Petch',system-ui,sans-serif;color:#1b2033;display:flex;gap:28px;padding:28px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:10px;align-items:center}.col>b{font-size:15px}.col>small{max-width:300px;text-align:center;color:#454c66}
+.ph{width:300px;height:650px;background:#eef1f7;border-radius:28px;border:6px solid #1b2033;position:relative;overflow:hidden}
+.strip{position:absolute;top:0;left:0;right:0;background:#eef1f7;padding:10px 10px 8px;display:flex;gap:6px;align-items:center;border-bottom:1px solid #d3d9e6;z-index:3}
+.st{flex:1;background:#fff;border:1px solid #d3d9e6;border-radius:8px;padding:4px 6px}.st span{display:block;font-size:8px;color:#646c86;text-transform:uppercase}.st b{font:600 12px monospace}
+.ib{width:34px;height:34px;border:1px solid #d3d9e6;border-radius:8px;background:#fff;display:grid;place-items:center;font-size:13px}
+.board{position:absolute;top:58px;bottom:56px;left:0;right:0;padding:8px 20px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.bd{flex:1;background:#fbfcfe;border:1px solid #d3d9e6;border-radius:6px;position:relative;background-image:radial-gradient(#b4bbcf 1.5px,transparent 1.5px);background-size:22px 18px}
+.bd i{position:absolute;left:10px;top:3px;font:700 9px monospace;font-style:normal;color:#646c86}
+.bar{position:absolute;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:1px solid #d3d9e6;display:flex;z-index:3}
+.bar div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#646c86;position:relative;gap:2px}.bar div u{text-decoration:none;font-size:17px}.bar .on{color:#7a5ad8;font-weight:700}
+.bdg{position:absolute;top:6px;right:22px;background:#7a5ad8;color:#fff;border-radius:9px;font-size:9px;padding:0 5px}
+.sheet{position:absolute;left:0;right:0;bottom:56px;top:150px;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(27,32,51,.25);z-index:2;padding:8px 12px;overflow:hidden}
+.sheet:before{content:"";display:block;width:36px;height:4px;border-radius:2px;background:#d3d9e6;margin:0 auto 8px}
+.sheet h4{margin:8px 0 4px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#646c86}
+.c{border:1px solid #d3d9e6;border-radius:8px;padding:7px 9px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:11px}.c b{display:block;font-size:12px}.c small{color:#646c86;font-size:9px}
+.bt{background:#f0b020;border-radius:8px;padding:8px 10px;font-weight:700;font-size:10px;white-space:nowrap;min-height:20px;display:grid;place-items:center}.bt.g{background:#e3e8f2;color:#646c86}
+.row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #e3e8f2;font:11px monospace}
+.dim{position:absolute;inset:0;background:rgba(27,32,51,.0)}
+</style>
+<div class=col><b>Play</b><div class=ph>
+<div class=strip><div class=st><span>Cash</span><b>$1,500</b></div><div class=st><span>MRR</span><b>$0</b></div><div class=st><span>Valuation</span><b style=color:#1ea862>$0</b></div><div class=ib>⏸</div><div class=ib>⋯</div></div>
+<div class=board><div class=bd><i>A · ACQUISITION</i></div><div class=bd><i>A · ACTIVATION</i></div><div class=bd><i>R · RETENTION</i></div><div class=bd><i>R · REFERRAL</i></div><div class=bd><i>R · REVENUE</i></div></div>
+<div class=bar><div><u>📣</u>Ads</div><div><u>🛠</u>Build<span class=bdg>2</span></div><div><u>📊</u>Stats</div></div></div>
+<small>Pinned money strip (~58px instead of 502px). Boards fill the screen, scaled to fit so all five funnel stages are visible. Bottom bar always reachable.</small></div>
+
+<div class=col><b>Ads tab</b><div class=ph>
+<div class=strip><div class=st><span>Cash</span><b>$1,500</b></div><div class=st><span>MRR</span><b>$0</b></div><div class=st><span>Valuation</span><b style=color:#1ea862>$0</b></div><div class=ib>⏸</div><div class=ib>⋯</div></div>
+<div class=board><div class=bd><i>A · ACQUISITION</i></div><div class=bd><i>A · ACTIVATION</i></div></div>
+<div class=sheet><h4>Ads</h4>
+<div class=c><div><b>Organic social post</b><small>400 followers · ~6 clicks</small></div><div class=bt>POST<br>Free</div></div>
+<div class=c><div><b>SEO &amp; content</b><small>90–210 free visitors/mo</small></div><div class="bt g">START A BLOG<br>$2,000</div></div>
+<div class=c style="display:block"><div style="display:flex;justify-content:space-between"><div><b>Social ads</b><small>$1 a visitor now</small></div><div class="bt g">NEW CAMPAIGN $500</div></div><small>Budget: Off ───●────────</small></div>
+<div class=c><div><b>Search ads</b><small>~50 visitors per $100</small></div><div class="bt g">UNLOCK $3,000</div></div>
+</div>
+<div class=bar><div class=on><u>📣</u>Ads</div><div><u>🛠</u>Build<span class=bdg>2</span></div><div><u>📊</u>Stats</div></div></div>
+<small>Sheet covers ~65% of the screen; the game keeps running behind it (no pause). Drag down or tap the tab again to close.</small></div>
+
+<div class=col><b>Build tab</b><div class=ph>
+<div class=strip><div class=st><span>Cash</span><b>$1,500</b></div><div class=st><span>MRR</span><b>$0</b></div><div class=st><span>Valuation</span><b style=color:#1ea862>$0</b></div><div class=ib>⏸</div><div class=ib>⋯</div></div>
+<div class=board><div class=bd><i>A · ACQUISITION</i></div><div class=bd><i>A · ACTIVATION</i></div></div>
+<div class=sheet><h4>Roadmap</h4><div class=c style="border-left:4px solid #7a5ad8"><div><b>Open roadmap</b><small>+1 point a year</small></div><b>0 points</b></div>
+<h4>Pricing</h4><div class=c><div><b>$49 a month</b><small>conversion ×1.00 · churn ×1.00</small></div><div class="bt g">− / +</div></div>
+<h4>Team</h4><div class=c><div><b>Open team</b><small>0 people</small></div><div class="bt g">2 NEW</div></div>
+<h4>Financing</h4><div class=c><div><b>Loans</b><small>unlock at $100k</small></div></div></div>
+<div class=bar><div><u>📣</u>Ads</div><div class=on><u>🛠</u>Build<span class=bdg>2</span></div><div><u>📊</u>Stats</div></div></div>
+<small>Roadmap and Team still open their existing full-screen dialogs. The tab badge combines "N ready" and "N new".</small></div>
+
+<div class=col><b>Stats tab</b><div class=ph>
+<div class=strip><div class=st><span>Cash</span><b>$1,500</b></div><div class=st><span>MRR</span><b>$0</b></div><div class=st><span>Valuation</span><b style=color:#1ea862>$0</b></div><div class=ib>⏸</div><div class=ib>⋯</div></div>
+<div class=board><div class=bd><i>A · ACQUISITION</i></div><div class=bd><i>A · ACTIVATION</i></div></div>
+<div class=sheet><h4>Pirate metrics</h4><div class=row><span>Visitors</span><span>0</span></div><div class=row><span>Sign-ups</span><span>– / 5%</span></div><div class=row><span>Paid</span><span>– / 30%</span></div>
+<h4>Company</h4><div class=row><span>ARR</span><span>$0</span></div><div class=row><span>Next milestone</span><span>$100k</span></div><div class=row><span>NRR, 12 months</span><span>– / 109%</span></div>
+<h4>Unit economics</h4><div class=row><span>Net cash flow / month</span><span>+$0</span></div><div class=row><span>LTV : CAC</span><span>–</span></div><h4>+ Charts, IPO readiness, sources</h4></div>
+<div class=bar><div><u>📣</u>Ads</div><div><u>🛠</u>Build<span class=bdg>2</span></div><div class=on><u>📊</u>Stats</div></div></div>
+<small>Everything read-only: charts, company, IPO, pirate metrics, unit economics, sources. Paying and Days move here.</small></div>
